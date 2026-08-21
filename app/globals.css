@@ -1,26 +1,414 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * =========================================================
+ * ARRIYADH STUDIO DESIGN SYSTEM
+ * Tailwind CSS v4
+ * =========================================================
+ */
+
+@theme {
+  /*
+   * -------------------------------------------------------
+   * COLORS
+   * -------------------------------------------------------
+   */
+
+  --color-primary: #000613;
+  --color-primary-container: #001f3f;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #4e6073;
+  --color-secondary-container: #cfe2f9;
+  --color-on-secondary: #ffffff;
+
+  --color-tertiary: #110200;
+  --color-tertiary-container: #391303;
+  --color-on-tertiary: #ffffff;
+
+  --color-surface: #f8f9fa;
+  --color-surface-dim: #d9dadb;
+  --color-surface-bright: #f8f9fa;
+
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f4f5;
+  --color-surface-container: #edeeef;
+  --color-surface-container-high: #e7e8e9;
+  --color-surface-container-highest: #e1e3e4;
+
+  --color-surface-white: #ffffff;
+
+  --color-on-surface: #191c1d;
+  --color-on-surface-variant: #43474e;
+
+  --color-background: #f8f9fa;
+  --color-on-background: #191c1d;
+
+  --color-outline: #74777f;
+  --color-outline-variant: #c4c6cf;
+
+  --color-inverse-surface: #2e3132;
+  --color-inverse-on-surface: #f0f1f2;
+  --color-inverse-primary: #afc8f0;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-success-green: #1b5e20;
+  --color-status-amber: #ff8f00;
+  --color-link-blue: #0056b3;
+
+  /*
+   * -------------------------------------------------------
+   * BORDER RADIUS
+   * -------------------------------------------------------
+   */
+
+  --radius-sm: 2px;
+  --radius-default: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /*
+   * -------------------------------------------------------
+   * SPACING
+   * -------------------------------------------------------
+   */
+
+  --spacing-base: 8px;
+  --spacing-gutter: 24px;
+  --spacing-margin-mobile: 16px;
+  --spacing-section-gap: 80px;
+
+  --container-content: 1200px;
+
+  /*
+   * =======================================================
+   * TYPOGRAPHY — ARRIYADH STUDIO
+   * =======================================================
+   *
+   * Semua nilai berasal dari typography Figma.
+   *
+   * Public:
+   * - Heading: Hanken Grotesk
+   * - Body/UI: Inter
+   *
+   * Admin:
+   * - Dominan Hanken Grotesk
+   * =======================================================
+   */
+
+  /*
+   * -------------------------------------------------------
+   * FONT WEIGHTS
+   * -------------------------------------------------------
+   */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /*
+   * -------------------------------------------------------
+   * LETTER SPACING
+   * -------------------------------------------------------
+   */
+
+  --tracking-tight-brand: -1px;
+  --tracking-normal-brand: 0px;
+  --tracking-label: 1px;
+  --tracking-wide-label: 2px;
+
+  /*
+   * -------------------------------------------------------
+   * RAW TYPOGRAPHY SCALE
+   *
+   * Dipakai jika perlu ukuran yang benar-benar spesifik.
+   * -------------------------------------------------------
+   */
+
+  --text-10: 10px;
+  --text-10--line-height: 15px;
+
+  --text-11: 11px;
+  --text-11--line-height: 17px;
+
+  --text-12: 12px;
+  --text-12--line-height: 16px;
+
+  --text-14: 14px;
+  --text-14--line-height: 20px;
+
+  --text-16: 16px;
+  --text-16--line-height: 24px;
+
+  --text-18: 18px;
+  --text-18--line-height: 28px;
+
+  --text-20: 20px;
+  --text-20--line-height: 28px;
+
+  --text-24: 24px;
+  --text-24--line-height: 32px;
+
+  --text-30: 30px;
+  --text-30--line-height: 36px;
+
+  --text-32: 32px;
+  --text-32--line-height: 40px;
+
+  --text-48: 48px;
+  --text-48--line-height: 56px;
+
+  --text-64: 64px;
+  --text-64--line-height: 64px;
+
+  /*
+   * -------------------------------------------------------
+   * SEMANTIC DISPLAY / HEADING TOKENS
+   * Hanken Grotesk
+   * -------------------------------------------------------
+   */
+
+  /* 64 / 64 / Regular */
+  --text-display-xl: 64px;
+  --text-display-xl--line-height: 64px;
+  --text-display-xl--letter-spacing: 0px;
+  --text-display-xl--font-weight: 400;
+
+  /* 48 / 60 / Bold */
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 60px;
+  --text-display-lg--letter-spacing: -1px;
+  --text-display-lg--font-weight: 700;
+
+  /* 48 / 56 / Bold */
+  --text-display-md: 48px;
+  --text-display-md--line-height: 56px;
+  --text-display-md--letter-spacing: -1px;
+  --text-display-md--font-weight: 700;
+
+  /* 32 / 40 / SemiBold */
+  --text-heading-lg: 32px;
+  --text-heading-lg--line-height: 40px;
+  --text-heading-lg--letter-spacing: 0px;
+  --text-heading-lg--font-weight: 600;
+
+  /* 30 / 36 / ExtraBold */
+  --text-heading-strong: 30px;
+  --text-heading-strong--line-height: 36px;
+  --text-heading-strong--letter-spacing: 0px;
+  --text-heading-strong--font-weight: 800;
+
+  /* 24 / 32 / SemiBold */
+  --text-heading-md: 24px;
+  --text-heading-md--line-height: 32px;
+  --text-heading-md--letter-spacing: 0px;
+  --text-heading-md--font-weight: 600;
+
+  /* 20 / 28 / SemiBold */
+  --text-heading-sm: 20px;
+  --text-heading-sm--line-height: 28px;
+  --text-heading-sm--letter-spacing: 0px;
+  --text-heading-sm--font-weight: 600;
+
+  /* 18 / 28 / SemiBold */
+  --text-heading-xs: 18px;
+  --text-heading-xs--line-height: 28px;
+  --text-heading-xs--letter-spacing: 0px;
+  --text-heading-xs--font-weight: 600;
+
+  /*
+   * -------------------------------------------------------
+   * BODY TOKENS
+   * Inter
+   * -------------------------------------------------------
+   */
+
+  /* 18 / 28 */
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-lg--letter-spacing: 0px;
+  --text-body-lg--font-weight: 400;
+
+  /* 16 / 26 */
+  --text-body-relaxed: 16px;
+  --text-body-relaxed--line-height: 26px;
+  --text-body-relaxed--letter-spacing: 0px;
+  --text-body-relaxed--font-weight: 400;
+
+  /* 16 / 24 */
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--letter-spacing: 0px;
+  --text-body-md--font-weight: 400;
+
+  /* 14 / 23 */
+  --text-body-compact: 14px;
+  --text-body-compact--line-height: 23px;
+  --text-body-compact--letter-spacing: 0px;
+  --text-body-compact--font-weight: 400;
+
+  /* 14 / 20 */
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--letter-spacing: 0px;
+  --text-body-sm--font-weight: 400;
+
+  /*
+   * -------------------------------------------------------
+   * UI / LABEL / BUTTON TOKENS
+   * -------------------------------------------------------
+   */
+
+  /* Button / semibold */
+  --text-button: 14px;
+  --text-button--line-height: 20px;
+  --text-button--letter-spacing: 0px;
+  --text-button--font-weight: 600;
+
+  /* Strong button */
+  --text-button-strong: 14px;
+  --text-button-strong--line-height: 20px;
+  --text-button-strong--letter-spacing: 0px;
+  --text-button-strong--font-weight: 700;
+
+  /* Navigation / compact labels */
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 1px;
+  --text-label-md--font-weight: 700;
+
+  /* Small uppercase labels */
+  --text-label-sm: 10px;
+  --text-label-sm--line-height: 15px;
+  --text-label-sm--letter-spacing: 2px;
+  --text-label-sm--font-weight: 700;
+
+  /* Very small form tabs */
+  --text-label-xs: 11px;
+  --text-label-xs--line-height: 17px;
+  --text-label-xs--letter-spacing: 1px;
+  --text-label-xs--font-weight: 700;
+
+  /*
+   * -------------------------------------------------------
+   * ADMIN TYPOGRAPHY
+   * Hanken Grotesk
+   * -------------------------------------------------------
+   */
+
+  --text-admin-title: 32px;
+  --text-admin-title--line-height: 40px;
+  --text-admin-title--letter-spacing: 0px;
+  --text-admin-title--font-weight: 600;
+
+  --text-admin-section: 24px;
+  --text-admin-section--line-height: 32px;
+  --text-admin-section--letter-spacing: 0px;
+  --text-admin-section--font-weight: 600;
+
+  --text-admin-body: 16px;
+  --text-admin-body--line-height: 24px;
+  --text-admin-body--letter-spacing: 0px;
+  --text-admin-body--font-weight: 400;
+
+  --text-admin-label: 14px;
+  --text-admin-label--line-height: 20px;
+  --text-admin-label--letter-spacing: 0px;
+  --text-admin-label--font-weight: 600;
+
+  --text-admin-caption: 12px;
+  --text-admin-caption--line-height: 16px;
+  --text-admin-caption--letter-spacing: 0px;
+  --text-admin-caption--font-weight: 500;
 }
+
+/*
+ * =========================================================
+ * FONT FAMILY MAPPING
+ *
+ * Variable asli berasal dari next/font di layout.tsx
+ * =========================================================
+ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-hanken-grotesk);
+  --font-body: var(--font-inter);
+
+  /*
+   * Default sans memakai Inter.
+   */
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+ * =========================================================
+ * GLOBAL BASE
+ * =========================================================
+ */
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+
+    font-family: var(--font-inter), sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-hanken-grotesk), sans-serif;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
 }
