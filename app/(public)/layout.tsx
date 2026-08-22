@@ -1,5 +1,6 @@
 import { PublicFooter } from "@/components/layout/public-footer";
 import { PublicNavbar } from "@/components/layout/public-navbar";
+import { FloatingWhatsapp } from "@/components/ui/floating-whatsapp";
 
 export default function PublicLayout({
   children,
@@ -11,6 +12,7 @@ export default function PublicLayout({
       <PublicNavbar />
       <div className="flex-1">{children}</div>
       <PublicFooter />
+      <FloatingWhatsapp />
     </div>
   );
 }
