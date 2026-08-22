@@ -3,7 +3,6 @@ export default function Home() {
     <main className="min-h-screen bg-background text-on-background">
       <section className="mx-auto max-w-content px-margin-mobile py-section-gap md:px-gutter">
         <div className="space-y-gutter rounded-xl border border-outline-variant bg-surface-white p-gutter">
-
           <div>
             <p className="font-body text-label-md text-secondary">
               TERPERCAYA SEJAK 2010
@@ -14,8 +13,7 @@ export default function Home() {
             </h1>
 
             <p className="mt-base max-w-2xl font-body text-body-lg text-on-surface-variant">
-              Kualitas premium untuk seragam, kaos, dan
-              merchandise custom Anda.
+              Kualitas premium untuk seragam, kaos, dan merchandise custom Anda.
             </p>
           </div>
 
@@ -25,15 +23,12 @@ export default function Home() {
             </h2>
 
             <p className="mt-base font-body text-body-md text-on-surface-variant">
-              Produksi pakaian custom dengan standar
-              pengerjaan profesional.
+              Produksi pakaian custom dengan standar pengerjaan profesional.
             </p>
           </div>
 
           <div>
-            <h3 className="font-heading text-heading-md">
-              Konveksi & Sablon
-            </h3>
+            <h3 className="font-heading text-heading-md">Konveksi & Sablon</h3>
 
             <p className="font-body text-body-sm text-on-surface-variant">
               Produksi pakaian massal dengan kualitas premium.
@@ -68,7 +63,6 @@ export default function Home() {
               Ringkasan aktivitas produksi hari ini.
             </p>
           </div>
-
         </div>
       </section>
     </main>
