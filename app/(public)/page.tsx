@@ -48,7 +48,7 @@ const services = [
 const products = [
   {
     title: "Kaos Polos Premium",
-    material: "Cotton Combed 30s",
+    material: "Cotton Combed 30s & 24s",
     variant: "Tersedia dalam berbagai pilihan warna",
     price: "Rp 45.000",
     image: "/images/home/product-kaos-main.jpeg",
@@ -59,8 +59,8 @@ const products = [
     material: "Bahan Baby Terry",
     variant: "Tersedia dalam berbagai pilihan motif",
     price: "Rp 25.000",
-    image: "/images/home/product-celana-opsional-1.jpeg",
-    imageAlt: "Celana kolor santai Arriyadh Studio",
+    image: "/images/home/product-celana-main.jpeg",
+    imageAlt: "Pilihan motif celana kolor santai Arriyadh Studio",
   },
 ] as const;
 
