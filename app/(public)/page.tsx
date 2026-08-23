@@ -58,7 +58,7 @@ const products = [
     title: "Celana Kolor Santai",
     material: "Bahan Baby Terry",
     variant: "Tersedia dalam berbagai pilihan motif",
-    price: "Rp 35.000",
+    price: "Rp 25.000",
     image: "/images/home/product-celana-opsional-1.jpeg",
     imageAlt: "Celana kolor santai Arriyadh Studio",
   },
