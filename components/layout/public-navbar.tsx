@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
 import { Container } from "@/components/ui/container";
@@ -18,63 +19,97 @@ const navigation = [
 const orderButtonClass =
   "inline-flex min-h-10 items-center justify-center rounded-md bg-primary px-6 py-2.5 font-body text-button text-on-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:translate-y-0";
 
+function isNavigationActive(pathname: string, href: string) {
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function PublicNavbar() {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const mobileMenuId = useId();
 
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsMenuOpen(false);
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
     }
 
     window.addEventListener("keydown", handleEscape);
+
     return () => window.removeEventListener("keydown", handleEscape);
   }, []);
 
   return (
     <header className="border-b border-outline-variant bg-surface-white">
-     <div className="mx-auto flex min-h-20 w-full items-center justify-between gap-gutter px-margin-mobile md:px-gutter lg:px-12 xl:px-16 2xl:px-20">
-      <Link
-  href="/"
-  aria-label="Arriyadh Studio — Beranda"
-  className="flex shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-  onClick={() => setIsMenuOpen(false)}
->
-  <Image
-    src="/branding/arriyadh-logo.png"
-    alt=""
-    width={44}
-    height={44}
-    priority
-    aria-hidden="true"
-    className="h-11 w-11 object-contain"
-  />
+      <div className="mx-auto flex min-h-20 w-full items-center justify-between gap-gutter px-margin-mobile md:px-gutter lg:px-12 xl:px-16 2xl:px-20">
+        {/* Brand */}
+        <Link
+          href="/"
+          aria-label="Arriyadh Studio — Beranda"
+          className="flex shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <Image
+            src="/branding/arriyadh-logo.png"
+            alt=""
+            width={44}
+            height={44}
+            priority
+            aria-hidden="true"
+            className="h-11 w-11 object-contain"
+          />
 
-  <span className="font-heading text-[20px] leading-none text-primary">
-    <span className="font-bold">Arriyadh</span>{" "}
-    <span className="font-normal">Studio</span>
-  </span>
-</Link> 
+          <span className="font-heading text-[20px] leading-none text-primary">
+            <span className="font-bold">Arriyadh</span>{" "}
+            <span className="font-normal">Studio</span>
+          </span>
+        </Link>
 
+        {/* Desktop navigation */}
         <nav
           aria-label="Navigasi utama"
-          className="hidden items-center gap-6 lg:flex"
+          className="hidden items-center gap-7 lg:flex"
         >
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="font-body text-button text-on-surface-variant transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navigation.map((item) => {
+            const isActive = isNavigationActive(pathname, item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`group relative py-2 font-body text-button transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
+                  isActive
+                    ? "font-semibold text-primary"
+                    : "text-on-surface-variant hover:text-primary"
+                }`}
+              >
+                {item.label}
+
+                <span
+                  aria-hidden="true"
+                  className={`absolute inset-x-0 -bottom-1 mx-auto h-0.5 bg-primary transition-all duration-200 ${
+                    isActive
+                      ? "w-full opacity-100"
+                      : "w-0 opacity-0 group-hover:w-full group-hover:opacity-40"
+                  }`}
+                />
+              </Link>
+            );
+          })}
         </nav>
 
+        {/* Desktop order button */}
         <div className="hidden lg:block">
           <OrderChoiceDialog className={orderButtonClass} />
         </div>
 
+        {/* Mobile menu button */}
         <button
           type="button"
           aria-label={isMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
@@ -100,6 +135,7 @@ export function PublicNavbar() {
         </button>
       </div>
 
+      {/* Mobile navigation */}
       <div
         id={mobileMenuId}
         hidden={!isMenuOpen}
@@ -107,17 +143,34 @@ export function PublicNavbar() {
       >
         <Container className="py-margin-mobile">
           <nav aria-label="Navigasi seluler" className="flex flex-col">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="border-b border-outline-variant py-3 font-body text-button text-on-surface-variant focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive = isNavigationActive(pathname, item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`relative border-b border-outline-variant py-3 pr-8 font-body text-button transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                    isActive
+                      ? "font-semibold text-primary"
+                      : "text-on-surface-variant hover:text-primary"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
+
           <OrderChoiceDialog
             className={`${orderButtonClass} mt-margin-mobile w-full`}
           />
