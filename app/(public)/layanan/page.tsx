@@ -150,6 +150,9 @@ const orderSteps = [
   },
 ] as const;
 
+const serviceOrderUrl =
+  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20layanan%20custom.";
+
 function ArrowIcon() {
   return (
     <svg
@@ -315,15 +318,17 @@ export default function LayananPage() {
                         </ul>
                       </div>
 
-                      <Link
-                        href="/pesan?tipe=layanan"
+                      <a
+                        href={serviceOrderUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="mt-8 inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                       >
                         Pesan Layanan
                         <span className="transition-transform duration-200 group-hover:translate-x-1">
                           <ArrowIcon />
                         </span>
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </Reveal>

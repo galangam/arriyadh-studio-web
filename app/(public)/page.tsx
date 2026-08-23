@@ -38,10 +38,10 @@ const services = [
     href: "/layanan#jersey",
   },
   {
-    title: "Sweater",
+    title: "Lainnya",
     description:
-      "Hoodie, sweater, dan jaket dengan pilihan bahan fleece maupun baby terry.",
-    href: "/layanan#sweater",
+      "Kebutuhan desain, banner, stiker, undangan, dan pengerjaan custom lainnya.",
+    href: "/layanan#lainnya",
   },
 ] as const;
 
@@ -72,6 +72,9 @@ const portfolioImages = Array.from({ length: 33 }, (_, index) => {
     alt: `Hasil produksi Arriyadh Studio ${number}`,
   };
 });
+
+const productOrderUrl =
+  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20produk%20ready-stock.";
 
 function ArrowIcon() {
   return (
@@ -340,12 +343,14 @@ export default function Home() {
                         </p>
                       </div>
 
-                      <Link
-                        href="/pesan?tipe=produk"
+                      <a
+                        href={productOrderUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container"
                       >
                         Beli
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </article>

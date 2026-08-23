@@ -103,8 +103,8 @@ export default function LacakPesananPage() {
       </h1>
 
       <p className="mx-auto mt-margin-mobile max-w-2xl font-body text-body-md leading-relaxed text-on-surface-variant sm:text-body-lg">
-        Masukkan nomor pesanan Anda untuk memantau kemajuan setiap tahap
-        pengerjaan secara real-time.
+        Masukkan nomor pesanan Anda untuk melihat informasi perkembangan
+        pengerjaan.
       </p>
 
       <div className="mx-auto mt-10 max-w-4xl">
@@ -112,8 +112,8 @@ export default function LacakPesananPage() {
       </div>
 
       <p className="mx-auto mt-margin-mobile max-w-2xl font-body text-body-sm text-on-surface-variant">
-        Layanan pelacakan tersedia untuk semua pesanan sablon, kemeja, dan
-        jersey.
+        Nomor pesanan diberikan melalui informasi pesanan yang dikirimkan oleh
+        admin.
       </p>
     </div>
   </Reveal>

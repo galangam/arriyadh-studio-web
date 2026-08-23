@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 
 import { PublicCta } from "@/components/layout/public-cta";
 import { Container } from "@/components/ui/container";
@@ -71,6 +70,9 @@ const purchaseSteps = [
     description: "Ikuti informasi pembayaran dan penyelesaian pesanan.",
   },
 ] as const;
+
+const productOrderUrl =
+  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20produk%20ready-stock.";
 
 function ArrowIcon() {
   return (
@@ -214,15 +216,17 @@ export default function ProdukPage() {
                       </div>
 
                       <div className="mt-auto pt-8">
-                        <Link
-                          href="/pesan?tipe=produk"
+                        <a
+                          href={productOrderUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         >
                           Beli Sekarang
                           <span className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none">
                             <ArrowIcon />
                           </span>
-                        </Link>
+                        </a>
                       </div>
                     </div>
                   </article>

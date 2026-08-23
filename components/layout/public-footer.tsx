@@ -5,7 +5,7 @@ const quickServices = [
   { label: "Sablon Kaos", href: "/layanan#sablon" },
   { label: "Pembuatan Kemeja / PDH", href: "/layanan#kemeja" },
   { label: "Bikin Jersey Olahraga", href: "/layanan#jersey" },
-  { label: "Jaket & Sweater", href: "/layanan#sweater" },
+  { label: "Kebutuhan Custom Lainnya", href: "/layanan#lainnya" },
   { label: "Jasa Permak Pakaian", href: "/layanan#permak" },
 ];
 
@@ -102,9 +102,7 @@ export function PublicFooter() {
 
           {/* Layanan Cepat */}
           <div>
-            <h2 className="font-body text-body-md font-bold">
-              Layanan Cepat
-            </h2>
+            <h2 className="font-body text-body-md font-bold">Layanan Cepat</h2>
 
             <nav
               aria-label="Layanan cepat"
@@ -124,9 +122,7 @@ export function PublicFooter() {
 
           {/* Informasi */}
           <div>
-            <h2 className="font-body text-body-md font-bold">
-              Informasi
-            </h2>
+            <h2 className="font-body text-body-md font-bold">Informasi</h2>
 
             <nav
               aria-label="Informasi footer"
@@ -146,9 +142,7 @@ export function PublicFooter() {
 
           {/* Hubungi Kami */}
           <div>
-            <h2 className="font-body text-body-md font-bold">
-              Hubungi Kami
-            </h2>
+            <h2 className="font-body text-body-md font-bold">Hubungi Kami</h2>
 
             <address className="mt-margin-mobile space-y-4 font-body text-body-sm not-italic text-on-primary/70">
               <p>{contactInformation.address}</p>
