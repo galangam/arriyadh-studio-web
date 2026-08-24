@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 
+import { logoutAdmin } from "@/app/admin/(protected)/actions";
 import {
   ADMIN_NAVIGATION,
   isAdminNavigationActive,
@@ -13,6 +15,20 @@ import {
 type AdminNavigationProps = {
   onNavigate?: () => void;
 };
+
+function LogoutButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex min-h-10 w-full items-center px-4 text-left text-admin-body font-medium text-inverse-on-surface transition-colors hover:bg-on-primary/5 hover:text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-primary focus-visible:ring-inset disabled:cursor-wait disabled:opacity-70"
+    >
+      {pending ? "Keluar..." : "Keluar"}
+    </button>
+  );
+}
 
 function AdminNavigation({ onNavigate }: AdminNavigationProps) {
   const pathname = usePathname();
@@ -74,9 +90,9 @@ function SidebarContent({ onNavigate }: AdminNavigationProps) {
 
       <AdminNavigation onNavigate={onNavigate} />
 
-      <p className="border-t border-on-primary/15 pt-4 text-admin-caption text-inverse-on-surface">
-        Admin
-      </p>
+      <form action={logoutAdmin} className="border-t border-on-primary/15 pt-3">
+        <LogoutButton />
+      </form>
     </div>
   );
 }
