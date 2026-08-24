@@ -122,11 +122,10 @@ export default async function AdminOrdersPage() {
                       className="border-b border-outline-variant px-5 py-12 text-center md:px-6 md:py-14"
                     >
                       <p className="font-heading text-heading-xs text-primary">
-                        Belum ada pesanan.
+                        Belum ada pesanan masuk.
                       </p>
                       <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">
-                        Data pesanan akan tampil di sini setelah modul pemesanan
-                        terhubung.
+                        Pesanan terbaru akan muncul di sini.
                       </p>
                     </td>
                   </tr>
