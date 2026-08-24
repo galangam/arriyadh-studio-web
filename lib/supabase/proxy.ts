@@ -4,6 +4,37 @@ import {
   type NextRequest,
 } from "next/server";
 
+const SUPABASE_AUTH_CACHE_HEADERS = [
+  "cache-control",
+  "expires",
+  "pragma",
+] as const;
+
+function copySupabaseAuthState(
+  sourceResponse: NextResponse,
+  targetResponse: NextResponse
+) {
+  sourceResponse.cookies
+    .getAll()
+    .forEach((cookie) => {
+      targetResponse.cookies.set(cookie);
+    });
+
+  SUPABASE_AUTH_CACHE_HEADERS.forEach(
+    (headerName) => {
+      const headerValue =
+        sourceResponse.headers.get(headerName);
+
+      if (headerValue) {
+        targetResponse.headers.set(
+          headerName,
+          headerValue
+        );
+      }
+    }
+  );
+}
+
 export async function updateSession(
   request: NextRequest
 ) {
@@ -135,11 +166,10 @@ export async function updateSession(
        * Pertahankan cookie yang mungkin baru saja
        * di-refresh Supabase.
        */
-      supabaseResponse.cookies
-        .getAll()
-        .forEach((cookie) => {
-          redirectResponse.cookies.set(cookie);
-        });
+      copySupabaseAuthState(
+        supabaseResponse,
+        redirectResponse
+      );
 
       return redirectResponse;
     }
@@ -161,11 +191,10 @@ export async function updateSession(
     const redirectResponse =
       NextResponse.redirect(adminUrl);
 
-    supabaseResponse.cookies
-      .getAll()
-      .forEach((cookie) => {
-        redirectResponse.cookies.set(cookie);
-      });
+    copySupabaseAuthState(
+      supabaseResponse,
+      redirectResponse
+    );
 
     return redirectResponse;
   }
