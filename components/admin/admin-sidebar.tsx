@@ -18,8 +18,8 @@ function AdminNavigation({ onNavigate }: AdminNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navigasi admin" className="mt-8 flex-1">
-      <ul className="space-y-1">
+    <nav aria-label="Navigasi admin" className="mt-7 flex-1">
+      <ul className="space-y-0.5">
         {ADMIN_NAVIGATION.map((item) => {
           const isActive = isAdminNavigationActive(pathname, item.href);
 
@@ -29,10 +29,10 @@ function AdminNavigation({ onNavigate }: AdminNavigationProps) {
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 onClick={onNavigate}
-                className={`flex min-h-11 items-center rounded-md px-4 text-admin-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary ${
+                className={`flex min-h-10 items-center border-l-2 px-4 text-admin-body font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-primary focus-visible:ring-inset ${
                   isActive
-                    ? "bg-surface-white text-primary"
-                    : "text-inverse-on-surface hover:bg-on-primary/10 hover:text-on-primary"
+                    ? "border-on-primary bg-on-primary/10 text-on-primary"
+                    : "border-transparent text-inverse-on-surface hover:bg-on-primary/5 hover:text-on-primary"
                 }`}
               >
                 {item.label}
@@ -47,23 +47,23 @@ function AdminNavigation({ onNavigate }: AdminNavigationProps) {
 
 function SidebarContent({ onNavigate }: AdminNavigationProps) {
   return (
-    <div className="flex h-full flex-col px-4 py-5">
+    <div className="flex h-full flex-col px-5 py-5">
       <Link
         href="/admin"
         onClick={onNavigate}
-        className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+        className="flex items-center gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-white p-1.5">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center">
           <Image
             src="/branding/arriyadh-logo.png"
             alt=""
             width={32}
             height={36}
-            className="h-8 w-auto object-contain"
+            className="h-8 w-auto object-contain invert"
           />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-heading text-heading-xs text-on-primary">
+          <span className="block truncate font-heading text-admin-body font-semibold text-on-primary">
             Arriyadh Studio
           </span>
           <span className="block text-admin-caption text-inverse-on-surface">
@@ -75,7 +75,7 @@ function SidebarContent({ onNavigate }: AdminNavigationProps) {
       <AdminNavigation onNavigate={onNavigate} />
 
       <p className="border-t border-on-primary/15 pt-4 text-admin-caption text-inverse-on-surface">
-        Operasional internal
+        Admin
       </p>
     </div>
   );
@@ -133,7 +133,7 @@ export function AdminSidebar() {
         </span>
       </button>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-primary lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-on-primary/10 bg-primary lg:block">
         <SidebarContent />
       </aside>
 

@@ -14,8 +14,8 @@ export function AdminHeader({ email }: AdminHeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 border-b border-outline-variant bg-surface-white">
-      <div className="flex h-16 min-w-0 items-center justify-between gap-3 pl-16 pr-margin-mobile md:pr-gutter lg:px-gutter">
-        <p className="truncate font-heading text-heading-xs text-primary">
+      <div className="flex h-14 min-w-0 items-center justify-between gap-3 pl-16 pr-margin-mobile md:pr-gutter lg:px-gutter">
+        <p className="truncate font-heading text-admin-body font-semibold text-primary">
           {pageTitle}
         </p>
 
@@ -25,7 +25,7 @@ export function AdminHeader({ email }: AdminHeaderProps) {
               {email}
             </span>
           ) : null}
-          <span className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-admin-caption font-semibold text-primary">
+          <span className="border-l border-outline-variant pl-3 text-admin-caption font-semibold text-primary">
             Admin
           </span>
         </div>

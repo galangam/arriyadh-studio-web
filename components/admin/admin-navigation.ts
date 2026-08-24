@@ -5,10 +5,8 @@ export type AdminNavigationItem = {
 
 export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
   { label: "Dashboard", href: "/admin" },
-  { label: "Pesanan", href: "/admin/pesanan" },
-  { label: "Produk", href: "/admin/produk" },
-  { label: "Layanan", href: "/admin/layanan" },
-  { label: "Produksi", href: "/admin/produksi" },
+  { label: "Daftar Pesanan", href: "/admin/pesanan" },
+  { label: "Kelola Konten", href: "/admin/konten" },
 ];
 
 export function isAdminNavigationActive(pathname: string, href: string) {
