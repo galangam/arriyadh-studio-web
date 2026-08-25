@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
+
 import {
   formatAdminOrderDateTime,
   formatOrderPrice,
@@ -204,6 +206,26 @@ export default async function AdminOrderDetailPage({
                 <OrderInformation order={order} />
               </div>
             </section>
+
+            {order.order_kind === "service" &&
+              order.status === "menunggu_harga" && (
+                <section
+                  aria-labelledby="set-order-price-heading"
+                  className="border border-outline-variant bg-surface-white p-5 md:p-6"
+                >
+                  <h2
+                    id="set-order-price-heading"
+                    className="font-heading text-admin-section text-primary"
+                  >
+                    Set Harga Pesanan
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+                    Tentukan total harga pesanan. DP sekitar 50% akan dihitung
+                    otomatis.
+                  </p>
+                  <SetOrderPriceForm orderId={order.id} />
+                </section>
+              )}
 
             {statusDetails.length > 0 && (
               <section
