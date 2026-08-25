@@ -5,6 +5,7 @@ import {
   TransferVerificationControls,
 } from "@/app/admin/(protected)/pesanan/[id]/payment-verification-controls";
 
+import { ProductionProgress } from "@/app/admin/(protected)/pesanan/[id]/production-progress";
 import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
 
 import {
@@ -283,6 +284,8 @@ export default async function AdminOrderDetailPage({
                   <CodConfirmationControl orderId={order.id} />
                 </section>
               )}
+
+            <ProductionProgress order={order} />
 
             {statusDetails.length > 0 && (
               <section

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAdminPaymentProofSignedUrl } from "@/lib/orders/admin-payment";
+import { getNextOrderStatus } from "@/lib/orders/order-workflows";
 import { createClient } from "@/lib/supabase/server";
 
 export type SetOrderPriceState = {
@@ -18,6 +19,10 @@ export type AdminPaymentActionState = {
 export type PaymentProofLinkState = {
   error: string | null;
   signedUrl: string | null;
+};
+
+export type AdvanceOrderStatusState = {
+  error: string | null;
 };
 
 const uuidPattern =
@@ -278,6 +283,85 @@ export async function confirmCodPayment(
   if (!data) {
     return {
       error: "Status pesanan sudah berubah atau pembayaran tidak dapat diverifikasi.",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pesanan");
+  revalidatePath(`/admin/pesanan/${orderId}`);
+  redirect(`/admin/pesanan/${orderId}`);
+}
+
+export async function advanceOrderStatus(
+  orderId: string,
+  _previousState: AdvanceOrderStatusState,
+  _formData: FormData,
+): Promise<AdvanceOrderStatusState> {
+  void _previousState;
+  void _formData;
+  await requireAdmin();
+
+  if (!uuidPattern.test(orderId)) {
+    return {
+      error: "Status pesanan sudah berubah. Muat ulang halaman dan coba lagi.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("order_kind, service_flow, status")
+    .eq("id", orderId)
+    .maybeSingle<{
+      order_kind: "service" | "product";
+      service_flow: string | null;
+      status: string;
+    }>();
+
+  if (orderError) {
+    return {
+      error: "Status pesanan gagal diperbarui. Silakan coba lagi.",
+    };
+  }
+
+  if (!order) {
+    return {
+      error: "Status pesanan sudah berubah. Muat ulang halaman dan coba lagi.",
+    };
+  }
+
+  const nextStatus = getNextOrderStatus(order);
+
+  if (!nextStatus) {
+    return {
+      error: "Status pesanan gagal diperbarui. Silakan coba lagi.",
+    };
+  }
+
+  let updateQuery = supabase
+    .from("orders")
+    .update({ status: nextStatus })
+    .eq("id", orderId)
+    .eq("order_kind", order.order_kind)
+    .eq("status", order.status);
+
+  if (order.order_kind === "service") {
+    updateQuery = updateQuery.eq("service_flow", order.service_flow);
+  }
+
+  const { data, error } = await updateQuery
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    return {
+      error: "Status pesanan gagal diperbarui. Silakan coba lagi.",
+    };
+  }
+
+  if (!data) {
+    return {
+      error: "Status pesanan sudah berubah. Muat ulang halaman dan coba lagi.",
     };
   }
 
