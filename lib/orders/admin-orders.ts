@@ -145,6 +145,7 @@ export type AdminOrderDetail = {
   price: number | null;
   dp_amount: number | null;
   payment_method: string | null;
+  payment_proof_path: string | null;
   payment_verified_at: string | null;
   quoted_at: string | null;
   cancellation_reason: string | null;
@@ -461,7 +462,7 @@ export async function getAdminOrderDetail(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
+      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
     )
     .eq("id", id)
     .maybeSingle<AdminOrderDetail>();

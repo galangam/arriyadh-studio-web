@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import {
+  CodConfirmationControl,
+  TransferVerificationControls,
+} from "@/app/admin/(protected)/pesanan/[id]/payment-verification-controls";
+
 import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
 
 import {
@@ -224,6 +229,58 @@ export default async function AdminOrderDetailPage({
                     otomatis.
                   </p>
                   <SetOrderPriceForm orderId={order.id} />
+                </section>
+              )}
+
+            {order.payment_method === "transfer" &&
+              order.status === "menunggu_verifikasi" &&
+              order.payment_proof_path && (
+                <section
+                  aria-labelledby="verify-payment-heading"
+                  className="border border-outline-variant bg-surface-white p-5 md:p-6"
+                >
+                  <h2
+                    id="verify-payment-heading"
+                    className="font-heading text-admin-section text-primary"
+                  >
+                    Verifikasi Pembayaran
+                  </h2>
+                  <div className="mt-4">
+                    <DetailList
+                      items={[
+                        { label: "Metode", value: "Transfer" },
+                        {
+                          label: "DP",
+                          value:
+                            order.dp_amount === null
+                              ? emptyValue
+                              : formatOrderPrice(order.dp_amount),
+                        },
+                        { label: "Status", value: "Menunggu Verifikasi" },
+                      ]}
+                    />
+                  </div>
+                  <TransferVerificationControls orderId={order.id} />
+                </section>
+              )}
+
+            {order.order_kind === "service" &&
+              order.payment_method === "cod" &&
+              order.status === "menunggu_konfirmasi_dp" && (
+                <section
+                  aria-labelledby="confirm-cod-heading"
+                  className="border border-outline-variant bg-surface-white p-5 md:p-6"
+                >
+                  <h2
+                    id="confirm-cod-heading"
+                    className="font-heading text-admin-section text-primary"
+                  >
+                    Konfirmasi COD
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+                    Konfirmasi metode COD untuk memulai alur produksi pesanan.
+                  </p>
+                  <CodConfirmationControl orderId={order.id} />
                 </section>
               )}
 
