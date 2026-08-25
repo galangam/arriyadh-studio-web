@@ -269,7 +269,14 @@ export default async function AdminOrdersPage({
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-admin-body font-semibold text-primary">{formatOrderPrice(order.price)}</td>
                         <td className={`whitespace-nowrap px-4 py-3 text-admin-body font-semibold ${statusClassName(order.status)}`}>{orderStatusLabels[order.status]}</td>
-                        <td className="px-4 py-3 text-center text-admin-body text-on-surface-variant"><span aria-hidden="true">—</span><span className="sr-only">Detail pesanan belum tersedia</span></td>
+                        <td className="px-4 py-3 text-center text-admin-body">
+                          <Link
+                            href={"/admin/pesanan/" + order.id}
+                            className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                          >
+                            Lihat
+                          </Link>
+                        </td>
                       </tr>
                     ))
                   )}

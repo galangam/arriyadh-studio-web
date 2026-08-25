@@ -1,5 +1,7 @@
 import "server-only";
 
+import { notFound } from "next/navigation";
+
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -122,6 +124,36 @@ export type AdminOrderListRow = {
   created_at: string;
 };
 
+export type AdminOrderDetail = {
+  id: string;
+  order_code: string;
+  order_kind: OrderKind;
+  status: OrderStatus;
+  customer_name: string;
+  customer_whatsapp: string;
+  customer_company: string | null;
+  customer_email: string | null;
+  shipping_address: string | null;
+  service_name_snapshot: string | null;
+  service_flow: string | null;
+  material: string | null;
+  job_description: string | null;
+  product_name_snapshot: string | null;
+  product_size: string | null;
+  quantity: number;
+  unit_price: number | null;
+  price: number | null;
+  dp_amount: number | null;
+  payment_method: string | null;
+  payment_verified_at: string | null;
+  quoted_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type RecentOrder = Pick<
   AdminOrderListRow,
   | "id"
@@ -165,6 +197,12 @@ export const adminOrdersPageSize = 10;
 
 const jakartaDateFormatter = new Intl.DateTimeFormat("id-ID", {
   dateStyle: "medium",
+  timeZone: "Asia/Jakarta",
+});
+
+const jakartaDateTimeFormatter = new Intl.DateTimeFormat("id-ID", {
+  dateStyle: "medium",
+  timeStyle: "short",
   timeZone: "Asia/Jakarta",
 });
 
@@ -236,6 +274,10 @@ function getJakartaMonthRange(now = new Date()) {
 
 export function formatAdminOrderDate(value: string) {
   return jakartaDateFormatter.format(new Date(value));
+}
+
+export function formatAdminOrderDateTime(value: string) {
+  return jakartaDateTimeFormatter.format(new Date(value)) + " WIB";
 }
 
 export function formatOrderPrice(value: number | null) {
@@ -409,4 +451,24 @@ export async function getAdminOrdersPage(
     pageSize: adminOrdersPageSize,
     totalPages: totalCount === 0 ? 0 : totalPages,
   };
+}
+
+export async function getAdminOrderDetail(
+  id: string,
+): Promise<AdminOrderDetail> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
+    )
+    .eq("id", id)
+    .maybeSingle<AdminOrderDetail>();
+
+  if (error || !data) {
+    notFound();
+  }
+
+  return data;
 }
