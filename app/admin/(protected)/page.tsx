@@ -1,12 +1,18 @@
 import Link from "next/link";
 
 import { requireAdmin } from "@/lib/auth/require-admin";
+import {
+  formatAdminOrderDate,
+  getAdminDashboardData,
+  getOrderSnapshotName,
+  orderStatusLabels,
+} from "@/lib/orders/admin-orders";
 
 const activitySummary = [
-  "Menunggu Harga",
-  "Menunggu Verifikasi",
-  "Sedang Diproduksi",
-  "Selesai Bulan Ini",
+  { key: "awaitingPrice", label: "Menunggu Harga" },
+  { key: "awaitingVerification", label: "Menunggu Verifikasi" },
+  { key: "inProduction", label: "Sedang Diproduksi" },
+  { key: "completedThisMonth", label: "Selesai Bulan Ini" },
 ] as const;
 
 const recentOrderColumns = [
@@ -20,6 +26,7 @@ const recentOrderColumns = [
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
+  const dashboardData = await getAdminDashboardData();
 
   return (
     <main className="w-full px-margin-mobile py-8 md:px-gutter md:py-10">
@@ -41,21 +48,35 @@ export default async function AdminDashboardPage() {
             Ringkasan aktivitas
           </h2>
           <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {activitySummary.map((label) => (
+            {activitySummary.map((item) => (
               <div
-                key={label}
+                key={item.key}
                 className="flex min-h-32 flex-col justify-between rounded-md border border-outline-variant bg-surface-white p-5"
               >
                 <dt className="text-admin-label text-on-surface-variant">
-                  {label}
+                  {item.label}
                 </dt>
                 <dd className="mt-5 font-heading text-heading-lg text-primary">
-                  <span aria-hidden="true">—</span>
-                  <span className="sr-only">Data belum tersedia</span>
+                  {dashboardData.ok ? (
+                    dashboardData.metrics[item.key].toLocaleString("id-ID")
+                  ) : (
+                    <>
+                      <span aria-hidden="true">—</span>
+                      <span className="sr-only">Data tidak dapat dimuat</span>
+                    </>
+                  )}
                 </dd>
               </div>
             ))}
           </dl>
+          {!dashboardData.ok && (
+            <p
+              role="alert"
+              className="mt-4 border border-error/30 bg-error-container px-4 py-3 text-admin-body text-on-error-container"
+            >
+              Ringkasan pesanan tidak dapat dimuat saat ini. Silakan coba lagi.
+            </p>
+          )}
         </section>
 
         <section aria-labelledby="recent-orders-heading" className="mt-10">
@@ -77,7 +98,11 @@ export default async function AdminDashboardPage() {
           <div className="mt-5 max-w-full overflow-hidden rounded-md border border-outline-variant bg-surface-white">
             <div className="max-w-full overflow-x-auto">
               <table
-                aria-describedby="recent-orders-empty-state"
+                aria-describedby={
+                  !dashboardData.ok || dashboardData.recentOrders.length === 0
+                    ? "recent-orders-state"
+                    : undefined
+                }
                 className="w-full min-w-[720px] border-collapse text-left"
               >
                 <caption className="sr-only">
@@ -97,20 +122,32 @@ export default async function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td
-                      colSpan={recentOrderColumns.length}
-                      id="recent-orders-empty-state"
-                      className="px-5 py-10 text-center md:px-6 md:py-12"
-                    >
-                      <p className="font-heading text-heading-xs text-primary">
-                        Belum ada pesanan masuk.
-                      </p>
-                      <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">
-                       Pesanan terbaru akan muncul di sini.
-                      </p>
-                    </td>
-                  </tr>
+                  {!dashboardData.ok ? (
+                    <tr>
+                      <td colSpan={recentOrderColumns.length} id="recent-orders-state" className="px-5 py-10 text-center md:px-6 md:py-12">
+                        <p className="font-heading text-heading-xs text-error">Pesanan terbaru tidak dapat dimuat.</p>
+                        <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">Silakan muat ulang halaman atau coba lagi nanti.</p>
+                      </td>
+                    </tr>
+                  ) : dashboardData.recentOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={recentOrderColumns.length} id="recent-orders-state" className="px-5 py-10 text-center md:px-6 md:py-12">
+                        <p className="font-heading text-heading-xs text-primary">Belum ada pesanan masuk.</p>
+                        <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">Pesanan terbaru akan muncul di sini.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    dashboardData.recentOrders.map((order) => (
+                      <tr key={order.id} className="border-b border-outline-variant last:border-b-0">
+                        <td className="whitespace-nowrap px-4 py-3 text-admin-body font-semibold text-primary">{order.order_code}</td>
+                        <td className="px-4 py-3 text-admin-body text-on-surface">{order.customer_name}</td>
+                        <td className="px-4 py-3 text-admin-body text-on-surface"><span className="block font-semibold text-primary">{getOrderSnapshotName(order)}</span></td>
+                        <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface">{orderStatusLabels[order.status]}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface-variant">{formatAdminOrderDate(order.created_at)}</td>
+                        <td className="px-4 py-3 text-center text-admin-body text-on-surface-variant"><span aria-hidden="true">—</span><span className="sr-only">Detail pesanan belum tersedia</span></td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

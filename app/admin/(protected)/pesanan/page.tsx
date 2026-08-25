@@ -1,4 +1,20 @@
+import Link from "next/link";
+
 import { requireAdmin } from "@/lib/auth/require-admin";
+import {
+  formatAdminOrderDate,
+  formatOrderPrice,
+  getAdminOrdersPage,
+  getOrderSnapshotName,
+  orderKindLabels,
+  orderStatusLabels,
+  parseAdminOrderFilters,
+  statusFilterOptions,
+  type AdminOrderFilters,
+  type AdminOrderListRow,
+  type OrderStatus,
+  typeFilterOptions,
+} from "@/lib/orders/admin-orders";
 
 const orderTableColumns = [
   "Order ID",
@@ -9,17 +25,92 @@ const orderTableColumns = [
   "Aksi",
 ] as const;
 
-export default async function AdminOrdersPage() {
+function createOrdersHref(filters: AdminOrderFilters, page: number) {
+  const params = new URLSearchParams();
+
+  if (filters.q) params.set("q", filters.q);
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.type !== "all") params.set("type", filters.type);
+  if (page > 1) params.set("page", String(page));
+
+  const query = params.toString();
+  return query ? `/admin/pesanan?${query}` : "/admin/pesanan";
+}
+
+function getPaginationItems(page: number, totalPages: number) {
+  const pages = new Set([1, totalPages, page - 1, page, page + 1]);
+  const visiblePages = [...pages]
+    .filter((value) => value >= 1 && value <= totalPages)
+    .sort((a, b) => a - b);
+  const items: Array<number | string> = [];
+
+  visiblePages.forEach((value, index) => {
+    const previous = visiblePages[index - 1];
+    if (previous && value - previous > 1) items.push(`ellipsis-${value}`);
+    items.push(value);
+  });
+
+  return items;
+}
+
+function OrderDetail({ order }: { order: AdminOrderListRow }) {
+  if (order.order_kind === "product") {
+    const details = [
+      order.product_size ? `Ukuran ${order.product_size}` : null,
+      `${order.quantity} pcs`,
+    ].filter(Boolean);
+
+    return (
+      <>
+        <span className="block font-semibold text-primary">
+          {getOrderSnapshotName(order)}
+        </span>
+        <span className="mt-0.5 block text-admin-caption text-on-surface-variant">
+          {details.join(" · ")}
+        </span>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <span className="block font-semibold text-primary">
+        {getOrderSnapshotName(order)}
+      </span>
+      <span className="mt-0.5 block text-admin-caption text-on-surface-variant">
+        {order.quantity} pcs
+      </span>
+    </>
+  );
+}
+
+function statusClassName(status: OrderStatus) {
+  if (status === "selesai") return "text-success-green";
+  if (status === "dibatalkan") return "text-error";
+  return "text-primary";
+}
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string | string[];
+    status?: string | string[];
+    type?: string | string[];
+    page?: string | string[];
+  }>;
+}) {
   await requireAdmin();
+  const filters = parseAdminOrderFilters(await searchParams);
+  const ordersData = await getAdminOrdersPage(filters);
+  const hasActiveFilters =
+    filters.q !== "" || filters.status !== "all" || filters.type !== "all";
 
   return (
     <main className="w-full px-margin-mobile py-8 md:px-gutter md:py-10">
       <div className="mx-auto w-full max-w-content">
         <section aria-labelledby="orders-heading">
-          <h1
-            id="orders-heading"
-            className="font-heading text-admin-title text-primary"
-          >
+          <h1 id="orders-heading" className="font-heading text-admin-title text-primary">
             Daftar Pesanan
           </h1>
           <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
@@ -28,74 +119,98 @@ export default async function AdminOrdersPage() {
         </section>
 
         <section aria-label="Daftar dan kontrol pesanan" className="mt-8">
-          <fieldset
-            disabled
-            className="grid gap-4 border border-outline-variant bg-surface-white p-4 md:grid-cols-[minmax(18rem,1fr)_13rem_13rem]"
+          <form
+            key={`${filters.q}:${filters.status}:${filters.type}`}
+            action="/admin/pesanan"
+            method="get"
+            className="grid gap-4 border border-outline-variant bg-surface-white p-4 md:grid-cols-[minmax(18rem,1fr)_13rem_13rem_auto] md:items-end"
           >
-            <legend className="sr-only">Kontrol daftar pesanan</legend>
-
             <div className="space-y-2">
-              <label
-                htmlFor="order-search"
-                className="block text-admin-label text-primary"
-              >
+              <label htmlFor="order-search" className="block text-admin-label text-primary">
                 Pencarian
               </label>
               <input
                 id="order-search"
-                name="order-search"
+                name="q"
                 type="search"
+                defaultValue={filters.q}
+                maxLength={80}
                 placeholder="Cari ID Pesanan, nama, atau nomor WhatsApp"
-                className="min-h-10 w-full rounded-md border border-outline-variant bg-surface-white px-3 text-admin-body text-on-surface outline-none placeholder:text-on-surface-variant disabled:cursor-not-allowed focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                className="min-h-10 w-full rounded-md border border-outline-variant bg-surface-white px-3 text-admin-body text-on-surface outline-none placeholder:text-on-surface-variant focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
               />
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="order-status"
-                className="block text-admin-label text-primary"
-              >
+              <label htmlFor="order-status" className="block text-admin-label text-primary">
                 Status
               </label>
               <select
                 id="order-status"
-                name="order-status"
-                defaultValue="semua"
-                className="min-h-10 w-full rounded-md border border-outline-variant bg-surface-white px-3 text-admin-body text-on-surface outline-none disabled:cursor-not-allowed focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                name="status"
+                defaultValue={filters.status}
+                className="min-h-10 w-full rounded-md border border-outline-variant bg-surface-white px-3 text-admin-body text-on-surface outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
               >
-                <option value="semua">Semua Status</option>
-                <option value="menunggu-konfirmasi">Menunggu Konfirmasi</option>
-                <option value="diproses">Diproses</option>
-                <option value="produksi">Produksi</option>
-                <option value="selesai">Selesai</option>
-                <option value="dibatalkan">Dibatalkan</option>
+                {statusFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="order-type"
-                className="block text-admin-label text-primary"
-              >
+              <label htmlFor="order-type" className="block text-admin-label text-primary">
                 Tipe Pesanan
               </label>
               <select
                 id="order-type"
-                name="order-type"
-                defaultValue="semua"
-                className="min-h-10 w-full rounded-md border border-outline-variant bg-surface-white px-3 text-admin-body text-on-surface outline-none disabled:cursor-not-allowed focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                name="type"
+                defaultValue={filters.type}
+                className="min-h-10 w-full rounded-md border border-outline-variant bg-surface-white px-3 text-admin-body text-on-surface outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
               >
-                <option value="semua">Semua Tipe</option>
-                <option value="produk">Produk</option>
-                <option value="layanan-custom">Layanan Custom</option>
+                {typeFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
-          </fieldset>
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="min-h-10 rounded-md bg-primary px-4 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
+                Terapkan
+              </button>
+              {hasActiveFilters && (
+                <Link
+                  href="/admin/pesanan"
+                  className="inline-flex min-h-10 items-center rounded-md border border-outline-variant px-3 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  Reset
+                </Link>
+              )}
+            </div>
+          </form>
+
+          {!ordersData.ok && (
+            <p
+              role="alert"
+              className="mt-5 border border-error/30 bg-error-container px-4 py-3 text-admin-body text-on-error-container"
+            >
+              Data pesanan tidak dapat dimuat saat ini. Silakan coba lagi.
+            </p>
+          )}
 
           <div className="mt-5 max-w-full overflow-hidden rounded-md border border-outline-variant bg-surface-white">
             <div className="max-w-full overflow-x-auto">
               <table
-                aria-describedby="orders-empty-state"
+                aria-describedby={
+                  !ordersData.ok || ordersData.orders.length === 0
+                    ? "orders-table-state"
+                    : undefined
+                }
                 className="w-full min-w-[760px] border-collapse text-left"
               >
                 <caption className="sr-only">
@@ -115,24 +230,85 @@ export default async function AdminOrdersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td
-                      colSpan={orderTableColumns.length}
-                      id="orders-empty-state"
-                      className="border-b border-outline-variant px-5 py-12 text-center md:px-6 md:py-14"
-                    >
-                      <p className="font-heading text-heading-xs text-primary">
-                        Belum ada pesanan masuk.
-                      </p>
-                      <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">
-                        Pesanan terbaru akan muncul di sini.
-                      </p>
-                    </td>
-                  </tr>
+                  {!ordersData.ok ? (
+                    <tr>
+                      <td colSpan={orderTableColumns.length} id="orders-table-state" className="px-5 py-12 text-center md:px-6 md:py-14">
+                        <p className="font-heading text-heading-xs text-error">Data pesanan tidak dapat dimuat.</p>
+                        <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">Silakan muat ulang halaman atau coba lagi nanti.</p>
+                      </td>
+                    </tr>
+                  ) : ordersData.orders.length === 0 ? (
+                    <tr>
+                      <td colSpan={orderTableColumns.length} id="orders-table-state" className="px-5 py-12 text-center md:px-6 md:py-14">
+                        <p className="font-heading text-heading-xs text-primary">
+                          {ordersData.totalOrderCount === 0
+                            ? "Belum ada pesanan masuk."
+                            : "Tidak ada pesanan yang sesuai."}
+                        </p>
+                        <p className="mx-auto mt-1.5 max-w-lg text-admin-body text-on-surface-variant">
+                          {ordersData.totalOrderCount === 0
+                            ? "Pesanan terbaru akan muncul di sini."
+                            : "Ubah pencarian atau filter untuk melihat hasil lainnya."}
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    ordersData.orders.map((order) => (
+                      <tr key={order.id} className="border-b border-outline-variant last:border-b-0">
+                        <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface">
+                          <span className="block font-semibold text-primary">{order.order_code}</span>
+                          <span className="mt-0.5 block text-admin-caption text-on-surface-variant">{formatAdminOrderDate(order.created_at)}</span>
+                        </td>
+                        <td className="px-4 py-3 text-admin-body text-on-surface">
+                          <span className="block font-semibold text-primary">{order.customer_name}</span>
+                          <span className="mt-0.5 block whitespace-nowrap text-admin-caption text-on-surface-variant">{order.customer_whatsapp}</span>
+                        </td>
+                        <td className="px-4 py-3 text-admin-body text-on-surface">
+                          <span className="mb-1 block text-admin-caption text-on-surface-variant">{orderKindLabels[order.order_kind]}</span>
+                          <OrderDetail order={order} />
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-admin-body font-semibold text-primary">{formatOrderPrice(order.price)}</td>
+                        <td className={`whitespace-nowrap px-4 py-3 text-admin-body font-semibold ${statusClassName(order.status)}`}>{orderStatusLabels[order.status]}</td>
+                        <td className="px-4 py-3 text-center text-admin-body text-on-surface-variant"><span aria-hidden="true">—</span><span className="sr-only">Detail pesanan belum tersedia</span></td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
+
+          {ordersData.ok && ordersData.totalCount > 0 && (
+            <div className="mt-4 flex flex-col gap-3 text-admin-body text-on-surface-variant sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Menampilkan {(ordersData.page - 1) * ordersData.pageSize + 1}–{Math.min(ordersData.page * ordersData.pageSize, ordersData.totalCount)} dari {ordersData.totalCount} pesanan
+              </p>
+              {ordersData.totalPages > 1 && (
+                <nav aria-label="Paginasi daftar pesanan" className="flex flex-wrap items-center gap-1">
+                  {ordersData.page > 1 && (
+                    <Link href={createOrdersHref(filters, ordersData.page - 1)} className="inline-flex min-h-9 items-center rounded-md border border-outline-variant px-3 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Sebelumnya</Link>
+                  )}
+                  {getPaginationItems(ordersData.page, ordersData.totalPages).map((item) =>
+                    typeof item === "number" ? (
+                      <Link
+                        key={item}
+                        href={createOrdersHref(filters, item)}
+                        aria-current={item === ordersData.page ? "page" : undefined}
+                        className={`inline-flex size-9 items-center justify-center rounded-md border text-admin-label focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${item === ordersData.page ? "border-primary bg-primary text-on-primary" : "border-outline-variant text-primary"}`}
+                      >
+                        {item}
+                      </Link>
+                    ) : (
+                      <span key={item} aria-hidden="true" className="px-1">…</span>
+                    ),
+                  )}
+                  {ordersData.page < ordersData.totalPages && (
+                    <Link href={createOrdersHref(filters, ordersData.page + 1)} className="inline-flex min-h-9 items-center rounded-md border border-outline-variant px-3 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Berikutnya</Link>
+                  )}
+                </nav>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </main>
