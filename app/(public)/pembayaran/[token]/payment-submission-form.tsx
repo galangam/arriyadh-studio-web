@@ -11,13 +11,24 @@ const initialState: PaymentSubmissionState = { error: null };
 const maxProofSize = 5 * 1024 * 1024;
 const allowedProofTypes = ["image/jpeg", "image/png", "image/webp"];
 
-export function PaymentSubmissionForm({ token }: { token: string }) {
+type PaymentSubmissionFormProps = {
+  token: string;
+  orderKind: "service" | "product";
+};
+
+export function PaymentSubmissionForm({
+  token,
+  orderKind,
+}: PaymentSubmissionFormProps) {
   const submitPaymentForToken = submitPayment.bind(null, token);
   const [state, formAction, isPending] = useActionState(
     submitPaymentForToken,
     initialState,
   );
-  const [method, setMethod] = useState<"transfer" | "cod" | null>(null);
+  const isProduct = orderKind === "product";
+  const [method, setMethod] = useState<"transfer" | "cod" | null>(
+    isProduct ? "transfer" : null,
+  );
   const [clientError, setClientError] = useState<string | null>(null);
   const proofInputRef = useRef<HTMLInputElement>(null);
   const displayedError = clientError ?? state.error;
@@ -53,64 +64,68 @@ export function PaymentSubmissionForm({ token }: { token: string }) {
 
   return (
     <form action={formAction} onSubmit={handleSubmit} className="mt-8 space-y-6">
-      <fieldset disabled={isPending} className="space-y-3">
-        <legend className="font-body text-label-md font-semibold text-primary">
-          Pilih Metode Pembayaran
-        </legend>
+      {isProduct ? (
+        <input type="hidden" name="paymentMethod" value="transfer" />
+      ) : (
+        <fieldset disabled={isPending} className="space-y-3">
+          <legend className="font-body text-label-md font-semibold text-primary">
+            Pilih Metode Pembayaran
+          </legend>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
-          <input
-            type="radio"
-            name="paymentMethod"
-            value="transfer"
-            required
-            checked={method === "transfer"}
-            onChange={() => {
-              setMethod("transfer");
-              setClientError(null);
-            }}
-            className="mt-1 size-4 accent-primary"
-          />
-          <span>
-            <span className="block font-body text-body-md font-semibold text-primary">
-              Transfer
+          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="transfer"
+              required
+              checked={method === "transfer"}
+              onChange={() => {
+                setMethod("transfer");
+                setClientError(null);
+              }}
+              className="mt-1 size-4 accent-primary"
+            />
+            <span>
+              <span className="block font-body text-body-md font-semibold text-primary">
+                Transfer
+              </span>
+              <span className="mt-1 block font-body text-body-sm text-on-surface-variant">
+                Unggah bukti pembayaran setelah melakukan transfer.
+              </span>
             </span>
-            <span className="mt-1 block font-body text-body-sm text-on-surface-variant">
-              Unggah bukti pembayaran setelah melakukan transfer.
-            </span>
-          </span>
-        </label>
+          </label>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
-          <input
-            type="radio"
-            name="paymentMethod"
-            value="cod"
-            required
-            checked={method === "cod"}
-            onChange={() => {
-              setMethod("cod");
-              setClientError(null);
-            }}
-            className="mt-1 size-4 accent-primary"
-          />
-          <span>
-            <span className="block font-body text-body-md font-semibold text-primary">
-              COD
+          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="cod"
+              required
+              checked={method === "cod"}
+              onChange={() => {
+                setMethod("cod");
+                setClientError(null);
+              }}
+              className="mt-1 size-4 accent-primary"
+            />
+            <span>
+              <span className="block font-body text-body-md font-semibold text-primary">
+                COD
+              </span>
+              <span className="mt-1 block font-body text-body-sm text-on-surface-variant">
+                Pilih pembayaran COD tanpa mengunggah bukti transfer.
+              </span>
             </span>
-            <span className="mt-1 block font-body text-body-sm text-on-surface-variant">
-              Pilih pembayaran COD tanpa mengunggah bukti transfer.
-            </span>
-          </span>
-        </label>
-      </fieldset>
+          </label>
+        </fieldset>
+      )}
 
       {method === "transfer" && (
         <div className="space-y-4 border-l-2 border-primary pl-4">
           <p className="font-body text-body-sm text-on-surface-variant">
-            Informasi rekening tujuan belum tersedia pada halaman ini. Pastikan
-            tujuan transfer telah dikonfirmasi melalui informasi resmi Arriyadh
-            Studio sebelum mengirim pembayaran.
+            {isProduct
+              ? "Gunakan rekening demo di atas hanya untuk mendemonstrasikan alur pembayaran, bukan sebagai rekening resmi."
+              : "Informasi rekening resmi belum tersedia pada halaman ini. Pastikan tujuan transfer telah dikonfirmasi melalui informasi resmi Arriyadh Studio sebelum mengirim pembayaran."}
           </p>
           <div className="space-y-2">
             <label
@@ -145,7 +160,9 @@ export function PaymentSubmissionForm({ token }: { token: string }) {
       )}
 
       <p className="font-body text-body-sm text-on-surface-variant">
-        Metode pembayaran tidak dapat diubah setelah dikirim.
+        {isProduct
+          ? "Pesanan akan menunggu verifikasi admin setelah bukti pembayaran dikirim."
+          : "Metode pembayaran tidak dapat diubah setelah dikirim."}
       </p>
 
       <div aria-live="polite" aria-atomic="true" className="min-h-6">
@@ -165,7 +182,11 @@ export function PaymentSubmissionForm({ token }: { token: string }) {
         disabled={isPending}
         className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-6 font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {isPending ? "Mengirim..." : "Kirim Pembayaran"}
+        {isPending
+          ? "Mengirim..."
+          : isProduct
+            ? "Kirim Bukti Pembayaran"
+            : "Kirim Pembayaran"}
       </button>
     </form>
   );

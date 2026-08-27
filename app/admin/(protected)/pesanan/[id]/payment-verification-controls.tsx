@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import {
   confirmCodPayment,
+  confirmProductCodOrder,
   createPaymentProofLink,
   verifyTransferPayment,
   type AdminPaymentActionState,
@@ -97,6 +98,36 @@ export function CodConfirmationControl({ orderId }: { orderId: string }) {
         className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Mengonfirmasi..." : "Konfirmasi dan Mulai Produksi"}
+      </button>
+      <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5">
+        {state.error ? (
+          <p role="alert" className="text-admin-body text-error">
+            {state.error}
+          </p>
+        ) : null}
+      </div>
+    </form>
+  );
+}
+
+export function ProductCodConfirmationControl({
+  orderId,
+}: {
+  orderId: string;
+}) {
+  const [state, formAction, isPending] = useActionState(
+    confirmProductCodOrder.bind(null, orderId),
+    initialActionState,
+  );
+
+  return (
+    <form action={formAction} className="mt-5">
+      <button
+        type="submit"
+        disabled={isPending}
+        className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isPending ? "Mengonfirmasi..." : "Konfirmasi Pesanan COD"}
       </button>
       <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5">
         {state.error ? (

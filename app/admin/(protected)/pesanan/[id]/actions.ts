@@ -370,3 +370,45 @@ export async function advanceOrderStatus(
   revalidatePath(`/admin/pesanan/${orderId}`);
   redirect(`/admin/pesanan/${orderId}`);
 }
+
+export async function confirmProductCodOrder(
+  orderId: string,
+  _previousState: AdminPaymentActionState,
+  _formData: FormData,
+): Promise<AdminPaymentActionState> {
+  void _previousState;
+  void _formData;
+  await requireAdmin();
+
+  if (!uuidPattern.test(orderId)) {
+    return {
+      error: "Status pesanan sudah berubah atau pesanan COD tidak dapat dikonfirmasi.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status: "diproses" })
+    .eq("id", orderId)
+    .eq("order_kind", "product")
+    .eq("payment_method", "cod")
+    .eq("status", "menunggu_verifikasi")
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    return { error: "Konfirmasi pesanan COD gagal. Silakan coba lagi." };
+  }
+
+  if (!data) {
+    return {
+      error: "Status pesanan sudah berubah atau pesanan COD tidak dapat dikonfirmasi.",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pesanan");
+  revalidatePath(`/admin/pesanan/${orderId}`);
+  redirect(`/admin/pesanan/${orderId}`);
+}

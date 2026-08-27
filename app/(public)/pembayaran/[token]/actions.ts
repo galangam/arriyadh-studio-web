@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { submitPublicServicePayment } from "@/lib/orders/public-payment";
+import { submitPublicPayment } from "@/lib/orders/public-payment";
 
 export type PaymentSubmissionState = {
   error: string | null;
@@ -14,7 +14,7 @@ export async function submitPayment(
   _previousState: PaymentSubmissionState,
   formData: FormData,
 ): Promise<PaymentSubmissionState> {
-  const result = await submitPublicServicePayment(token, formData);
+  const result = await submitPublicPayment(token, formData);
 
   if (!result.ok) {
     return { error: result.error };

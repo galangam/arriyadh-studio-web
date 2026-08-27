@@ -34,7 +34,9 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
       <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
         {isCompleted
           ? "Seluruh tahap pesanan telah diselesaikan."
-          : "Perbarui progres secara berurutan. Tahap produksi tidak dapat dilewati."}
+          : order.order_kind === "product"
+            ? "Perbarui progres penyiapan produk secara berurutan."
+            : "Perbarui progres secara berurutan. Tahap produksi tidak dapat dilewati."}
       </p>
 
       <ol

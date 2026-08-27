@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminPaymentSummary } from "@/app/admin/(protected)/pesanan/[id]/admin-payment-summary";
 
 import {
   CodConfirmationControl,
@@ -6,6 +7,7 @@ import {
 } from "@/app/admin/(protected)/pesanan/[id]/payment-verification-controls";
 
 import { ProductionProgress } from "@/app/admin/(protected)/pesanan/[id]/production-progress";
+import { ProductCodConfirmationSection } from "@/app/admin/(protected)/pesanan/[id]/product-cod-confirmation-section";
 import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
 
 import {
@@ -62,56 +64,6 @@ function OrderInformation({ order }: { order: AdminOrderDetail }) {
         ];
 
   return <DetailList items={items} />;
-}
-
-function PaymentSummary({ order }: { order: AdminOrderDetail }) {
-  return (
-    <section
-      aria-labelledby="payment-summary-heading"
-      className="border border-outline-variant bg-surface-white p-5"
-    >
-      <h2
-        id="payment-summary-heading"
-        className="font-heading text-admin-section text-primary"
-      >
-        Ringkasan Pembayaran
-      </h2>
-      <dl className="mt-5 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <dt className="text-admin-body text-on-surface-variant">Total Harga</dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
-            {formatOrderPrice(order.price)}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-4 border-t border-outline-variant pt-4">
-          <dt className="text-admin-body text-on-surface-variant">DP</dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
-            {order.dp_amount === null
-              ? "Belum ditentukan"
-              : formatOrderPrice(order.dp_amount)}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-4 border-t border-outline-variant pt-4">
-          <dt className="text-admin-body text-on-surface-variant">
-            Metode Pembayaran
-          </dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
-            {order.payment_method ?? "Belum dipilih"}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-4 border-t border-outline-variant pt-4">
-          <dt className="text-admin-body text-on-surface-variant">
-            Status Verifikasi
-          </dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
-            {order.payment_verified_at
-              ? "Terverifikasi"
-              : "Belum diverifikasi"}
-          </dd>
-        </div>
-      </dl>
-    </section>
-  );
 }
 
 export default async function AdminOrderDetailPage({
@@ -251,11 +203,16 @@ export default async function AdminOrderDetailPage({
                       items={[
                         { label: "Metode", value: "Transfer" },
                         {
-                          label: "DP",
+                          label:
+                            order.order_kind === "product"
+                              ? "Total Pembayaran"
+                              : "DP",
                           value:
-                            order.dp_amount === null
-                              ? emptyValue
-                              : formatOrderPrice(order.dp_amount),
+                            order.order_kind === "product"
+                              ? formatOrderPrice(order.price)
+                              : order.dp_amount === null
+                                ? emptyValue
+                                : formatOrderPrice(order.dp_amount),
                         },
                         { label: "Status", value: "Menunggu Verifikasi" },
                       ]}
@@ -284,6 +241,8 @@ export default async function AdminOrderDetailPage({
                   <CodConfirmationControl orderId={order.id} />
                 </section>
               )}
+
+            <ProductCodConfirmationSection order={order} />
 
             <ProductionProgress order={order} />
 
@@ -323,7 +282,7 @@ export default async function AdminOrderDetailPage({
                 {orderStatusLabels[order.status]}
               </p>
             </section>
-            <PaymentSummary order={order} />
+            <AdminPaymentSummary order={order} />
           </aside>
         </div>
       </div>

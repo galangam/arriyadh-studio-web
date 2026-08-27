@@ -4,32 +4,62 @@ import { notFound } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const paymentStatuses = [
+const servicePaymentStatuses = [
   "menunggu_pembayaran_dp",
   "menunggu_konfirmasi_dp",
   "menunggu_verifikasi",
 ] as const;
 
-type PublicPaymentStatus = (typeof paymentStatuses)[number];
+type ServicePaymentStatus = (typeof servicePaymentStatuses)[number];
 type PaymentMethod = "transfer" | "cod";
 
-type PaymentOrderRow = {
+type PublicServicePaymentOrder = {
   order_code: string;
   order_kind: "service";
-  status: PublicPaymentStatus;
+  status: ServicePaymentStatus;
   service_name_snapshot: string | null;
   quantity: number;
-  price: number | null;
-  dp_amount: number | null;
+  price: number;
+  dp_amount: number;
   payment_method: PaymentMethod | null;
 };
 
-export type PublicPaymentOrder = Omit<
-  PaymentOrderRow,
-  "price" | "dp_amount"
-> & {
+type PublicProductPaymentOrder = {
+  order_code: string;
+  order_kind: "product";
+  status: "menunggu_verifikasi";
+  product_name_snapshot: string;
+  product_size: string;
+  quantity: number;
   price: number;
-  dp_amount: number;
+  payment_method: "transfer";
+  has_payment_proof: boolean;
+};
+
+export type PublicPaymentOrder =
+  | PublicServicePaymentOrder
+  | PublicProductPaymentOrder;
+
+type PaymentOrderRow = {
+  order_code: string;
+  order_kind: "service" | "product";
+  status: string;
+  service_name_snapshot: string | null;
+  product_name_snapshot: string | null;
+  product_size: string | null;
+  quantity: number;
+  price: number | string | null;
+  dp_amount: number | string | null;
+  payment_method: PaymentMethod | null;
+  payment_proof_path: string | null;
+};
+
+type SubmittableOrder = {
+  id: string;
+  order_kind: "service" | "product";
+  status: string;
+  payment_method: PaymentMethod | null;
+  payment_proof_path: string | null;
 };
 
 export type PublicPaymentResult =
@@ -75,6 +105,60 @@ function hasValidFileSignature(bytes: Uint8Array, mimeType: string) {
   return false;
 }
 
+function paymentUnavailable(): PublicPaymentResult {
+  return {
+    ok: false,
+    error: "Pesanan tidak dapat menerima pembayaran saat ini.",
+  };
+}
+
+function normalizePaymentOrder(row: PaymentOrderRow): PublicPaymentOrder | null {
+  const price = Number(row.price);
+  if (row.price === null || !Number.isFinite(price)) return null;
+
+  if (row.order_kind === "product") {
+    if (
+      row.status !== "menunggu_verifikasi" ||
+      row.payment_method !== "transfer" ||
+      !row.product_name_snapshot ||
+      !row.product_size
+    ) {
+      return null;
+    }
+
+    return {
+      order_code: row.order_code,
+      order_kind: "product",
+      status: "menunggu_verifikasi",
+      product_name_snapshot: row.product_name_snapshot,
+      product_size: row.product_size,
+      quantity: row.quantity,
+      price,
+      payment_method: "transfer",
+      has_payment_proof: row.payment_proof_path !== null,
+    };
+  }
+
+  const dpAmount = Number(row.dp_amount);
+  if (
+    !servicePaymentStatuses.includes(row.status as ServicePaymentStatus) ||
+    row.dp_amount === null || !Number.isFinite(dpAmount)
+  ) {
+    return null;
+  }
+
+  return {
+    order_code: row.order_code,
+    order_kind: "service",
+    status: row.status as ServicePaymentStatus,
+    service_name_snapshot: row.service_name_snapshot,
+    quantity: row.quantity,
+    price,
+    dp_amount: dpAmount,
+    payment_method: row.payment_method,
+  };
+}
+
 export async function getPublicPaymentOrder(
   token: string,
 ): Promise<PublicPaymentOrder> {
@@ -84,37 +168,74 @@ export async function getPublicPaymentOrder(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "order_code, order_kind, status, service_name_snapshot, quantity, price, dp_amount, payment_method",
+      "order_code, order_kind, status, service_name_snapshot, product_name_snapshot, product_size, quantity, price, dp_amount, payment_method, payment_proof_path",
     )
     .eq("payment_token", token)
-    .eq("order_kind", "service")
-    .in("status", [...paymentStatuses])
+    .in("order_kind", ["service", "product"])
     .maybeSingle<PaymentOrderRow>();
 
-  if (error || !data || data.price === null || data.dp_amount === null) {
-    notFound();
-  }
+  if (error || !data) notFound();
 
-  return {
-    ...data,
-    price: data.price,
-    dp_amount: data.dp_amount,
-  };
+  const order = normalizePaymentOrder(data);
+  if (!order) notFound();
+
+  return order;
 }
 
-async function submitPublicServicePaymentInternal(
+function validatePaymentProof(formData: FormData) {
+  const proof = formData.get("paymentProof");
+
+  if (!(proof instanceof File) || proof.size === 0) {
+    return { ok: false, error: "Bukti pembayaran wajib dipilih." } as const;
+  }
+
+  if (proof.size > maxProofSize) {
+    return { ok: false, error: "Ukuran bukti pembayaran maksimal 5 MB." } as const;
+  }
+
+  if (!(proof.type in proofMimeTypes)) {
+    return { ok: false, error: "Format bukti pembayaran tidak didukung." } as const;
+  }
+
+  return { ok: true, proof } as const;
+}
+
+async function uploadPaymentProof(
+  orderId: string,
+  proof: File,
+  supabase: ReturnType<typeof createAdminClient>,
+) {
+  const bytes = new Uint8Array(await proof.arrayBuffer());
+
+  if (!hasValidFileSignature(bytes, proof.type)) {
+    return { ok: false, error: "Format bukti pembayaran tidak didukung." } as const;
+  }
+
+  const extension = proofMimeTypes[proof.type as keyof typeof proofMimeTypes];
+  const proofPath = `orders/${orderId}/${crypto.randomUUID()}.${extension}`;
+  const storage = supabase.storage.from("payment-proofs");
+  const { error } = await storage.upload(proofPath, bytes, {
+    contentType: proof.type,
+    upsert: false,
+  });
+
+  if (error) {
+    return {
+      ok: false,
+      error: "Pembayaran gagal dikirim. Silakan coba lagi.",
+    } as const;
+  }
+
+  return { ok: true, proofPath, storage } as const;
+}
+
+async function submitPublicPaymentInternal(
   token: string,
   formData: FormData,
 ): Promise<PublicPaymentResult> {
-  if (!isValidPaymentToken(token)) {
-    return {
-      ok: false,
-      error: "Pesanan tidak dapat menerima pembayaran saat ini.",
-    };
-  }
+  if (!isValidPaymentToken(token)) return paymentUnavailable();
 
   const method = formData.get("paymentMethod");
-
   if (method !== "transfer" && method !== "cod") {
     return { ok: false, error: "Pilih metode pembayaran terlebih dahulu." };
   }
@@ -122,18 +243,64 @@ async function submitPublicServicePaymentInternal(
   const supabase = createAdminClient();
   const { data: order, error: lookupError } = await supabase
     .from("orders")
-    .select("id")
+    .select("id, order_kind, status, payment_method, payment_proof_path")
     .eq("payment_token", token)
-    .eq("order_kind", "service")
-    .eq("status", "menunggu_pembayaran_dp")
-    .is("payment_method", null)
-    .maybeSingle<{ id: string }>();
+    .in("order_kind", ["service", "product"])
+    .maybeSingle<SubmittableOrder>();
 
-  if (lookupError || !order) {
-    return {
-      ok: false,
-      error: "Pesanan tidak dapat menerima pembayaran saat ini.",
-    };
+  if (lookupError || !order) return paymentUnavailable();
+
+  if (order.order_kind === "product") {
+    if (
+      method !== "transfer" ||
+      order.status !== "menunggu_verifikasi" ||
+      order.payment_method !== "transfer" ||
+      order.payment_proof_path !== null
+    ) {
+      return paymentUnavailable();
+    }
+
+    const validatedProof = validatePaymentProof(formData);
+    if (!validatedProof.ok) {
+      return { ok: false, error: validatedProof.error };
+    }
+
+    const uploaded = await uploadPaymentProof(
+      order.id,
+      validatedProof.proof,
+      supabase,
+    );
+    if (!uploaded.ok) return { ok: false, error: uploaded.error };
+
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ payment_proof_path: uploaded.proofPath })
+      .eq("id", order.id)
+      .eq("order_kind", "product")
+      .eq("payment_method", "transfer")
+      .eq("status", "menunggu_verifikasi")
+      .is("payment_proof_path", null)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (error || !data) {
+      await uploaded.storage.remove([uploaded.proofPath]);
+      return error
+        ? {
+            ok: false,
+            error: "Pembayaran gagal dikirim. Silakan coba lagi.",
+          }
+        : paymentUnavailable();
+    }
+
+    return { ok: true, orderId: data.id };
+  }
+
+  if (
+    order.status !== "menunggu_pembayaran_dp" ||
+    order.payment_method !== null
+  ) {
+    return paymentUnavailable();
   }
 
   if (method === "cod") {
@@ -157,56 +324,26 @@ async function submitPublicServicePaymentInternal(
       };
     }
 
-    if (!data) {
-      return {
-        ok: false,
-        error: "Pesanan tidak dapat menerima pembayaran saat ini.",
-      };
-    }
-
-    return { ok: true, orderId: data.id };
+    return data ? { ok: true, orderId: data.id } : paymentUnavailable();
   }
 
-  const proof = formData.get("paymentProof");
-
-  if (!(proof instanceof File) || proof.size === 0) {
-    return { ok: false, error: "Bukti pembayaran wajib dipilih." };
+  const validatedProof = validatePaymentProof(formData);
+  if (!validatedProof.ok) {
+    return { ok: false, error: validatedProof.error };
   }
 
-  if (proof.size > maxProofSize) {
-    return { ok: false, error: "Ukuran bukti pembayaran maksimal 5 MB." };
-  }
-
-  if (!(proof.type in proofMimeTypes)) {
-    return { ok: false, error: "Format bukti pembayaran tidak didukung." };
-  }
-
-  const bytes = new Uint8Array(await proof.arrayBuffer());
-
-  if (!hasValidFileSignature(bytes, proof.type)) {
-    return { ok: false, error: "Format bukti pembayaran tidak didukung." };
-  }
-
-  const extension = proofMimeTypes[proof.type as keyof typeof proofMimeTypes];
-  const proofPath = `orders/${order.id}/${crypto.randomUUID()}.${extension}`;
-  const storage = supabase.storage.from("payment-proofs");
-  const { error: uploadError } = await storage.upload(proofPath, bytes, {
-    contentType: proof.type,
-    upsert: false,
-  });
-
-  if (uploadError) {
-    return {
-      ok: false,
-      error: "Pembayaran gagal dikirim. Silakan coba lagi.",
-    };
-  }
+  const uploaded = await uploadPaymentProof(
+    order.id,
+    validatedProof.proof,
+    supabase,
+  );
+  if (!uploaded.ok) return { ok: false, error: uploaded.error };
 
   const { data, error } = await supabase
     .from("orders")
     .update({
       payment_method: "transfer",
-      payment_proof_path: proofPath,
+      payment_proof_path: uploaded.proofPath,
       status: "menunggu_verifikasi",
     })
     .eq("id", order.id)
@@ -217,29 +354,24 @@ async function submitPublicServicePaymentInternal(
     .maybeSingle<{ id: string }>();
 
   if (error || !data) {
-    try {
-      await storage.remove([proofPath]);
-    } catch {
-      // Cleanup is best-effort; never expose Storage failures to the customer.
-    }
-
-    return {
-      ok: false,
-      error: error
-        ? "Pembayaran gagal dikirim. Silakan coba lagi."
-        : "Pesanan tidak dapat menerima pembayaran saat ini.",
-    };
+    await uploaded.storage.remove([uploaded.proofPath]);
+    return error
+      ? {
+          ok: false,
+          error: "Pembayaran gagal dikirim. Silakan coba lagi.",
+        }
+      : paymentUnavailable();
   }
 
   return { ok: true, orderId: data.id };
 }
 
-export async function submitPublicServicePayment(
+export async function submitPublicPayment(
   token: string,
   formData: FormData,
 ): Promise<PublicPaymentResult> {
   try {
-    return await submitPublicServicePaymentInternal(token, formData);
+    return await submitPublicPaymentInternal(token, formData);
   } catch {
     return {
       ok: false,
