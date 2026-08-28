@@ -3,11 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Container } from "@/components/ui/container";
-import { getProductOrderConfirmation } from "@/lib/orders/product-orders";
+import { getPublicOrderConfirmation } from "@/lib/orders/public-order-confirmation";
+import {
+  arriyadhWhatsappNumber,
+  createWhatsappUrl,
+} from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Pesanan Berhasil | Arriyadh Studio",
-  description: "Konfirmasi pesanan produk ready-stock Arriyadh Studio.",
+  description: "Konfirmasi pesanan Arriyadh Studio.",
   robots: { index: false, follow: false },
 };
 
@@ -17,104 +21,164 @@ const rupiahFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
-export default async function ProductOrderConfirmationPage({
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid gap-1 border-b border-outline-variant py-4 last:border-b-0 sm:grid-cols-[11rem_1fr]">
+      <dt className="font-body text-body-sm text-on-surface-variant">{label}</dt>
+      <dd className="font-body text-body-md font-semibold text-on-surface">
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+export default async function OrderConfirmationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ reference?: string }>;
 }) {
-  const { token } = await params;
-  const order = await getProductOrderConfirmation(token);
+  const [{ token }, query] = await Promise.all([params, searchParams]);
+  const order = await getPublicOrderConfirmation(token);
 
   if (!order) notFound();
 
-  const isTransfer = order.payment_method === "transfer";
+  const isService = order.order_kind === "service";
+  const requirement =
+    order.service_flow === "permak"
+      ? order.job_description
+      : order.material;
+  const isAwaitingQuote = isService && order.status === "menunggu_harga";
+  const serviceName = order.service_name_snapshot ?? "Layanan custom";
+  const isOtherService = serviceName.toLowerCase() === "lainnya";
+  const referenceUploadFailed = isService && query.reference === "failed";
+  const assistanceWhatsappUrl = isAwaitingQuote
+    ? createWhatsappUrl(
+        arriyadhWhatsappNumber,
+        `Halo Arriyadh Studio,\n\nSaya ingin bertanya mengenai pesanan saya.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${serviceName}\nJumlah: ${order.quantity} pcs\n\nMohon bantuannya, terima kasih.`,
+      )
+    : null;
 
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
       <Container>
-        <div className="mx-auto max-w-3xl">
-          <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">
-            <p className="font-body text-label-md font-semibold uppercase tracking-label text-success-green">
-              Pesanan Berhasil Dibuat
+        <section className="mx-auto max-w-3xl border border-outline-variant bg-surface-white p-6 sm:p-10">
+          <p className="font-body text-label-md uppercase text-success-green">
+            Pesanan Berhasil Dibuat
+          </p>
+          <h1 className="mt-2 font-heading text-heading-lg text-primary">
+            {isAwaitingQuote
+              ? "Menunggu Peninjauan Harga"
+              : "Detail Pesanan Anda"}
+          </h1>
+          <p className="mt-3 font-body text-body-md text-on-surface-variant">
+            {isAwaitingQuote
+              ? "Admin akan meninjau kebutuhan Anda terlebih dahulu. Pembayaran belum diperlukan saat ini; pilihan pembayaran tersedia setelah admin menetapkan harga."
+              : isService
+                ? "Pesanan layanan Anda telah tersimpan. Ikuti informasi pembayaran atau proses berikutnya dari admin."
+                : order.payment_method === "cod"
+                  ? "Pesanan COD telah dibuat. Pembayaran dilakukan saat pesanan diterima sesuai proses COD Arriyadh Studio."
+                  : "Pesanan produk Anda telah tersimpan. Lanjutkan pembayaran sesuai petunjuk yang tersedia."}
+          </p>
+
+          <dl className="mt-8 border-y border-outline-variant">
+            <DetailRow label="Kode Pesanan" value={order.order_code} />
+            <DetailRow
+              label={isService ? "Layanan" : "Produk"}
+              value={
+                isService
+                  ? serviceName
+                  : order.product_name_snapshot ?? "Produk"
+              }
+            />
+            {!isService && order.product_size ? (
+              <DetailRow label="Ukuran" value={order.product_size} />
+            ) : null}
+            <DetailRow label="Jumlah" value={order.quantity + " pcs"} />
+            {isService && requirement ? (
+              <DetailRow
+                label={
+                  order.service_flow === "permak"
+                    ? "Deskripsi Pekerjaan"
+                    : isOtherService
+                      ? "Detail Kebutuhan"
+                      : "Material / Bahan"
+                }
+                value={<span className="whitespace-pre-wrap">{requirement}</span>}
+              />
+            ) : null}
+            {isService && order.design_description ? (
+              <DetailRow
+                label="Detail Desain"
+                value={
+                  <span className="whitespace-pre-wrap">
+                    {order.design_description}
+                  </span>
+                }
+              />
+            ) : null}
+            {isService && order.design_reference_count > 0 ? (
+              <DetailRow
+                label="Referensi Desain"
+                value={order.design_reference_count + " file diterima"}
+              />
+            ) : null}
+            {!isService && order.price !== null ? (
+              <DetailRow label="Total" value={rupiahFormatter.format(order.price)} />
+            ) : null}
+            {!isService && order.payment_method ? (
+              <DetailRow
+                label="Metode Pembayaran"
+                value={order.payment_method === "cod" ? "COD" : "Transfer BRI"}
+              />
+            ) : null}
+          </dl>
+
+          {referenceUploadFailed ? (
+            <p role="alert" className="mt-6 border border-status-amber/40 bg-status-amber/10 px-4 py-3 font-body text-body-sm text-on-surface">
+              Pesanan berhasil dibuat, tetapi referensi desain belum terunggah.
+              Silakan kirim referensi melalui WhatsApp kepada admin.
             </p>
-            <h1 className="mt-2 font-heading text-heading-lg text-primary">
-              Terima kasih, pesanan Anda sudah tercatat.
-            </h1>
-            <p className="mt-3 font-body text-body-md text-on-surface-variant">
-              Simpan Order ID berikut untuk komunikasi dan pengecekan pesanan.
-            </p>
+          ) : null}
 
-            <div className="mt-6 bg-surface-container-low p-5">
-              <p className="font-body text-label-md text-on-surface-variant">
-                Order ID
-              </p>
-              <p className="mt-1 break-words font-heading text-heading-md text-primary">
-                {order.order_code}
-              </p>
-            </div>
-
-            <dl className="mt-6 grid gap-5 sm:grid-cols-2">
-              <div>
-                <dt className="font-body text-label-md text-on-surface-variant">
-                  Produk
-                </dt>
-                <dd className="mt-1 font-body text-body-md font-semibold text-primary">
-                  {order.product_name_snapshot}
-                </dd>
-              </div>
-              <div>
-                <dt className="font-body text-label-md text-on-surface-variant">
-                  Ukuran
-                </dt>
-                <dd className="mt-1 font-body text-body-md font-semibold text-primary">
-                  {order.product_size}
-                </dd>
-              </div>
-              <div>
-                <dt className="font-body text-label-md text-on-surface-variant">
-                  Jumlah
-                </dt>
-                <dd className="mt-1 font-body text-body-md font-semibold text-primary">
-                  {order.quantity} pcs
-                </dd>
-              </div>
-              <div>
-                <dt className="font-body text-label-md text-on-surface-variant">
-                  Metode Pembayaran
-                </dt>
-                <dd className="mt-1 font-body text-body-md font-semibold text-primary">
-                  {isTransfer ? "Transfer Bank BRI" : "COD"}
-                </dd>
-              </div>
-              <div className="border-t border-outline-variant pt-5 sm:col-span-2">
-                <dt className="font-body text-label-md text-on-surface-variant">
-                  Total
-                </dt>
-                <dd className="mt-1 font-heading text-heading-md text-primary">
-                  {rupiahFormatter.format(order.price)}
-                </dd>
-              </div>
-            </dl>
-
-            <div className="mt-6 border border-outline-variant p-5">
-              <h2 className="font-heading text-heading-sm text-primary">
-                Langkah Berikutnya
-              </h2>
-              <p className="mt-2 font-body text-body-md text-on-surface-variant">
-                {isTransfer
-                  ? "Lanjutkan ke halaman pembayaran untuk membayar total penuh dan mengunggah bukti transfer. Jika bukti sudah dikirim, pembayaran sedang menunggu verifikasi admin."
-                  : "Pesanan COD berhasil dibuat. Siapkan pembayaran sesuai total pesanan saat pesanan diterima atau sesuai konfirmasi COD dari admin."}
-              </p>
-            </div>
-
+          <div className="mt-8 flex flex-wrap gap-3">
+            {(!isService && order.payment_method === "transfer") ||
+            (isService && order.status === "menunggu_pembayaran_dp") ? (
+              <Link
+                href={`/pembayaran/${token}`}
+                className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+              >
+                {isService ? "Bayar DP" : "Lanjut ke Pembayaran"}
+              </Link>
+            ) : null}
             <Link
-              href={isTransfer ? `/pembayaran/${token}` : "/produk"}
-              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              href={isService ? "/layanan" : "/produk"}
+              className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
             >
-              {isTransfer ? "Lanjut ke Pembayaran" : "Kembali ke Produk"}
+              Kembali
             </Link>
-          </section>
-        </div>
+          </div>
+          {assistanceWhatsappUrl ? (
+            <section className="mt-8 border-t border-outline-variant pt-6">
+              <h2 className="font-heading text-heading-sm text-primary">
+                Butuh bantuan atau ingin konsultasi?
+              </h2>
+              <p className="mt-2 font-body text-body-sm text-on-surface-variant">
+                Hubungi admin melalui WhatsApp bila ada kebutuhan yang ingin
+                dikonsultasikan sebelum harga ditentukan.
+              </p>
+              <a
+                href={assistanceWhatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
+              >
+                Hubungi via WhatsApp
+              </a>
+            </section>
+          ) : null}
+        </section>
       </Container>
     </main>
   );

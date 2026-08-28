@@ -6,6 +6,7 @@ import {
   submitPayment,
   type PaymentSubmissionState,
 } from "@/app/(public)/pembayaran/[token]/actions";
+import { DemoTransferAccount } from "@/app/(public)/pembayaran/[token]/demo-transfer-account";
 
 const initialState: PaymentSubmissionState = { error: null };
 const maxProofSize = 5 * 1024 * 1024;
@@ -90,7 +91,7 @@ export function PaymentSubmissionForm({
                 Transfer
               </span>
               <span className="mt-1 block font-body text-body-sm text-on-surface-variant">
-                Unggah bukti pembayaran setelah melakukan transfer.
+                Transfer DP melalui rekening demo berikut, lalu unggah bukti pembayaran.
               </span>
             </span>
           </label>
@@ -124,15 +125,16 @@ export function PaymentSubmissionForm({
         <div className="space-y-4 border-l-2 border-primary pl-4">
           <p className="font-body text-body-sm text-on-surface-variant">
             {isProduct
-              ? "Gunakan rekening demo di atas hanya untuk mendemonstrasikan alur pembayaran, bukan sebagai rekening resmi."
-              : "Informasi rekening resmi belum tersedia pada halaman ini. Pastikan tujuan transfer telah dikonfirmasi melalui informasi resmi Arriyadh Studio sebelum mengirim pembayaran."}
+              ? "Transfer total pembayaran melalui rekening demo berikut, lalu unggah bukti pembayaran untuk dikirim kepada admin."
+              : "Transfer DP sesuai jumlah yang ditampilkan melalui rekening demo berikut, lalu unggah Bukti Pembayaran DP dan kirim untuk verifikasi admin."}
           </p>
+          <DemoTransferAccount />
           <div className="space-y-2">
             <label
               htmlFor="payment-proof"
               className="block font-body text-label-md font-semibold text-primary"
             >
-              Bukti Pembayaran
+              {isProduct ? "Bukti Pembayaran" : "Bukti Pembayaran DP"}
             </label>
             <input
               ref={proofInputRef}
@@ -186,7 +188,9 @@ export function PaymentSubmissionForm({
           ? "Mengirim..."
           : isProduct
             ? "Kirim Bukti Pembayaran"
-            : "Kirim Pembayaran"}
+            : method === "transfer"
+              ? "Kirim Bukti Pembayaran DP"
+              : "Kirim Pembayaran"}
       </button>
     </form>
   );

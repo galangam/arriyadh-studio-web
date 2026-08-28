@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { getAdminDesignReferenceSignedUrl } from "@/lib/orders/admin-design-reference";
 import { getAdminPaymentProofSignedUrl } from "@/lib/orders/admin-payment";
 import { getNextOrderStatus } from "@/lib/orders/order-workflows";
 import { createClient } from "@/lib/supabase/server";
@@ -21,29 +22,14 @@ export type PaymentProofLinkState = {
   signedUrl: string | null;
 };
 
+export type DesignReferenceLinkState = PaymentProofLinkState;
+
 export type AdvanceOrderStatusState = {
   error: string | null;
 };
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function calculateDpAmount(price: number) {
-  const dpAmount = Math.round(price / 2);
-  const ratio = dpAmount / price;
-
-  if (
-    !Number.isSafeInteger(dpAmount) ||
-    dpAmount <= 0 ||
-    dpAmount > price ||
-    ratio < 0.45 ||
-    ratio > 0.55
-  ) {
-    return null;
-  }
-
-  return dpAmount;
-}
 
 export async function setOrderPrice(
   orderId: string,
@@ -74,18 +60,11 @@ export async function setOrderPrice(
     return { error: "Total harga tidak valid." };
   }
 
-  const dpAmount = calculateDpAmount(price);
-
-  if (dpAmount === null) {
-    return { error: "Total harga tidak valid." };
-  }
-
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("orders")
     .update({
       price,
-      dp_amount: dpAmount,
       status: "menunggu_pembayaran_dp",
     })
     .eq("id", orderId)
@@ -95,6 +74,14 @@ export async function setOrderPrice(
     .maybeSingle<{ id: string }>();
 
   if (error) {
+    console.error("Failed to set service order quotation", {
+      orderId,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+
     return {
       error: "Harga pesanan gagal disimpan. Silakan coba lagi.",
     };
@@ -120,6 +107,22 @@ export async function createPaymentProofLink(
   void _previousState;
   void _formData;
   const result = await getAdminPaymentProofSignedUrl(orderId);
+
+  if (!result.ok) {
+    return { error: result.error, signedUrl: null };
+  }
+
+  return { error: null, signedUrl: result.signedUrl };
+}
+
+export async function createDesignReferenceLink(
+  orderId: string,
+  _previousState: DesignReferenceLinkState,
+  _formData: FormData,
+): Promise<DesignReferenceLinkState> {
+  void _previousState;
+  void _formData;
+  const result = await getAdminDesignReferenceSignedUrl(orderId);
 
   if (!result.ok) {
     return { error: result.error, signedUrl: null };

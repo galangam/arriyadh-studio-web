@@ -15,10 +15,8 @@ export function DemoTransferAccount() {
       >
         Informasi Transfer Demonstrasi
       </h3>
-      <p className="mt-2 font-body text-body-sm text-on-surface-variant">
-        Data berikut hanya untuk demonstrasi dan bukan rekening resmi.
-      </p>
-      <dl className="mt-4 grid gap-3 font-body text-body-sm sm:grid-cols-3">
+      
+        <dl className="mt-4 grid gap-3 font-body text-body-sm sm:grid-cols-3">
         <div>
           <dt className="text-on-surface-variant">Bank</dt>
           <dd className="mt-1 font-semibold text-primary">
@@ -32,7 +30,7 @@ export function DemoTransferAccount() {
           </dd>
         </div>
         <div>
-          <dt className="text-on-surface-variant">Nama Rekening</dt>
+          <dt className="text-on-surface-variant">Atas Nama</dt>
           <dd className="mt-1 font-semibold text-primary">
             {demoProductTransferAccount.accountName}
           </dd>

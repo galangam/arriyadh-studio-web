@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   setOrderPrice,
@@ -12,6 +12,7 @@ const initialState: SetOrderPriceState = {
 };
 
 export function SetOrderPriceForm({ orderId }: { orderId: string }) {
+  const [priceDigits, setPriceDigits] = useState("");
   const setOrderPriceForOrder = setOrderPrice.bind(null, orderId);
   const [state, formAction, isPending] = useActionState(
     setOrderPriceForOrder,
@@ -30,12 +31,18 @@ export function SetOrderPriceForm({ orderId }: { orderId: string }) {
         </label>
         <input
           id="total-price"
-          name="totalPrice"
           type="text"
           inputMode="numeric"
-          pattern="[0-9]+"
           required
           autoComplete="off"
+          value={
+            priceDigits === ""
+              ? ""
+              : new Intl.NumberFormat("id-ID").format(Number(priceDigits))
+          }
+          onChange={(event) => {
+            setPriceDigits(event.target.value.replace(/\D/g, ""));
+          }}
           aria-invalid={hasError}
           aria-describedby={
             hasError ? "total-price-help total-price-error" : "total-price-help"
@@ -44,6 +51,7 @@ export function SetOrderPriceForm({ orderId }: { orderId: string }) {
           placeholder="Contoh: 2000000"
           disabled={isPending}
         />
+        <input type="hidden" name="totalPrice" value={priceDigits} />
         <p
           id="total-price-help"
           className="text-admin-caption text-on-surface-variant"

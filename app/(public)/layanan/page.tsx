@@ -5,6 +5,10 @@ import Link from "next/link";
 import { PublicCta } from "@/components/layout/public-cta";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
+import {
+  getActiveServices,
+  type PublicService,
+} from "@/lib/services/public-services";
 
 export const metadata: Metadata = {
   title: "Layanan | Arriyadh Studio",
@@ -12,10 +16,8 @@ export const metadata: Metadata = {
     "Layanan konveksi, sablon, pakaian custom, dan permak Arriyadh Studio untuk berbagai kebutuhan.",
 };
 
-type Service = {
-  id: string;
-  name: string;
-  description: string;
+type ServicePresentation = {
+  slug: string;
   detail: string;
   useCases: readonly string[];
   image?: string;
@@ -24,12 +26,9 @@ type Service = {
   visualTitle?: string | null;
 };
 
-const services: readonly Service[] = [
+const servicePresentations: readonly ServicePresentation[] = [
   {
-    id: "permak",
-    name: "Permak",
-    description:
-      "Penyesuaian dan perbaikan pakaian agar ukuran, bentuk, atau detailnya kembali sesuai kebutuhan.",
+    slug: "permak",
     detail:
       "Layanan permak ditujukan untuk pakaian yang perlu diperkecil, diperbesar, diperbaiki, atau dirapikan kembali.",
     useCases: [
@@ -43,10 +42,7 @@ const services: readonly Service[] = [
     visualTitle: "Pakaian kembali nyaman digunakan.",
   },
   {
-    id: "sablon",
-    name: "Sablon",
-    description:
-      "Cetak desain custom pada kaos dan pakaian untuk kebutuhan personal maupun kelompok.",
+    slug: "sablon",
     detail:
       "Pengerjaan sablon disesuaikan dengan desain dan kebutuhan pakaian yang diajukan oleh pelanggan.",
     useCases: [
@@ -60,10 +56,7 @@ const services: readonly Service[] = [
     visualTitle: null,
   },
   {
-    id: "kaos",
-    name: "Kaos",
-    description:
-      "Produksi kaos custom yang disesuaikan dengan kebutuhan desain dan penggunaannya.",
+    slug: "kaos",
     detail:
       "Kaos custom dapat digunakan untuk berbagai kebutuhan bersama, identitas kegiatan, maupun produk usaha.",
     useCases: [
@@ -77,10 +70,7 @@ const services: readonly Service[] = [
     visualTitle: null,
   },
   {
-    id: "kemeja",
-    name: "Kemeja",
-    description:
-      "Pembuatan kemeja custom untuk pakaian kerja, seragam, dan identitas organisasi.",
+    slug: "kemeja",
     detail:
       "Model dan kebutuhan kemeja dibahas berdasarkan fungsi pakaian serta identitas kelompok atau usaha.",
     useCases: [
@@ -94,10 +84,7 @@ const services: readonly Service[] = [
     visualTitle: null,
   },
   {
-    id: "jersey",
-    name: "Jersey",
-    description:
-      "Pembuatan jersey custom untuk tim, komunitas, acara, dan kebutuhan olahraga lainnya.",
+    slug: "jersey",
     detail:
       "Desain jersey dapat disesuaikan dengan identitas tim atau kegiatan yang akan menggunakannya.",
     useCases: ["Tim olahraga", "Komunitas", "Turnamen dan kegiatan olahraga"],
@@ -107,10 +94,7 @@ const services: readonly Service[] = [
     visualTitle: null,
   },
   {
-    id: "lainnya",
-    name: "Lainnya",
-    description:
-      "Layanan tambahan untuk kebutuhan desain dan media pendukung seperti banner, stiker, undangan, serta kebutuhan custom lainnya.",
+    slug: "lainnya",
     detail:
       "Kebutuhan dapat dikonsultasikan terlebih dahulu agar jenis pengerjaan dan hasil akhir dapat disesuaikan dengan kebutuhan Anda.",
     useCases: [
@@ -151,7 +135,30 @@ const orderSteps = [
 ] as const;
 
 const serviceOrderUrl =
-  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20layanan%20custom.";
+  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20berkonsultasi%20tentang%20layanan%20custom.";
+
+const presentationBySlug = new Map(
+  servicePresentations.map((presentation) => [presentation.slug, presentation]),
+);
+
+type PresentedService = PublicService & ServicePresentation;
+
+function presentService(service: PublicService): PresentedService {
+  const presentation = presentationBySlug.get(service.slug);
+
+  return {
+    ...service,
+    slug: service.slug,
+    detail:
+      presentation?.detail ??
+      "Sampaikan detail kebutuhan Anda agar admin dapat meninjau pengerjaan dan menentukan harga.",
+    useCases: presentation?.useCases ?? ["Kebutuhan custom"],
+    image: service.image_url ?? presentation?.image,
+    imageAlt: presentation?.imageAlt ?? service.name,
+    visualKicker: presentation?.visualKicker ?? "Layanan Custom",
+    visualTitle: presentation?.visualTitle ?? service.name,
+  };
+}
 
 function ArrowIcon() {
   return (
@@ -170,7 +177,8 @@ function ArrowIcon() {
   );
 }
 
-export default function LayananPage() {
+export default async function LayananPage() {
+  const services = (await getActiveServices()).map(presentService);
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       <section
@@ -208,7 +216,7 @@ export default function LayananPage() {
                 {services.map((service, index) => (
                   <Link
                     key={service.id}
-                    href={`#${service.id}`}
+                    href={"#" + service.slug}
                     className="group flex min-h-16 items-center gap-base border-r border-outline-variant px-gutter font-body text-button text-primary transition-colors first:border-l hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary md:min-h-18 md:px-8"
                   >
                     <span className="text-label-md text-secondary transition-colors group-hover:text-primary">
@@ -230,8 +238,8 @@ export default function LayananPage() {
           return (
             <section
               key={service.id}
-              id={service.id}
-              aria-labelledby={`${service.id}-title`}
+              id={service.slug}
+              aria-labelledby={service.slug + "-title"}
               className={`scroll-mt-20 py-section-gap md:py-24 ${
                 index % 2 === 0 ? "bg-surface-white" : "bg-surface"
               }`}
@@ -251,6 +259,7 @@ export default function LayananPage() {
                             alt={service.imageAlt ?? ""}
                             fill
                             sizes="(min-width: 1024px) 50vw, 100vw"
+                            unoptimized={service.image.startsWith("http")}
                             className="object-cover transition-[transform,filter] duration-500 ease-out group-hover:scale-[1.02] group-hover:brightness-95 motion-reduce:transition-none"
                           />
                           <div
@@ -289,7 +298,7 @@ export default function LayananPage() {
                         Layanan {String(index + 1).padStart(2, "0")}
                       </p>
                       <h2
-                        id={`${service.id}-title`}
+                        id={service.slug + "-title"}
                         className="mt-base font-heading text-heading-strong text-primary sm:text-display-md"
                       >
                         {service.name}
@@ -318,17 +327,23 @@ export default function LayananPage() {
                         </ul>
                       </div>
 
-                      <a
-                        href={serviceOrderUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-8 inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                      >
-                        Pesan Layanan
-                        <span className="transition-transform duration-200 group-hover:translate-x-1">
+                      <div className="mt-8 flex flex-wrap gap-3">
+                        <Link
+                          href={"/layanan/" + service.slug + "/pesan"}
+                          className="inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        >
+                          Pesan Layanan
                           <ArrowIcon />
-                        </span>
-                      </a>
+                        </Link>
+                        <a
+                          href={serviceOrderUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        >
+                          Konsultasi WhatsApp
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </Reveal>

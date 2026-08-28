@@ -11,7 +11,8 @@ const orderChoices = [
     description:
       "Untuk konveksi, sablon, jersey, sweater, kemeja, atau permak.",
     supportingText: "Harga ditentukan setelah pesanan ditinjau admin",
-    href: "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20layanan%20custom.",
+    href: "/layanan",
+    external: false,
   },
   {
     index: "02",
@@ -19,6 +20,7 @@ const orderChoices = [
     description: "Untuk produk yang tersedia dengan harga tetap.",
     supportingText: "Langsung pilih produk, ukuran, dan jumlah",
     href: "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20produk%20ready-stock.",
+    external: true,
   },
 ];
 
@@ -90,8 +92,8 @@ export function OrderChoiceDialog({
               <a
                 key={choice.index}
                 href={choice.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={choice.external ? "_blank" : undefined}
+                rel={choice.external ? "noopener noreferrer" : undefined}
                 className="group relative grid min-h-40 grid-cols-[2rem_1fr_auto] gap-margin-mobile overflow-hidden px-base py-gutter transition-colors duration-200 ease-out hover:bg-surface-container-low focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:grid-cols-[2.5rem_1fr_auto] sm:gap-gutter sm:px-margin-mobile"
                 onClick={closeDialog}
               >

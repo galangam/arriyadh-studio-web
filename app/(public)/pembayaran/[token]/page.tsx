@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { DemoTransferAccount } from "@/app/(public)/pembayaran/[token]/demo-transfer-account";
 import { PaymentSubmissionForm } from "@/app/(public)/pembayaran/[token]/payment-submission-form";
 import { Container } from "@/components/ui/container";
 import {
@@ -164,15 +163,13 @@ export default async function PublicPaymentPage({
                   id="payment-method-heading"
                   className="font-heading text-heading-md text-primary"
                 >
-                  {isProduct ? "Bukti Pembayaran" : "Pilih Pembayaran"}
+                  {isProduct ? "Bukti Pembayaran" : "Pilih Metode Pembayaran"}
                 </h2>
                 <p className="mt-2 font-body text-body-md text-on-surface-variant">
                   {isProduct
                     ? "Bayar total penuh melalui Transfer Bank BRI, lalu unggah bukti pembayaran."
                     : "Pilih Transfer atau COD untuk melanjutkan pesanan."}
                 </p>
-                {isProduct ? <DemoTransferAccount /> : null}
-
                 <PaymentSubmissionForm
                   token={token}
                   orderKind={order.order_kind}

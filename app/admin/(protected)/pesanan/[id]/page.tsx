@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DesignReferenceControl } from "@/app/admin/(protected)/pesanan/[id]/design-reference-control";
 import { AdminPaymentSummary } from "@/app/admin/(protected)/pesanan/[id]/admin-payment-summary";
 
 import {
@@ -9,6 +10,7 @@ import {
 import { ProductionProgress } from "@/app/admin/(protected)/pesanan/[id]/production-progress";
 import { ProductCodConfirmationSection } from "@/app/admin/(protected)/pesanan/[id]/product-cod-confirmation-section";
 import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
+import { ServicePaymentLinkSection } from "@/app/admin/(protected)/pesanan/[id]/service-payment-link-section";
 
 import {
   formatAdminOrderDateTime,
@@ -16,10 +18,23 @@ import {
   getAdminOrderDetail,
   orderKindLabels,
   orderStatusLabels,
+  type AdminDesignReference,
   type AdminOrderDetail,
 } from "@/lib/orders/admin-orders";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { createWhatsappUrl } from "@/lib/whatsapp";
 
 const emptyValue = "—";
+
+const designReferenceTypeLabels: Record<
+  AdminDesignReference["mime_type"],
+  string
+> = {
+  "image/jpeg": "JPEG",
+  "image/png": "PNG",
+  "image/webp": "WebP",
+  "application/pdf": "PDF",
+};
 
 type DetailItem = { label: string; value: string | number | null };
 
@@ -41,6 +56,14 @@ function DetailList({ items }: { items: DetailItem[] }) {
 }
 
 function OrderInformation({ order }: { order: AdminOrderDetail }) {
+  const isOtherService =
+    order.service_name_snapshot?.toLowerCase() === "lainnya";
+  const serviceFlowLabel =
+    order.service_flow === "konveksi_sablon"
+      ? "Konveksi / Sablon"
+      : order.service_flow === "permak"
+        ? "Permak"
+        : "Layanan Custom";
   const items: DetailItem[] =
     order.order_kind === "product"
       ? [
@@ -57,9 +80,21 @@ function OrderInformation({ order }: { order: AdminOrderDetail }) {
         ]
       : [
           { label: "Nama Layanan", value: order.service_name_snapshot },
-          { label: "Alur Layanan", value: order.service_flow },
-          { label: "Material", value: order.material },
-          { label: "Deskripsi Pekerjaan", value: order.job_description },
+          { label: "Jenis Layanan", value: serviceFlowLabel },
+          {
+            label:
+              isOtherService
+                ? "Detail Kebutuhan"
+                : order.service_flow === "konveksi_sablon"
+                  ? "Material / Bahan"
+                  : order.service_flow === "permak"
+                  ? "Deskripsi Pekerjaan"
+                  : "Detail Kebutuhan",
+            value:
+              order.service_flow === "permak"
+                ? order.job_description
+                : order.material,
+          },
           { label: "Jumlah", value: `${order.quantity} pcs` },
         ];
 
@@ -73,6 +108,24 @@ export default async function AdminOrderDetailPage({
 }) {
   const { id } = await params;
   const order = await getAdminOrderDetail(id);
+  const siteOrigin = await getSiteOrigin();
+  const showServicePaymentLink =
+    order.order_kind === "service" &&
+    order.payment_token !== null &&
+    order.price !== null &&
+    order.dp_amount !== null &&
+    order.status !== "menunggu_harga" &&
+    ["menunggu_pembayaran_dp", "menunggu_konfirmasi_dp", "menunggu_verifikasi"].includes(order.status) &&
+    siteOrigin !== null;
+  const paymentUrl = showServicePaymentLink
+    ? `${siteOrigin}/pembayaran/${order.payment_token}`
+    : null;
+  const paymentWhatsappUrl = paymentUrl
+    ? createWhatsappUrl(
+        order.customer_whatsapp,
+        `Halo ${order.customer_name},\n\nHarga pesanan Anda sudah ditentukan.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${order.service_name_snapshot ?? "Layanan custom"}\nTotal Pesanan: ${formatOrderPrice(order.price)}\nDP: ${formatOrderPrice(order.dp_amount)}\n\nSilakan pilih metode pembayaran dan lakukan pembayaran DP melalui link berikut:\n${paymentUrl}\n\nTerima kasih.`,
+      )
+    : null;
   const statusDetails: DetailItem[] = [];
 
   if (order.quoted_at) {
@@ -166,6 +219,59 @@ export default async function AdminOrderDetailPage({
             </section>
 
             {order.order_kind === "service" &&
+            (order.design_description || order.design_references.length > 0) ? (
+              <section
+                aria-labelledby="design-specification-heading"
+                className="border border-outline-variant bg-surface-white p-5 md:p-6"
+              >
+                <h2
+                  id="design-specification-heading"
+                  className="font-heading text-admin-section text-primary"
+                >
+                  Spesifikasi Desain
+                </h2>
+                {order.design_description ? (
+                  <div className="mt-5">
+                    <DetailList
+                      items={[
+                        {
+                          label: "Detail Desain",
+                          value: order.design_description,
+                        },
+                      ]}
+                    />
+                  </div>
+                ) : null}
+                {order.design_references.length > 0 ? (
+                  <div className="mt-5 border-t border-outline-variant pt-5">
+                    <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+                      Referensi Desain
+                    </p>
+                    <ul className="mt-3 space-y-3">
+                      {order.design_references.map((reference, index) => (
+                        <li
+                          key={reference.id}
+                          className="flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface-container-low p-3"
+                        >
+                          <div>
+                            <p className="text-admin-body font-semibold text-on-surface">
+                              Referensi {index + 1}
+                            </p>
+                            <p className="text-admin-caption text-on-surface-variant">
+                              {designReferenceTypeLabels[reference.mime_type]}
+                            </p>
+                          </div>
+                          <DesignReferenceControl referenceId={reference.id} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+
+
+            {order.order_kind === "service" &&
               order.status === "menunggu_harga" && (
                 <section
                   aria-labelledby="set-order-price-heading"
@@ -184,6 +290,13 @@ export default async function AdminOrderDetailPage({
                   <SetOrderPriceForm orderId={order.id} />
                 </section>
               )}
+
+            {paymentUrl && paymentWhatsappUrl ? (
+              <ServicePaymentLinkSection
+                paymentUrl={paymentUrl}
+                whatsappUrl={paymentWhatsappUrl}
+              />
+            ) : null}
 
             {order.payment_method === "transfer" &&
               order.status === "menunggu_verifikasi" &&

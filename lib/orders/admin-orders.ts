@@ -3,6 +3,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export const orderStatuses = [
@@ -124,6 +125,12 @@ export type AdminOrderListRow = {
   created_at: string;
 };
 
+export type AdminDesignReference = {
+  id: string;
+  mime_type: "image/jpeg" | "image/png" | "image/webp" | "application/pdf";
+  created_at: string;
+};
+
 export type AdminOrderDetail = {
   id: string;
   order_code: string;
@@ -138,6 +145,8 @@ export type AdminOrderDetail = {
   service_flow: string | null;
   material: string | null;
   job_description: string | null;
+  design_description: string | null;
+  design_references: AdminDesignReference[];
   product_name_snapshot: string | null;
   product_size: string | null;
   quantity: number;
@@ -145,6 +154,7 @@ export type AdminOrderDetail = {
   price: number | null;
   dp_amount: number | null;
   payment_method: string | null;
+  payment_token: string | null;
   payment_proof_path: string | null;
   payment_verified_at: string | null;
   quoted_at: string | null;
@@ -462,14 +472,27 @@ export async function getAdminOrderDetail(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
+      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_token, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
     )
     .eq("id", id)
-    .maybeSingle<AdminOrderDetail>();
+    .maybeSingle<Omit<AdminOrderDetail, "design_references">>();
 
   if (error || !data) {
     notFound();
   }
 
-  return data;
+  const adminSupabase = createAdminClient();
+  const { data: designReferences, error: referencesError } = await adminSupabase
+    .from("order_design_references")
+    .select("id, mime_type, created_at")
+    .eq("order_id", data.id)
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
+    .returns<AdminDesignReference[]>();
+
+  if (referencesError || !designReferences) {
+    notFound();
+  }
+
+  return { ...data, design_references: designReferences };
 }
