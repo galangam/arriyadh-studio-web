@@ -125,6 +125,24 @@ export type AdminOrderListRow = {
   created_at: string;
 };
 
+export type AdminOrderVariantSize = {
+  size: string;
+  quantity: number;
+};
+
+export type AdminOrderVariant = {
+  variant_type: string | null;
+  material: string;
+  sleeve_type: string;
+  quantity: number;
+  sizes: AdminOrderVariantSize[];
+};
+
+type AdminOrderVariantRow = Omit<AdminOrderVariant, "sizes"> & {
+  id: string;
+  order_service_variant_sizes: AdminOrderVariantSize[];
+};
+
 export type AdminDesignReference = {
   id: string;
   mime_type: "image/jpeg" | "image/png" | "image/webp" | "application/pdf";
@@ -147,6 +165,7 @@ export type AdminOrderDetail = {
   job_description: string | null;
   design_description: string | null;
   design_references: AdminDesignReference[];
+  service_variants: AdminOrderVariant[];
   product_name_snapshot: string | null;
   product_size: string | null;
   quantity: number;
@@ -475,24 +494,42 @@ export async function getAdminOrderDetail(
       "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_token, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
     )
     .eq("id", id)
-    .maybeSingle<Omit<AdminOrderDetail, "design_references">>();
+    .maybeSingle<Omit<AdminOrderDetail, "design_references" | "service_variants">>();
 
   if (error || !data) {
     notFound();
   }
 
   const adminSupabase = createAdminClient();
-  const { data: designReferences, error: referencesError } = await adminSupabase
-    .from("order_design_references")
-    .select("id, mime_type, created_at")
-    .eq("order_id", data.id)
-    .order("created_at", { ascending: true })
-    .order("id", { ascending: true })
-    .returns<AdminDesignReference[]>();
+  const [referenceResult, variantResult] = await Promise.all([
+    adminSupabase
+      .from("order_design_references")
+      .select("id, mime_type, created_at")
+      .eq("order_id", data.id)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .returns<AdminDesignReference[]>(),
+    adminSupabase
+      .from("order_service_variants")
+      .select("id, variant_type, material, sleeve_type, quantity, order_service_variant_sizes(size, quantity)")
+      .eq("order_id", data.id)
+      .order("created_at", { ascending: true })
+      .returns<AdminOrderVariantRow[]>(),
+  ]);
 
-  if (referencesError || !designReferences) {
+  if (referenceResult.error || !referenceResult.data || variantResult.error || !variantResult.data) {
     notFound();
   }
 
-  return { ...data, design_references: designReferences };
+  return {
+    ...data,
+    design_references: referenceResult.data,
+    service_variants: variantResult.data.map((variant) => ({
+      variant_type: variant.variant_type,
+      material: variant.material,
+      sleeve_type: variant.sleeve_type,
+      quantity: variant.quantity,
+      sizes: variant.order_service_variant_sizes,
+    })),
+  };
 }

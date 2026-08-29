@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Container } from "@/components/ui/container";
 import { getPublicOrderConfirmation } from "@/lib/orders/public-order-confirmation";
+import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import {
   arriyadhWhatsappNumber,
   createWhatsappUrl,
@@ -51,7 +52,11 @@ export default async function OrderConfirmationPage({
       : order.material;
   const isAwaitingQuote = isService && order.status === "menunggu_harga";
   const serviceName = order.service_name_snapshot ?? "Layanan custom";
-  const isOtherService = serviceName.toLowerCase() === "lainnya";
+  const normalizedServiceName = serviceName.toLowerCase();
+  const isOtherService = normalizedServiceName === "lainnya";
+  const isJerseyService =
+    normalizedServiceName === "jersey" ||
+    normalizedServiceName === "jersey embos";
   const referenceUploadFailed = isService && query.reference === "failed";
   const assistanceWhatsappUrl = isAwaitingQuote
     ? createWhatsappUrl(
@@ -96,7 +101,51 @@ export default async function OrderConfirmationPage({
               <DetailRow label="Ukuran" value={order.product_size} />
             ) : null}
             <DetailRow label="Jumlah" value={order.quantity + " pcs"} />
-            {isService && requirement ? (
+            {isService && order.service_variants.length > 0 ? (
+              <DetailRow
+                label="Rincian Pesanan"
+                value={
+                  <div className="space-y-5">
+                    {order.service_variants.map((variant) => (
+                      <div
+                        key={[
+                          variant.variant_type,
+                          variant.material,
+                          variant.sleeve_type,
+                        ].join(":")}
+                        className="border-b border-outline-variant pb-4 last:border-b-0 last:pb-0"
+                      >
+                        {isJerseyService ? (
+                          <p className="font-semibold">
+                            {getJerseyVariantTypeLabel(variant.variant_type)}
+                          </p>
+                        ) : null}
+                        <p>
+                          {variant.material} — {variant.sleeve_type}
+                        </p>
+                        {variant.sizes.length > 0 ? (
+                          <dl className="mt-2 grid max-w-xs grid-cols-2 gap-x-6 gap-y-1 font-normal">
+                            {variant.sizes.map((size) => (
+                              <div key={size.size} className="contents">
+                                <dt>{size.size}</dt>
+                                <dd className="text-right">{size.quantity} pcs</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        ) : null}
+                        <p className="mt-2 font-semibold">
+                          Subtotal: {variant.quantity} pcs
+                        </p>
+                      </div>
+                    ))}
+                    <p className="border-t border-outline-variant pt-3">
+                      Total Pesanan: {order.quantity} pcs
+                    </p>
+                  </div>
+                }
+              />
+            ) : null}
+            {isService && order.service_variants.length === 0 && requirement ? (
               <DetailRow
                 label={
                   order.service_flow === "permak"

@@ -19,12 +19,31 @@ type ConfirmationRow = {
   payment_method: "transfer" | "cod" | null;
 };
 
+export type PublicOrderVariantSize = {
+  size: string;
+  quantity: number;
+};
+
+export type PublicOrderVariant = {
+  variant_type: string | null;
+  material: string;
+  sleeve_type: string;
+  quantity: number;
+  sizes: PublicOrderVariantSize[];
+};
+
+type PublicOrderVariantRow = Omit<PublicOrderVariant, "sizes"> & {
+  id: string;
+  order_service_variant_sizes: PublicOrderVariantSize[];
+};
+
 export type PublicOrderConfirmation = Omit<
   ConfirmationRow,
   "id" | "price"
 > & {
   price: number | null;
   design_reference_count: number;
+  service_variants: PublicOrderVariant[];
 };
 
 const uuidPattern =
@@ -52,16 +71,31 @@ export async function getPublicOrderConfirmation(
 
   const { id: orderId, ...customerSafeData } = data;
 
-  const { count: designReferenceCount, error: referenceError } = await supabase
-    .from("order_design_references")
-    .select("id", { count: "exact", head: true })
-    .eq("order_id", orderId);
+  const [referenceResult, variantResult] = await Promise.all([
+    supabase
+      .from("order_design_references")
+      .select("id", { count: "exact", head: true })
+      .eq("order_id", orderId),
+    supabase
+      .from("order_service_variants")
+      .select("id, variant_type, material, sleeve_type, quantity, order_service_variant_sizes(size, quantity)")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: true })
+      .returns<PublicOrderVariantRow[]>(),
+  ]);
 
-  if (referenceError) return null;
+  if (referenceResult.error || variantResult.error || !variantResult.data) return null;
 
   return {
     ...customerSafeData,
     price,
-    design_reference_count: designReferenceCount ?? 0,
+    design_reference_count: referenceResult.count ?? 0,
+    service_variants: variantResult.data.map((variant) => ({
+      variant_type: variant.variant_type,
+      material: variant.material,
+      sleeve_type: variant.sleeve_type,
+      quantity: variant.quantity,
+      sizes: variant.order_service_variant_sizes,
+    })),
   };
 }

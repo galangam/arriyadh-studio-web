@@ -3,8 +3,11 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import type { DesignReferenceRequirement } from "@/lib/services/service-requirements";
+
 const maxFiles = 5;
 const maxFileSize = 10 * 1024 * 1024;
+const missingReferenceMessage = "Unggah minimal 1 referensi desain.";
 const allowedTypes = new Set([
   "image/jpeg",
   "image/png",
@@ -27,15 +30,43 @@ function formatFileSize(size: number) {
   return `${Math.max(1, Math.ceil(size / 1024))} KB`;
 }
 
-export function DesignReferencePicker({ serverError }: { serverError?: string }) {
+export function DesignReferencePicker({
+  serverError,
+  responseRevision,
+  pending,
+  requirement,
+}: {
+  serverError?: string;
+  responseRevision: number;
+  pending: boolean;
+  requirement: Exclude<DesignReferenceRequirement, "unsupported">;
+}) {
+  const required = requirement === "required";
   const submittedInputRef = useRef<HTMLInputElement>(null);
+  const pickerInputRef = useRef<HTMLInputElement>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
   const selectedReferencesRef = useRef<SelectedReference[]>([]);
-  const [selectedReferences, setSelectedReferences] = useState<SelectedReference[]>([]);
+  const [selectedReferences, setSelectedReferences] = useState<
+    SelectedReference[]
+  >([]);
   const [clientError, setClientError] = useState<string | null>(null);
+  const [dismissedServerRevision, setDismissedServerRevision] =
+    useState<number | null>(null);
 
   useEffect(() => {
     selectedReferencesRef.current = selectedReferences;
   }, [selectedReferences]);
+
+  useEffect(() => {
+    const input = submittedInputRef.current;
+    if (!input) return;
+
+    input.setCustomValidity(
+      required && selectedReferences.length === 0
+        ? missingReferenceMessage
+        : "",
+    );
+  }, [required, selectedReferences.length]);
 
   useEffect(() => {
     return () => {
@@ -45,18 +76,37 @@ export function DesignReferencePicker({ serverError }: { serverError?: string })
     };
   }, []);
 
+  useEffect(() => {
+    if (responseRevision === 0 || !submittedInputRef.current) return;
+
+    const transfer = new DataTransfer();
+    selectedReferencesRef.current.forEach(({ file }) => {
+      transfer.items.add(file);
+    });
+    submittedInputRef.current.files = transfer.files;
+  }, [responseRevision]);
+
   function syncSubmittedFiles(references: SelectedReference[]) {
     if (!submittedInputRef.current) return;
 
     const transfer = new DataTransfer();
     references.forEach(({ file }) => transfer.items.add(file));
     submittedInputRef.current.files = transfer.files;
+    submittedInputRef.current.setCustomValidity(
+      required && references.length === 0 ? missingReferenceMessage : "",
+    );
+  }
+
+  function dismissServerError() {
+    setDismissedServerRevision(responseRevision);
   }
 
   function selectFiles(event: React.ChangeEvent<HTMLInputElement>) {
     const incomingFiles = Array.from(event.currentTarget.files ?? []);
     event.currentTarget.value = "";
     if (incomingFiles.length === 0) return;
+
+    dismissServerError();
 
     const invalidFile = incomingFiles.find(
       (file) =>
@@ -95,50 +145,92 @@ export function DesignReferencePicker({ serverError }: { serverError?: string })
   }
 
   function removeFile(key: string) {
-    const removed = selectedReferences.find((reference) => reference.key === key);
+    const removed = selectedReferences.find(
+      (reference) => reference.key === key,
+    );
     if (removed) URL.revokeObjectURL(removed.previewUrl);
 
     const nextReferences = selectedReferences.filter(
       (reference) => reference.key !== key,
     );
-    setClientError(null);
+    dismissServerError();
+    setClientError(
+      required && nextReferences.length === 0
+        ? missingReferenceMessage
+        : null,
+    );
     setSelectedReferences(nextReferences);
     syncSubmittedFiles(nextReferences);
   }
 
+  const visibleServerError =
+    dismissedServerRevision === responseRevision ? undefined : serverError;
+  const displayedError = clientError ?? visibleServerError;
+
   return (
-    <div>
+    <div
+      data-design-reference-target
+      data-reference-missing={
+        required && selectedReferences.length === 0 ? "true" : undefined
+      }
+    >
       <p className="font-body text-label-md font-semibold text-primary">
-        Referensi Desain{" "}
-        <span className="font-normal text-on-surface-variant">(Opsional)</span>
+        {required ? (
+          "Referensi Desain"
+        ) : (
+          <>
+            Referensi Pendukung{" "}
+            <span className="font-normal text-on-surface-variant">
+              (Opsional)
+            </span>
+          </>
+        )}
       </p>
       <input
         ref={submittedInputRef}
         name="designReferences"
         type="file"
         multiple
-        tabIndex={-1}
-        aria-hidden="true"
+        required={required}
+        aria-invalid={Boolean(displayedError)}
+        onInvalid={(event) => {
+          event.preventDefault();
+          if (required && selectedReferences.length === 0) {
+            setClientError(missingReferenceMessage);
+            addButtonRef.current?.focus();
+          }
+        }}
+        aria-describedby="design-reference-help design-reference-error"
         className="sr-only"
       />
-      <label
-        htmlFor="design-reference-picker"
-        aria-disabled={selectedReferences.length >= maxFiles}
-        className="mt-3 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low"
+      <button
+        ref={addButtonRef}
+        id="design-reference-add"
+        type="button"
+        disabled={pending || selectedReferences.length >= maxFiles}
+        aria-describedby="design-reference-help design-reference-error"
+        onClick={() => pickerInputRef.current?.click()}
+        className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
       >
         Tambah File
-      </label>
+      </button>
       <input
+        ref={pickerInputRef}
         id="design-reference-picker"
         type="file"
         multiple
         accept="image/jpeg,image/png,image/webp,application/pdf"
-        disabled={selectedReferences.length >= maxFiles}
+        disabled={pending || selectedReferences.length >= maxFiles}
         onChange={selectFiles}
         className="sr-only"
       />
-      <p className="mt-2 font-body text-body-sm text-on-surface-variant">
-        Unggah hingga 5 gambar atau PDF. Maksimal 10 MB per file.
+      <p
+        id="design-reference-help"
+        className="mt-2 font-body text-body-sm text-on-surface-variant"
+      >
+        {required
+          ? "Wajib unggah minimal 1 gambar atau PDF sebagai referensi desain. Maksimal 5 file, masing-masing maksimal 10 MB."
+          : "Unggah gambar atau PDF jika tersedia. Maksimal 5 file, masing-masing maksimal 10 MB."}
       </p>
 
       {selectedReferences.length > 0 ? (
@@ -187,10 +279,11 @@ export function DesignReferencePicker({ serverError }: { serverError?: string })
                 <button
                   type="button"
                   onClick={() => removeFile(key)}
+                  disabled={pending}
                   aria-label={`Hapus ${file.name}`}
                   className="inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-outline-variant font-body text-heading-sm text-primary hover:bg-surface-container"
                 >
-                  <span aria-hidden="true">×</span>
+                  <span aria-hidden="true">&times;</span>
                 </button>
               </li>
             );
@@ -198,10 +291,14 @@ export function DesignReferencePicker({ serverError }: { serverError?: string })
         </ul>
       ) : null}
 
-      <div aria-live="polite" aria-atomic="true">
-        {clientError || serverError ? (
+      <div
+        id="design-reference-error"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {displayedError ? (
           <p role="alert" className="mt-2 font-body text-body-sm text-error">
-            {clientError ?? serverError}
+            {displayedError}
           </p>
         ) : null}
       </div>

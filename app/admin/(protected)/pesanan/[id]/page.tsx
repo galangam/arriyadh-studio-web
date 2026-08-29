@@ -21,6 +21,7 @@ import {
   type AdminDesignReference,
   type AdminOrderDetail,
 } from "@/lib/orders/admin-orders";
+import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { createWhatsappUrl } from "@/lib/whatsapp";
 
@@ -93,7 +94,9 @@ function OrderInformation({ order }: { order: AdminOrderDetail }) {
             value:
               order.service_flow === "permak"
                 ? order.job_description
-                : order.material,
+                : order.service_variants.length === 0
+                  ? order.material
+                  : null,
           },
           { label: "Jumlah", value: `${order.quantity} pcs` },
         ];
@@ -217,6 +220,84 @@ export default async function AdminOrderDetailPage({
                 <OrderInformation order={order} />
               </div>
             </section>
+
+            {order.order_kind === "service" &&
+            order.service_variants.length > 0 ? (
+              <section
+                aria-labelledby="service-variants-heading"
+                className="border border-outline-variant bg-surface-white p-5 md:p-6"
+              >
+                <h2
+                  id="service-variants-heading"
+                  className="font-heading text-admin-section text-primary"
+                >
+                  Rincian Pesanan
+                </h2>
+                <div className="mt-5 space-y-5">
+                  {order.service_variants.map((variant) => (
+                    <article
+                      key={[
+                        variant.variant_type,
+                        variant.material,
+                        variant.sleeve_type,
+                      ].join(":")}
+                      className="border border-outline-variant bg-surface-container-low p-4"
+                    >
+                      {order.service_name_snapshot?.toLowerCase() === "jersey" ||
+                      order.service_name_snapshot?.toLowerCase() ===
+                        "jersey embos" ? (
+                        <>
+                          <p className="text-admin-body text-on-surface-variant">
+                            Jenis Jersey
+                          </p>
+                          <h3 className="font-heading text-admin-body font-semibold text-primary">
+                            {getJerseyVariantTypeLabel(variant.variant_type)}
+                          </h3>
+                          <dl className="mt-3 grid gap-2 text-admin-body sm:grid-cols-2">
+                            <div>
+                              <dt className="text-on-surface-variant">
+                                Material
+                              </dt>
+                              <dd className="font-semibold">
+                                {variant.material}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-on-surface-variant">
+                                Jenis Lengan
+                              </dt>
+                              <dd className="font-semibold">
+                                {variant.sleeve_type}
+                              </dd>
+                            </div>
+                          </dl>
+                        </>
+                      ) : (
+                        <h3 className="font-heading text-admin-body font-semibold text-primary">
+                          {variant.material} {" - "} {variant.sleeve_type}
+                        </h3>
+                      )}
+                      {variant.sizes.length > 0 ? (
+                        <dl className="mt-3 grid max-w-sm grid-cols-2 gap-x-8 gap-y-2 text-admin-body">
+                          {variant.sizes.map((size) => (
+                            <div key={size.size} className="contents">
+                              <dt>{size.size}</dt>
+                              <dd className="text-right">{size.quantity} pcs</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      ) : null}
+                      <p className="mt-3 border-t border-outline-variant pt-3 text-admin-body font-semibold text-primary">
+                        Subtotal: {variant.quantity} pcs
+                      </p>
+                    </article>
+                  ))}
+                </div>
+                <p className="mt-5 border-t border-outline-variant pt-4 text-admin-body font-semibold text-primary">
+                  Total: {order.quantity} pcs
+                </p>
+              </section>
+            ) : null}
 
             {order.order_kind === "service" &&
             (order.design_description || order.design_references.length > 0) ? (

@@ -37,6 +37,7 @@ export async function getActiveServices(): Promise<PublicService[]> {
     .from("services")
     .select(publicServiceColumns)
     .eq("is_active", true)
+    .neq("slug", "jersey-embos")
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true })
     .returns<ServiceRow[]>();
@@ -56,6 +57,7 @@ export async function getActiveServiceBySlug(
     .from("services")
     .select(publicServiceColumns)
     .eq("slug", slug)
+    .neq("slug", "jersey-embos")
     .eq("is_active", true)
     .maybeSingle<ServiceRow>();
 
