@@ -29,8 +29,11 @@ type PublicProductPaymentOrder = {
   order_kind: "product";
   status: "menunggu_verifikasi";
   product_name_snapshot: string;
+  material: string | null;
+  product_sleeve_type: string | null;
   product_size: string;
   quantity: number;
+  unit_price: number | null;
   price: number;
   payment_method: "transfer";
   has_payment_proof: boolean;
@@ -46,8 +49,11 @@ type PaymentOrderRow = {
   status: string;
   service_name_snapshot: string | null;
   product_name_snapshot: string | null;
+  material: string | null;
+  product_sleeve_type: string | null;
   product_size: string | null;
   quantity: number;
+  unit_price: number | string | null;
   price: number | string | null;
   dp_amount: number | string | null;
   payment_method: PaymentMethod | null;
@@ -117,11 +123,13 @@ function normalizePaymentOrder(row: PaymentOrderRow): PublicPaymentOrder | null 
   if (row.price === null || !Number.isFinite(price)) return null;
 
   if (row.order_kind === "product") {
+    const unitPrice = row.unit_price === null ? null : Number(row.unit_price);
     if (
       row.status !== "menunggu_verifikasi" ||
       row.payment_method !== "transfer" ||
       !row.product_name_snapshot ||
-      !row.product_size
+      !row.product_size ||
+      (unitPrice !== null && !Number.isFinite(unitPrice))
     ) {
       return null;
     }
@@ -131,8 +139,11 @@ function normalizePaymentOrder(row: PaymentOrderRow): PublicPaymentOrder | null 
       order_kind: "product",
       status: "menunggu_verifikasi",
       product_name_snapshot: row.product_name_snapshot,
+      material: row.material,
+      product_sleeve_type: row.product_sleeve_type,
       product_size: row.product_size,
       quantity: row.quantity,
+      unit_price: unitPrice,
       price,
       payment_method: "transfer",
       has_payment_proof: row.payment_proof_path !== null,
@@ -168,7 +179,7 @@ export async function getPublicPaymentOrder(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "order_code, order_kind, status, service_name_snapshot, product_name_snapshot, product_size, quantity, price, dp_amount, payment_method, payment_proof_path",
+      "order_code, order_kind, status, service_name_snapshot, product_name_snapshot, material, product_sleeve_type, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_proof_path",
     )
     .eq("payment_token", token)
     .in("order_kind", ["service", "product"])

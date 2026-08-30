@@ -5,7 +5,15 @@ import Link from "next/link";
 import { PublicCta } from "@/components/layout/public-cta";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
+import {
+  getProductAvailabilitySupport,
+  getProductStartingPrice,
+} from "@/lib/products/product-pricing";
 import { getActiveProducts, type PublicProduct } from "@/lib/products/public-products";
+import {
+  arriyadhWhatsappNumber,
+  createWhatsappUrl,
+} from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Produk Ready-Stock | Arriyadh Studio",
@@ -13,12 +21,12 @@ export const metadata: Metadata = {
 };
 
 const localImages: Record<string, readonly { src: string; alt: string }[]> = {
-  "Kaos Polos Premium": [
+  "kaos-polos-premium": [
     { src: "/images/home/product-kaos-main-opsional.jpeg", alt: "Kaos polos premium Arriyadh Studio" },
     { src: "/images/home/product-kaos-main.jpeg", alt: "Pilihan kaos polos premium Arriyadh Studio" },
     { src: "/images/home/product-kaos-main-opsional-1.jpeg", alt: "Variasi kaos polos Arriyadh Studio" },
   ],
-  "Celana Kolor Santai": [
+  "celana-kolor-santai": [
     { src: "/images/home/product-celana-main.jpeg", alt: "Celana kolor santai Arriyadh Studio" },
     { src: "/images/home/product-celana-opsional.jpeg", alt: "Alternatif celana kolor santai Arriyadh Studio" },
     { src: "/images/home/product-celana-opsional-2.jpeg", alt: "Pilihan celana kolor santai Arriyadh Studio" },
@@ -31,11 +39,10 @@ const purchaseSteps = [
   { title: "Lanjutkan Pembelian", description: "Pilih Transfer Bank BRI atau COD dan buat pesanan." },
 ] as const;
 
-const contactUrl = "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20bertanya%20tentang%20produk%20ready-stock.";
 const rupiah = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 
 function productImages(product: PublicProduct) {
-  const fallback = localImages[product.name] ?? [];
+  const fallback = localImages[product.slug] ?? [];
   return product.image_url
     ? [{ src: product.image_url, alt: product.name }, ...fallback.slice(0, 2)]
     : fallback;
@@ -70,6 +77,12 @@ export default async function ProdukPage() {
             {products.map((product, index) => {
               const [primary, ...alternatives] = productImages(product);
               const canPurchase = product.available_sizes.length > 0;
+              const materials = [...new Set(product.variants.map((variant) => variant.material))];
+              const startingPrice = getProductStartingPrice(product.price, product.variants);
+              const availabilitySupport = getProductAvailabilitySupport(product.slug);
+              const availabilitySupportUrl = availabilitySupport
+                ? createWhatsappUrl(arriyadhWhatsappNumber, availabilitySupport.message)
+                : null;
               return (
                 <Reveal key={product.id} className="h-full">
                   <article aria-labelledby={`product-${product.id}-title`} className="group flex h-full flex-col border border-outline-variant bg-surface-white">
@@ -88,13 +101,22 @@ export default async function ProdukPage() {
                       <p className="font-body text-label-md uppercase text-secondary">Ready Stock {String(index + 1).padStart(2, "0")}</p>
                       <h2 id={`product-${product.id}-title`} className="mt-base font-heading text-heading-strong text-primary">{product.name}</h2>
                       <dl className="mt-gutter border-y border-outline-variant">
+                        {materials.length > 0 ? (
+                          <div className="grid grid-cols-[6rem_1fr] gap-gutter border-b border-outline-variant py-margin-mobile">
+                            <dt className="font-body text-label-md uppercase text-secondary">Bahan</dt>
+                            <dd className="font-body text-body-md text-on-surface">{materials.join(", ")}</dd>
+                          </div>
+                        ) : null}
                         <div className="grid grid-cols-[6rem_1fr] gap-gutter border-b border-outline-variant py-margin-mobile">
                           <dt className="font-body text-label-md uppercase text-secondary">Ukuran</dt>
                           <dd className="font-body text-body-md text-on-surface">{canPurchase ? product.available_sizes.join(", ") : "Belum tersedia"}</dd>
                         </div>
                         <div className="grid grid-cols-[6rem_1fr] items-baseline gap-gutter py-margin-mobile">
                           <dt className="font-body text-label-md uppercase text-secondary">Harga</dt>
-                          <dd className="font-heading text-heading-md text-primary">{rupiah.format(product.price)}</dd>
+                          <dd className="font-heading text-heading-md text-primary">
+                            {product.variants.length > 1 ? "Mulai " : ""}
+                            {rupiah.format(startingPrice)}
+                          </dd>
                         </div>
                       </dl>
                       <div className="mt-gutter bg-surface-container-low p-gutter">
@@ -105,7 +127,11 @@ export default async function ProdukPage() {
                         <Link href={`/produk/${product.slug}/checkout`} aria-disabled={!canPurchase} className={`inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${canPurchase ? "" : "pointer-events-none opacity-60"}`}>
                           Beli Sekarang <ArrowIcon />
                         </Link>
-                        <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="font-body text-button text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Tanya via WhatsApp</a>
+                        {availabilitySupport && availabilitySupportUrl ? (
+                          <a href={availabilitySupportUrl} target="_blank" rel="noopener noreferrer" className="font-body text-button text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                            {availabilitySupport.label}
+                          </a>
+                        ) : null}
                       </div>
                     </div>
                   </article>

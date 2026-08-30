@@ -47,7 +47,7 @@ const services = [
 
 const products = [
   {
-    title: "Kaos Polos Premium",
+    title: "Kaos Polos",
     material: "Cotton Combed 30s & 24s",
     variant: "Tersedia dalam berbagai pilihan warna",
     price: "Rp 45.000",
@@ -55,8 +55,8 @@ const products = [
     imageAlt: "Kaos polos premium Arriyadh Studio",
   },
   {
-    title: "Celana Kolor Santai",
-    material: "Bahan Baby Terry",
+    title: "Celana Kolor",
+    material: "Bahan Microfiber",
     variant: "Tersedia dalam berbagai pilihan motif",
     price: "Rp 25.000",
     image: "/images/home/product-celana-main.jpeg",
@@ -72,9 +72,6 @@ const portfolioImages = Array.from({ length: 33 }, (_, index) => {
     alt: `Hasil produksi Arriyadh Studio ${number}`,
   };
 });
-
-const productOrderUrl =
-  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20produk%20ready-stock.";
 
 function ArrowIcon() {
   return (
@@ -343,14 +340,12 @@ export default function Home() {
                         </p>
                       </div>
 
-                      <a
-                        href={productOrderUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        href="/produk"
                         className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container"
                       >
-                        Beli
-                      </a>
+                        Lihat Produk
+                      </Link>
                     </div>
                   </div>
                 </article>

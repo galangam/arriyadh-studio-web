@@ -167,6 +167,7 @@ export type AdminOrderDetail = {
   design_references: AdminDesignReference[];
   service_variants: AdminOrderVariant[];
   product_name_snapshot: string | null;
+  product_sleeve_type: string | null;
   product_size: string | null;
   quantity: number;
   unit_price: number | null;
@@ -491,7 +492,7 @@ export async function getAdminOrderDetail(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_token, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
+      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_sleeve_type, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_token, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
     )
     .eq("id", id)
     .maybeSingle<Omit<AdminOrderDetail, "design_references" | "service_variants">>();

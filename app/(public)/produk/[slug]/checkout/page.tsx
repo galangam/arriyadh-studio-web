@@ -4,7 +4,15 @@ import { notFound } from "next/navigation";
 
 import { ProductCheckoutForm } from "@/app/(public)/produk/[slug]/checkout/product-checkout-form";
 import { Container } from "@/components/ui/container";
+import {
+  getProductAvailabilitySupport,
+  getProductStartingPrice,
+} from "@/lib/products/product-pricing";
 import { getActiveProductBySlug } from "@/lib/products/public-products";
+import {
+  arriyadhWhatsappNumber,
+  createWhatsappUrl,
+} from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Checkout Produk | Arriyadh Studio",
@@ -27,6 +35,12 @@ export default async function ProductCheckoutPage({
   const product = await getActiveProductBySlug(slug);
 
   if (!product) notFound();
+
+  const startingPrice = getProductStartingPrice(product.price, product.variants);
+  const availabilitySupport = getProductAvailabilitySupport(product.slug);
+  const availabilitySupportUrl = availabilitySupport
+    ? createWhatsappUrl(arriyadhWhatsappNumber, availabilitySupport.message)
+    : null;
 
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
@@ -55,10 +69,12 @@ export default async function ProductCheckoutPage({
               <dl className="mt-6 border-y border-outline-variant">
                 <div className="flex items-start justify-between gap-4 py-4">
                   <dt className="font-body text-body-md text-on-surface-variant">
-                    Harga satuan
+                    {product.variants.length > 1
+                      ? "Harga mulai dari"
+                      : "Harga satuan"}
                   </dt>
                   <dd className="font-heading text-heading-sm text-primary">
-                    {rupiahFormatter.format(product.price)}
+                    {rupiahFormatter.format(startingPrice)}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4 border-t border-outline-variant py-4">
@@ -73,9 +89,25 @@ export default async function ProductCheckoutPage({
                 </div>
               </dl>
               <p className="mt-5 font-body text-body-sm text-on-surface-variant">
-                Total pesanan dihitung menggunakan harga terbaru dari sistem
-                setelah formulir dikirim.
+                Harga final dihitung ulang oleh sistem dari varian, ukuran, dan
+                jumlah setelah formulir dikirim.
               </p>
+              {availabilitySupport && availabilitySupportUrl ? (
+                <div className="mt-5 border-t border-outline-variant pt-5">
+                  <p className="font-body text-body-sm text-on-surface-variant">
+                    Pilihan lengkap mengikuti stok yang tersedia. Konfirmasikan
+                    pilihan sebelum menyelesaikan pesanan website.
+                  </p>
+                  <a
+                    href={availabilitySupportUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low"
+                  >
+                    {availabilitySupport.label}
+                  </a>
+                </div>
+              ) : null}
             </section>
 
             <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">
@@ -83,12 +115,14 @@ export default async function ProductCheckoutPage({
                 Detail Pesanan
               </h2>
               <p className="mt-2 font-body text-body-md text-on-surface-variant">
-                Pilih ukuran dan lengkapi informasi pemesan.
+                Pilih detail produk dan lengkapi informasi pemesan.
               </p>
               <div className="mt-6">
                 <ProductCheckoutForm
                   productId={product.id}
+                  catalogPrice={product.price}
                   availableSizes={product.available_sizes}
+                  variants={product.variants}
                 />
               </div>
             </section>

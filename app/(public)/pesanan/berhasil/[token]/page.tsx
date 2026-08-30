@@ -7,6 +7,7 @@ import { getPublicOrderConfirmation } from "@/lib/orders/public-order-confirmati
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import {
   arriyadhWhatsappNumber,
+  createProductOrderWhatsappUrl,
   createWhatsappUrl,
 } from "@/lib/whatsapp";
 
@@ -64,6 +65,23 @@ export default async function OrderConfirmationPage({
         `Halo Arriyadh Studio,\n\nSaya ingin bertanya mengenai pesanan saya.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${serviceName}\nJumlah: ${order.quantity} pcs\n\nMohon bantuannya, terima kasih.`,
       )
     : null;
+  const productCodWhatsappUrl =
+    !isService &&
+    order.status === "menunggu_verifikasi" &&
+    order.payment_method === "cod" &&
+    order.product_name_snapshot &&
+    order.product_size &&
+    order.price !== null
+      ? createProductOrderWhatsappUrl("cod", {
+          orderCode: order.order_code,
+          productName: order.product_name_snapshot,
+          material: order.material,
+          sleeveType: order.product_sleeve_type,
+          size: order.product_size,
+          quantity: order.quantity,
+          total: order.price,
+        })
+      : null;
 
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
@@ -97,6 +115,15 @@ export default async function OrderConfirmationPage({
                   : order.product_name_snapshot ?? "Produk"
               }
             />
+            {!isService && order.material ? (
+              <DetailRow label="Bahan" value={order.material} />
+            ) : null}
+            {!isService && order.product_sleeve_type ? (
+              <DetailRow
+                label="Jenis Lengan"
+                value={order.product_sleeve_type}
+              />
+            ) : null}
             {!isService && order.product_size ? (
               <DetailRow label="Ukuran" value={order.product_size} />
             ) : null}
@@ -174,6 +201,16 @@ export default async function OrderConfirmationPage({
               />
             ) : null}
             {!isService && order.price !== null ? (
+              <DetailRow
+                label="Harga Satuan"
+                value={
+                  order.unit_price === null
+                    ? "—"
+                    : rupiahFormatter.format(order.unit_price)
+                }
+              />
+            ) : null}
+            {!isService && order.price !== null ? (
               <DetailRow label="Total" value={rupiahFormatter.format(order.price)} />
             ) : null}
             {!isService && order.payment_method ? (
@@ -192,6 +229,16 @@ export default async function OrderConfirmationPage({
           ) : null}
 
           <div className="mt-8 flex flex-wrap gap-3">
+            {productCodWhatsappUrl ? (
+              <a
+                href={productCodWhatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+              >
+                Konfirmasi Pesanan via WhatsApp
+              </a>
+            ) : null}
             {(!isService && order.payment_method === "transfer") ||
             (isService && order.status === "menunggu_pembayaran_dp") ? (
               <Link

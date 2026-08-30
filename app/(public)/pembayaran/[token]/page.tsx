@@ -6,6 +6,7 @@ import {
   getPublicPaymentOrder,
   type PublicPaymentOrder,
 } from "@/lib/orders/public-payment";
+import { createProductOrderWhatsappUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Pembayaran Pesanan | Arriyadh Studio",
@@ -22,6 +23,18 @@ const rupiahFormatter = new Intl.NumberFormat("id-ID", {
 function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
   const isProduct = order.order_kind === "product";
   const isTransfer = order.payment_method === "transfer";
+  const whatsappConfirmationUrl =
+    isProduct && isTransfer && order.has_payment_proof
+      ? createProductOrderWhatsappUrl("transfer", {
+          orderCode: order.order_code,
+          productName: order.product_name_snapshot,
+          material: order.material,
+          sleeveType: order.product_sleeve_type,
+          size: order.product_size,
+          quantity: order.quantity,
+          total: order.price,
+        })
+      : null;
 
   return (
     <section
@@ -44,6 +57,16 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
           ? "Pembayaran sedang menunggu verifikasi admin."
           : "Pesanan sedang menunggu konfirmasi admin."}
       </p>
+      {whatsappConfirmationUrl ? (
+        <a
+          href={whatsappConfirmationUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+        >
+          Konfirmasi Pembayaran via WhatsApp
+        </a>
+      ) : null}
     </section>
   );
 }
@@ -82,6 +105,28 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
           </dd>
         </div>
         {isProduct ? (
+          order.material ? (
+            <div>
+              <dt className="font-body text-label-md text-on-surface-variant">
+                Bahan
+              </dt>
+              <dd className="mt-1 font-body text-body-md font-semibold text-primary">
+                {order.material}
+              </dd>
+            </div>
+          ) : null
+        ) : null}
+        {isProduct && order.product_sleeve_type ? (
+          <div>
+            <dt className="font-body text-label-md text-on-surface-variant">
+              Jenis Lengan
+            </dt>
+            <dd className="mt-1 font-body text-body-md font-semibold text-primary">
+              {order.product_sleeve_type}
+            </dd>
+          </div>
+        ) : null}
+        {isProduct ? (
           <div>
             <dt className="font-body text-label-md text-on-surface-variant">
               Ukuran
@@ -99,6 +144,16 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
             {order.quantity} pcs
           </dd>
         </div>
+        {isProduct && order.unit_price !== null ? (
+          <div>
+            <dt className="font-body text-label-md text-on-surface-variant">
+              Harga Satuan
+            </dt>
+            <dd className="mt-1 font-body text-body-md font-semibold text-primary">
+              {rupiahFormatter.format(order.unit_price)}
+            </dd>
+          </div>
+        ) : null}
         <div>
           <dt className="font-body text-label-md text-on-surface-variant">
             Total Harga

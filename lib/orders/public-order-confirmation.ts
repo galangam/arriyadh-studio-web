@@ -13,8 +13,10 @@ type ConfirmationRow = {
   job_description: string | null;
   design_description: string | null;
   product_name_snapshot: string | null;
+  product_sleeve_type: string | null;
   product_size: string | null;
   quantity: number;
+  unit_price: number | string | null;
   price: number | string | null;
   payment_method: "transfer" | "cod" | null;
 };
@@ -39,8 +41,9 @@ type PublicOrderVariantRow = Omit<PublicOrderVariant, "sizes"> & {
 
 export type PublicOrderConfirmation = Omit<
   ConfirmationRow,
-  "id" | "price"
+  "id" | "unit_price" | "price"
 > & {
+  unit_price: number | null;
   price: number | null;
   design_reference_count: number;
   service_variants: PublicOrderVariant[];
@@ -58,7 +61,7 @@ export async function getPublicOrderConfirmation(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_size, quantity, price, payment_method",
+      "id, order_code, order_kind, status, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_sleeve_type, product_size, quantity, unit_price, price, payment_method",
     )
     .eq("payment_token", token)
     .in("order_kind", ["service", "product"])
@@ -67,7 +70,9 @@ export async function getPublicOrderConfirmation(
   if (error || !data) return null;
 
   const price = data.price === null ? null : Number(data.price);
+  const unitPrice = data.unit_price === null ? null : Number(data.unit_price);
   if (price !== null && !Number.isFinite(price)) return null;
+  if (unitPrice !== null && !Number.isFinite(unitPrice)) return null;
 
   const { id: orderId, ...customerSafeData } = data;
 
@@ -88,6 +93,7 @@ export async function getPublicOrderConfirmation(
 
   return {
     ...customerSafeData,
+    unit_price: unitPrice,
     price,
     design_reference_count: referenceResult.count ?? 0,
     service_variants: variantResult.data.map((variant) => ({

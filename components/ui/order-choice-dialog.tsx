@@ -19,8 +19,8 @@ const orderChoices = [
     title: "Produk Ready-Stock",
     description: "Untuk produk yang tersedia dengan harga tetap.",
     supportingText: "Langsung pilih produk, ukuran, dan jumlah",
-    href: "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20memesan%20produk%20ready-stock.",
-    external: true,
+    href: "/produk",
+    external: false,
   },
 ];
 

@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { createProductOrder } from "@/lib/orders/product-orders";
 
 export type ProductCheckoutField =
+  | "productMaterial"
+  | "productSleeveType"
   | "productSize"
   | "quantity"
   | "customerName"
@@ -27,6 +29,8 @@ export async function submitProductCheckout(
   _previousState: ProductCheckoutState,
   formData: FormData,
 ): Promise<ProductCheckoutState> {
+  const productMaterial = formString(formData, "productMaterial");
+  const productSleeveType = formString(formData, "productSleeveType");
   const productSize = formString(formData, "productSize");
   const quantityValue = formString(formData, "quantity");
   const customerName = formString(formData, "customerName");
@@ -68,6 +72,8 @@ export async function submitProductCheckout(
   try {
     const result = await createProductOrder({
       productId,
+      productMaterial,
+      productSleeveType,
       productSize,
       quantity,
       customerName,
@@ -77,6 +83,22 @@ export async function submitProductCheckout(
 
     paymentToken = result.paymentToken;
   } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_MATERIAL") {
+      return {
+        error: null,
+        fieldErrors: { productMaterial: "Bahan yang dipilih tidak tersedia." },
+      };
+    }
+
+    if (error instanceof Error && error.message === "INVALID_SLEEVE") {
+      return {
+        error: null,
+        fieldErrors: {
+          productSleeveType: "Jenis lengan yang dipilih tidak tersedia.",
+        },
+      };
+    }
+
     if (error instanceof Error && error.message === "INVALID_SIZE") {
       return {
         error: null,

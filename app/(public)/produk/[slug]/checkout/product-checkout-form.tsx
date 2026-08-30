@@ -1,21 +1,34 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import {
   submitProductCheckout,
   type ProductCheckoutState,
 } from "@/app/(public)/produk/[slug]/checkout/actions";
+import {
+  calculateProductUnitPrice,
+  findProductVariant,
+  type ProductVariant,
+} from "@/lib/products/product-pricing";
 
 type ProductCheckoutFormProps = {
   productId: string;
+  catalogPrice: number;
   availableSizes: string[];
+  variants: ProductVariant[];
 };
 
 const initialState: ProductCheckoutState = {
   error: null,
   fieldErrors: {},
 };
+
+const rupiahFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
 
 function FieldError({ message }: { message?: string }) {
   return message ? (
@@ -25,31 +38,148 @@ function FieldError({ message }: { message?: string }) {
 
 export function ProductCheckoutForm({
   productId,
+  catalogPrice,
   availableSizes,
+  variants,
 }: ProductCheckoutFormProps) {
   const action = submitProductCheckout.bind(null, productId);
   const [state, formAction, isPending] = useActionState(action, initialState);
+  const materials = useMemo(
+    () => [...new Set(variants.map((variant) => variant.material))],
+    [variants],
+  );
+  const [material, setMaterial] = useState(
+    materials.length === 1 ? materials[0] : "",
+  );
+  const sleeveTypes = useMemo(
+    () =>
+      [
+        ...new Set(
+          variants
+            .filter((variant) => variant.material === material)
+            .map((variant) => variant.sleeve_type)
+            .filter((sleeve): sleeve is string => sleeve !== null),
+        ),
+      ],
+    [material, variants],
+  );
+  const hasSleeveVariants = variants.some(
+    (variant) => variant.sleeve_type !== null,
+  );
+  const [sleeveType, setSleeveType] = useState("");
+  const [size, setSize] = useState("");
+  const [quantity, setQuantity] = useState("1");
   const hasAvailableSizes = availableSizes.length > 0;
+  const selectedVariant = findProductVariant(variants, material, sleeveType);
+  const unitPrice = selectedVariant
+    ? calculateProductUnitPrice(selectedVariant, size)
+    : variants.length === 0
+      ? catalogPrice
+      : null;
+  const parsedQuantity = /^\d+$/.test(quantity) ? Number(quantity) : 0;
+  const total =
+    unitPrice !== null && Number.isSafeInteger(parsedQuantity)
+      ? unitPrice * parsedQuantity
+      : null;
 
   return (
     <form action={formAction} className="space-y-6">
-      <fieldset>
+      {materials.length > 1 ? (
+        <fieldset disabled={isPending}>
+          <legend className="font-body text-label-md font-semibold text-primary">
+            Bahan
+          </legend>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {materials.map((option) => (
+              <label
+                key={option}
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-md border border-outline-variant px-4 font-body text-body-md text-on-surface has-[:checked]:border-primary has-[:checked]:bg-surface-container-low"
+              >
+                <input
+                  type="radio"
+                  name="productMaterial"
+                  value={option}
+                  checked={material === option}
+                  onChange={() => {
+                    setMaterial(option);
+                    setSleeveType("");
+                  }}
+                  required
+                  className="size-4 accent-primary"
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+          <FieldError message={state.fieldErrors.productMaterial} />
+        </fieldset>
+      ) : materials.length === 1 ? (
+        <div>
+          <p className="font-body text-label-md font-semibold text-primary">
+            Bahan
+          </p>
+          <p className="mt-2 font-body text-body-md text-on-surface">
+            {materials[0]}
+          </p>
+          <input type="hidden" name="productMaterial" value={materials[0]} />
+          <FieldError message={state.fieldErrors.productMaterial} />
+        </div>
+      ) : null}
+
+      {hasSleeveVariants ? (
+        <fieldset disabled={isPending || !material}>
+          <legend className="font-body text-label-md font-semibold text-primary">
+            Jenis Lengan
+          </legend>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {sleeveTypes.map((option) => (
+              <label
+                key={option}
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-md border border-outline-variant px-4 font-body text-body-md text-on-surface has-[:checked]:border-primary has-[:checked]:bg-surface-container-low"
+              >
+                <input
+                  type="radio"
+                  name="productSleeveType"
+                  value={option}
+                  checked={sleeveType === option}
+                  onChange={() => setSleeveType(option)}
+                  required
+                  className="size-4 accent-primary"
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+          {!material ? (
+            <p className="mt-2 font-body text-body-sm text-on-surface-variant">
+              Pilih bahan terlebih dahulu.
+            </p>
+          ) : null}
+          <FieldError message={state.fieldErrors.productSleeveType} />
+        </fieldset>
+      ) : (
+        <input type="hidden" name="productSleeveType" value="" />
+      )}
+
+      <fieldset disabled={isPending}>
         <legend className="font-body text-label-md font-semibold text-primary">
           Ukuran Produk
         </legend>
         {hasAvailableSizes ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            {availableSizes.map((size) => (
-              <label key={size} className="cursor-pointer">
+            {availableSizes.map((option) => (
+              <label key={option} className="cursor-pointer">
                 <input
                   type="radio"
                   name="productSize"
-                  value={size}
+                  value={option}
+                  checked={size === option}
+                  onChange={() => setSize(option)}
                   required
                   className="peer sr-only"
                 />
                 <span className="inline-flex min-h-11 min-w-12 items-center justify-center rounded-md border border-outline-variant px-4 font-body text-button text-primary transition-colors peer-checked:border-primary peer-checked:bg-primary peer-checked:text-on-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
-                  {size}
+                  {option}
                 </span>
               </label>
             ))}
@@ -77,7 +207,9 @@ export function ProductCheckoutForm({
           min={1}
           max={10000}
           step={1}
-          defaultValue={1}
+          value={quantity}
+          onChange={(event) => setQuantity(event.target.value)}
+          disabled={isPending}
           required
           aria-describedby="quantity-help"
           className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -91,6 +223,28 @@ export function ProductCheckoutForm({
         <FieldError message={state.fieldErrors.quantity} />
       </div>
 
+      <dl
+        aria-live="polite"
+        className="border-y border-outline-variant bg-surface-container-low px-4"
+      >
+        <div className="flex items-center justify-between gap-4 py-4">
+          <dt className="font-body text-body-sm text-on-surface-variant">
+            Harga satuan
+          </dt>
+          <dd className="font-heading text-heading-xs text-primary">
+            {unitPrice === null ? "Pilih varian" : rupiahFormatter.format(unitPrice)}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-t border-outline-variant py-4">
+          <dt className="font-body text-body-sm text-on-surface-variant">
+            Total
+          </dt>
+          <dd className="font-heading text-heading-sm text-primary">
+            {total === null ? "—" : rupiahFormatter.format(total)}
+          </dd>
+        </div>
+      </dl>
+
       <div>
         <label
           htmlFor="customerName"
@@ -103,6 +257,7 @@ export function ProductCheckoutForm({
           name="customerName"
           type="text"
           autoComplete="name"
+          disabled={isPending}
           required
           className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
@@ -123,13 +278,14 @@ export function ProductCheckoutForm({
           inputMode="tel"
           autoComplete="tel"
           placeholder="Contoh: 081234567890"
+          disabled={isPending}
           required
           className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
         <FieldError message={state.fieldErrors.customerWhatsapp} />
       </div>
 
-      <fieldset>
+      <fieldset disabled={isPending}>
         <legend className="font-body text-label-md font-semibold text-primary">
           Metode Pembayaran
         </legend>

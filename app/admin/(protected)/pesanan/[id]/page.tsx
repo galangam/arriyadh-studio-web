@@ -69,6 +69,8 @@ function OrderInformation({ order }: { order: AdminOrderDetail }) {
     order.order_kind === "product"
       ? [
           { label: "Nama Produk", value: order.product_name_snapshot },
+          { label: "Bahan", value: order.material },
+          { label: "Jenis Lengan", value: order.product_sleeve_type },
           { label: "Ukuran", value: order.product_size },
           { label: "Jumlah", value: `${order.quantity} pcs` },
           {
