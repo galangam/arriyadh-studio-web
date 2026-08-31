@@ -104,8 +104,10 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
           </dl>
           <AdvanceOrderStatusControl
             orderId={order.id}
+            currentStatusLabel={orderStatusLabels[order.status]}
             nextStatusLabel={orderStatusLabels[nextStatus]}
             completesOrder={nextStatus === "selesai"}
+            isProduct={order.order_kind === "product"}
           />
         </div>
       ) : null}

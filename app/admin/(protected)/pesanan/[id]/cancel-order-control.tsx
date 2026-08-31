@@ -3,33 +3,28 @@
 import { useActionState, useId, useRef } from "react";
 
 import {
-  advanceOrderStatus,
-  type AdvanceOrderStatusState,
+  cancelOrder,
+  type CancelOrderState,
 } from "@/app/admin/(protected)/pesanan/[id]/actions";
 
-const initialState: AdvanceOrderStatusState = { error: null };
+const initialState: CancelOrderState = { error: null };
 
-export function AdvanceOrderStatusControl({
+export function CancelOrderControl({
   orderId,
-  currentStatusLabel,
-  nextStatusLabel,
-  completesOrder,
-  isProduct,
+  orderCode,
+  expectedStatus,
 }: {
   orderId: string;
-  currentStatusLabel: string;
-  nextStatusLabel: string;
-  completesOrder: boolean;
-  isProduct: boolean;
+  orderCode: string;
+  expectedStatus: string;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
   const [state, formAction, isPending] = useActionState(
-    advanceOrderStatus.bind(null, orderId),
+    cancelOrder.bind(null, orderId, expectedStatus),
     initialState,
   );
-  const orderSubject = isProduct ? "Status pesanan produk" : "Status pesanan";
 
   function closeDialog() {
     if (!isPending) dialogRef.current?.close();
@@ -41,13 +36,9 @@ export function AdvanceOrderStatusControl({
         type="button"
         disabled={isPending}
         onClick={() => dialogRef.current?.showModal()}
-        className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center rounded-md border border-error px-5 text-admin-label font-semibold text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending
-          ? "Memperbarui..."
-          : completesOrder
-            ? "Selesaikan Pesanan"
-            : `Lanjut ke ${nextStatusLabel}`}
+        Batalkan Pesanan
       </button>
 
       <dialog
@@ -65,23 +56,16 @@ export function AdvanceOrderStatusControl({
         <form action={formAction} className="p-5 md:p-6">
           <h2
             id={titleId}
-            className="font-heading text-admin-section text-primary"
+            className="font-heading text-admin-section text-error"
           >
-            Konfirmasi update status
+            Batalkan pesanan?
           </h2>
           <p
             id={descriptionId}
             className="mt-3 text-admin-body text-on-surface-variant"
           >
-            {orderSubject} akan diubah dari {currentStatusLabel} menjadi{" "}
-            {nextStatusLabel}.
-            {completesOrder ? (
-              <span className="mt-2 block font-semibold text-on-surface">
-                {isProduct
-                  ? "Pesanan produk akan ditandai sebagai selesai."
-                  : "Pesanan akan ditandai sebagai selesai."}
-              </span>
-            ) : null}
+            Pesanan {orderCode} akan ditandai sebagai dibatalkan. Tindakan ini
+            tidak menghapus data pesanan dan tidak memproses refund otomatis.
           </p>
 
           <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5">
@@ -104,9 +88,9 @@ export function AdvanceOrderStatusControl({
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-error px-5 text-admin-label text-on-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isPending ? "Memperbarui..." : "Ya, lanjutkan"}
+              {isPending ? "Membatalkan..." : "Ya, batalkan pesanan"}
             </button>
           </div>
         </form>

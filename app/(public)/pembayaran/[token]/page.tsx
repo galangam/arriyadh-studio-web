@@ -6,7 +6,10 @@ import {
   getPublicPaymentOrder,
   type PublicPaymentOrder,
 } from "@/lib/orders/public-payment";
-import { createProductOrderWhatsappUrl } from "@/lib/whatsapp";
+import {
+  createProductOrderWhatsappUrl,
+  createServicePaymentWhatsappUrl,
+} from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Pembayaran Pesanan | Arriyadh Studio",
@@ -23,7 +26,7 @@ const rupiahFormatter = new Intl.NumberFormat("id-ID", {
 function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
   const isProduct = order.order_kind === "product";
   const isTransfer = order.payment_method === "transfer";
-  const whatsappConfirmationUrl =
+  const productWhatsappUrl =
     isProduct && isTransfer && order.has_payment_proof
       ? createProductOrderWhatsappUrl("transfer", {
           orderCode: order.order_code,
@@ -35,6 +38,40 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
           total: order.price,
         })
       : null;
+  const serviceWhatsappUrl = !isProduct
+    ? order.status === "menunggu_verifikasi" && isTransfer
+      ? createServicePaymentWhatsappUrl("transfer", {
+          orderCode: order.order_code,
+          serviceName: order.service_name_snapshot,
+        })
+      : order.status === "menunggu_konfirmasi_dp" &&
+          order.payment_method === "cod"
+        ? createServicePaymentWhatsappUrl("cod", {
+            orderCode: order.order_code,
+            serviceName: order.service_name_snapshot,
+          })
+        : null
+    : null;
+  const whatsappConfirmationUrl = productWhatsappUrl ?? serviceWhatsappUrl;
+  const isServiceTransferPending =
+    !isProduct && order.status === "menunggu_verifikasi" && isTransfer;
+  const isServiceCodPending =
+    !isProduct &&
+    order.status === "menunggu_konfirmasi_dp" &&
+    order.payment_method === "cod";
+  const whatsappHeading = isServiceCodPending
+    ? "Koordinasikan DP dengan Admin"
+    : whatsappConfirmationUrl
+      ? "Konfirmasi Pembayaran ke Admin"
+      : null;
+  const whatsappSupportingCopy = isServiceCodPending
+    ? "Silakan hubungi admin untuk mengatur pembayaran DP di tempat."
+    : isServiceTransferPending || productWhatsappUrl
+      ? "Bukti pembayaran sudah tersimpan. Untuk mempercepat pengecekan, Anda dapat mengonfirmasi pembayaran kepada admin melalui WhatsApp."
+      : null;
+  const whatsappButtonLabel = isServiceCodPending
+    ? "Hubungi Admin via WhatsApp"
+    : "Konfirmasi via WhatsApp";
 
   return (
     <section
@@ -57,15 +94,31 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
           ? "Pembayaran sedang menunggu verifikasi admin."
           : "Pesanan sedang menunggu konfirmasi admin."}
       </p>
-      {whatsappConfirmationUrl ? (
-        <a
-          href={whatsappConfirmationUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+      {whatsappConfirmationUrl &&
+      whatsappHeading &&
+      whatsappSupportingCopy ? (
+        <section
+          aria-labelledby="payment-whatsapp-heading"
+          className="mt-6 border-t border-outline-variant pt-6"
         >
-          Konfirmasi Pembayaran via WhatsApp
-        </a>
+          <h3
+            id="payment-whatsapp-heading"
+            className="font-heading text-heading-sm text-primary"
+          >
+            {whatsappHeading}
+          </h3>
+          <p className="mt-2 font-body text-body-sm text-on-surface-variant">
+            {whatsappSupportingCopy}
+          </p>
+          <a
+            href={whatsappConfirmationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+          >
+            {whatsappButtonLabel}
+          </a>
+        </section>
       ) : null}
     </section>
   );

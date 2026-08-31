@@ -6,9 +6,8 @@ import { Container } from "@/components/ui/container";
 import { getPublicOrderConfirmation } from "@/lib/orders/public-order-confirmation";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import {
-  arriyadhWhatsappNumber,
   createProductOrderWhatsappUrl,
-  createWhatsappUrl,
+  createServiceOrderReviewWhatsappUrl,
 } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
@@ -60,10 +59,10 @@ export default async function OrderConfirmationPage({
     normalizedServiceName === "jersey embos";
   const referenceUploadFailed = isService && query.reference === "failed";
   const assistanceWhatsappUrl = isAwaitingQuote
-    ? createWhatsappUrl(
-        arriyadhWhatsappNumber,
-        `Halo Arriyadh Studio,\n\nSaya ingin bertanya mengenai pesanan saya.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${serviceName}\nJumlah: ${order.quantity} pcs\n\nMohon bantuannya, terima kasih.`,
-      )
+    ? createServiceOrderReviewWhatsappUrl({
+        orderCode: order.order_code,
+        serviceName: order.service_name_snapshot,
+      })
     : null;
   const productCodWhatsappUrl =
     !isService &&
@@ -82,6 +81,9 @@ export default async function OrderConfirmationPage({
           total: order.price,
         })
       : null;
+  const canContinueToPayment =
+    (!isService && order.payment_method === "transfer") ||
+    (isService && order.status === "menunggu_pembayaran_dp");
 
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
@@ -228,41 +230,37 @@ export default async function OrderConfirmationPage({
             </p>
           ) : null}
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            {productCodWhatsappUrl ? (
-              <a
-                href={productCodWhatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
-              >
-                Konfirmasi Pesanan via WhatsApp
-              </a>
-            ) : null}
-            {(!isService && order.payment_method === "transfer") ||
-            (isService && order.status === "menunggu_pembayaran_dp") ? (
-              <Link
-                href={`/pembayaran/${token}`}
-                className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
-              >
-                {isService ? "Bayar DP" : "Lanjut ke Pembayaran"}
-              </Link>
-            ) : null}
-            <Link
-              href={isService ? "/layanan" : "/produk"}
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
-            >
-              Kembali
-            </Link>
-          </div>
+          {productCodWhatsappUrl || canContinueToPayment ? (
+            <div className="mt-8 flex flex-wrap gap-3">
+              {productCodWhatsappUrl ? (
+                <a
+                  href={productCodWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+                >
+                  Konfirmasi Pesanan COD ke Admin
+                </a>
+              ) : null}
+              {canContinueToPayment ? (
+                <Link
+                  href={`/pembayaran/${token}`}
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+                >
+                  {isService ? "Bayar DP" : "Lanjut ke Pembayaran"}
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
           {assistanceWhatsappUrl ? (
             <section className="mt-8 border-t border-outline-variant pt-6">
               <h2 className="font-heading text-heading-sm text-primary">
-                Butuh bantuan atau ingin konsultasi?
+                Konfirmasi Pesanan ke Admin
               </h2>
               <p className="mt-2 font-body text-body-sm text-on-surface-variant">
-                Hubungi admin melalui WhatsApp bila ada kebutuhan yang ingin
-                dikonsultasikan sebelum harga ditentukan.
+                Pesanan Anda sudah tercatat dan sedang menunggu peninjauan harga
+                dari admin. Silakan konfirmasi melalui WhatsApp agar admin dapat
+                segera meninjau detail pesanan.
               </p>
               <a
                 href={assistanceWhatsappUrl}
@@ -270,9 +268,19 @@ export default async function OrderConfirmationPage({
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
               >
-                Hubungi via WhatsApp
+                Konfirmasi via WhatsApp
               </a>
             </section>
+          ) : null}
+          {!assistanceWhatsappUrl && !productCodWhatsappUrl ? (
+            <div className="mt-8">
+              <Link
+                href={isService ? "/layanan" : "/produk"}
+                className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
+              >
+                Kembali
+              </Link>
+            </div>
           ) : null}
         </section>
       </Container>

@@ -37,6 +37,19 @@ function createOrdersHref(filters: AdminOrderFilters, page: number) {
   return query ? `/admin/pesanan?${query}` : "/admin/pesanan";
 }
 
+function createOrdersExportHref(filters: AdminOrderFilters) {
+  const params = new URLSearchParams();
+
+  if (filters.q) params.set("q", filters.q);
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.type !== "all") params.set("type", filters.type);
+
+  const query = params.toString();
+  return query
+    ? `/admin/pesanan/export?${query}`
+    : "/admin/pesanan/export";
+}
+
 function getPaginationItems(page: number, totalPages: number) {
   const pages = new Set([1, totalPages, page - 1, page, page + 1]);
   const visiblePages = [...pages]
@@ -183,6 +196,12 @@ export default async function AdminOrdersPage({
               >
                 Terapkan
               </button>
+              <a
+                href={createOrdersExportHref(filters)}
+                className="inline-flex min-h-10 items-center rounded-md border border-outline-variant px-3 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
+                Export CSV
+              </a>
               {hasActiveFilters && (
                 <Link
                   href="/admin/pesanan"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CancelOrderControl } from "@/app/admin/(protected)/pesanan/[id]/cancel-order-control";
 import { DesignReferenceControl } from "@/app/admin/(protected)/pesanan/[id]/design-reference-control";
 import { AdminPaymentSummary } from "@/app/admin/(protected)/pesanan/[id]/admin-payment-summary";
 
@@ -18,12 +19,17 @@ import {
   getAdminOrderDetail,
   orderKindLabels,
   orderStatusLabels,
+  productionStatuses,
   type AdminDesignReference,
   type AdminOrderDetail,
 } from "@/lib/orders/admin-orders";
+import { isOrderCancellableStatus } from "@/lib/orders/order-workflows";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import { getSiteOrigin } from "@/lib/site-origin";
-import { createWhatsappUrl } from "@/lib/whatsapp";
+import {
+  createAdminOrderStatusWhatsappUrl,
+  createWhatsappUrl,
+} from "@/lib/whatsapp";
 
 const emptyValue = "—";
 
@@ -131,6 +137,37 @@ export default async function AdminOrderDetailPage({
         `Halo ${order.customer_name},\n\nHarga pesanan Anda sudah ditentukan.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${order.service_name_snapshot ?? "Layanan custom"}\nTotal Pesanan: ${formatOrderPrice(order.price)}\nDP: ${formatOrderPrice(order.dp_amount)}\n\nSilakan pilih metode pembayaran dan lakukan pembayaran DP melalui link berikut:\n${paymentUrl}\n\nTerima kasih.`,
       )
     : null;
+  const isServiceProductionStatus =
+    order.order_kind === "service" &&
+    productionStatuses.some((status) => status === order.status);
+  const statusWhatsappUpdate = isServiceProductionStatus
+    ? "progress"
+    : order.order_kind === "product" && order.status === "diproses"
+      ? "product_processing"
+      : order.status === "selesai"
+        ? "completed"
+        : order.status === "dibatalkan"
+          ? "cancelled"
+          : null;
+  const statusWhatsappUrl = statusWhatsappUpdate
+    ? createAdminOrderStatusWhatsappUrl(statusWhatsappUpdate, {
+        customerWhatsapp: order.customer_whatsapp,
+        customerName: order.customer_name,
+        orderCode: order.order_code,
+        orderKind: order.order_kind,
+        orderName:
+          order.order_kind === "product"
+            ? (order.product_name_snapshot ?? "Produk")
+            : (order.service_name_snapshot ?? "Layanan custom"),
+        statusLabel: orderStatusLabels[order.status],
+      })
+    : null;
+  const statusWhatsappButtonLabel =
+    statusWhatsappUpdate === "completed"
+      ? "Beri Tahu Pelanggan via WhatsApp"
+      : statusWhatsappUpdate === "cancelled"
+        ? "Hubungi Pelanggan via WhatsApp"
+        : "Kirim Update via WhatsApp";
   const statusDetails: DetailItem[] = [];
 
   if (order.quoted_at) {
@@ -442,6 +479,32 @@ export default async function AdminOrderDetailPage({
 
             <ProductionProgress order={order} />
 
+            {statusWhatsappUrl ? (
+              <section
+                aria-labelledby="status-whatsapp-heading"
+                className="border border-outline-variant bg-surface-white p-5 md:p-6"
+              >
+                <h2
+                  id="status-whatsapp-heading"
+                  className="font-heading text-admin-section text-primary"
+                >
+                  Informasikan Status ke Pelanggan
+                </h2>
+                <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+                  Status pesanan sudah tersimpan. Pengiriman pesan WhatsApp
+                  bersifat opsional dan tetap dilakukan secara manual.
+                </p>
+                <a
+                  href={statusWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label font-semibold text-on-primary hover:bg-primary-container"
+                >
+                  {statusWhatsappButtonLabel}
+                </a>
+              </section>
+            ) : null}
+
             {statusDetails.length > 0 && (
               <section
                 aria-labelledby="status-information-heading"
@@ -458,6 +521,29 @@ export default async function AdminOrderDetailPage({
                 </div>
               </section>
             )}
+
+            {isOrderCancellableStatus(order.status) ? (
+              <section
+                aria-labelledby="cancel-order-heading"
+                className="border border-error/30 bg-surface-white p-5 md:p-6"
+              >
+                <h2
+                  id="cancel-order-heading"
+                  className="font-heading text-admin-section text-error"
+                >
+                  Batalkan Pesanan
+                </h2>
+                <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+                  Gunakan tindakan ini hanya jika pesanan tidak akan
+                  dilanjutkan. Data pesanan tetap tersimpan.
+                </p>
+                <CancelOrderControl
+                  orderId={order.id}
+                  orderCode={order.order_code}
+                  expectedStatus={order.status}
+                />
+              </section>
+            ) : null}
           </div>
 
           <aside

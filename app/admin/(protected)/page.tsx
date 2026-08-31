@@ -10,7 +10,10 @@ import {
 
 const activitySummary = [
   { key: "awaitingPrice", label: "Menunggu Harga" },
-  { key: "awaitingVerification", label: "Menunggu Verifikasi" },
+  {
+    key: "awaitingPaymentOrVerification",
+    label: "Menunggu Pembayaran / Verifikasi",
+  },
   { key: "inProduction", label: "Sedang Diproduksi" },
   { key: "completedThisMonth", label: "Selesai Bulan Ini" },
 ] as const;

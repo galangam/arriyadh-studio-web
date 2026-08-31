@@ -69,6 +69,12 @@ export const paymentVerificationStatuses = [
   "menunggu_verifikasi",
 ] as const satisfies readonly OrderStatus[];
 
+const dashboardPaymentStatuses = [
+  "menunggu_pembayaran_dp",
+  "menunggu_konfirmasi_dp",
+  "menunggu_verifikasi",
+] as const satisfies readonly OrderStatus[];
+
 export const orderKindLabels = {
   product: "Produk",
   service: "Layanan Custom",
@@ -122,6 +128,7 @@ export type AdminOrderListRow = {
   service_name_snapshot: string | null;
   quantity: number;
   price: number | null;
+  payment_method: string | null;
   created_at: string;
 };
 
@@ -199,7 +206,7 @@ export type RecentOrder = Pick<
 
 export type DashboardMetrics = {
   awaitingPrice: number;
-  awaitingVerification: number;
+  awaitingPaymentOrVerification: number;
   inProduction: number;
   completedThisMonth: number;
 };
@@ -224,7 +231,14 @@ export type AdminOrdersPageData =
     }
   | { ok: false };
 
+export type AdminOrdersExportData =
+  | { ok: true; orders: AdminOrderListRow[] }
+  | { ok: false };
+
 export const adminOrdersPageSize = 10;
+const adminOrdersExportBatchSize = 1000;
+const adminOrderListSelection =
+  "id, order_code, order_kind, status, customer_name, customer_whatsapp, product_name_snapshot, product_size, service_name_snapshot, quantity, price, payment_method, created_at";
 
 const jakartaDateFormatter = new Intl.DateTimeFormat("id-ID", {
   dateStyle: "medium",
@@ -329,6 +343,38 @@ export function getOrderSnapshotName(
   return snapshot ?? orderKindLabels[order.order_kind];
 }
 
+function createFilteredAdminOrdersQuery(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  filters: AdminOrderFilters,
+) {
+  let query = supabase
+    .from("orders")
+    .select(adminOrderListSelection, { count: "exact" });
+
+  if (filters.q) {
+    const searchPattern = `%${filters.q}%`;
+    query = query.or(
+      `order_code.ilike.${searchPattern},customer_name.ilike.${searchPattern},customer_whatsapp.ilike.${searchPattern}`,
+    );
+  }
+
+  if (filters.status === "produksi") {
+    query = query.in("status", [...productionStatuses]);
+  } else if (filters.status === "menunggu_verifikasi_pembayaran") {
+    query = query.in("status", [...paymentVerificationStatuses]);
+  } else if (filters.status !== "all") {
+    query = query.eq("status", filters.status);
+  }
+
+  if (filters.type !== "all") {
+    query = query.eq("order_kind", filters.type);
+  }
+
+  return query
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+}
+
 export async function getAdminDashboardData(): Promise<AdminDashboardData> {
   await requireAdmin();
   const supabase = await createClient();
@@ -336,7 +382,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
 
   const [
     awaitingPrice,
-    awaitingVerification,
+    awaitingPaymentOrVerification,
     inProduction,
     completedThisMonth,
     recentOrders,
@@ -348,7 +394,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
-      .eq("status", "menunggu_verifikasi"),
+      .in("status", [...dashboardPaymentStatuses]),
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -372,7 +418,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
 
   const responses = [
     awaitingPrice,
-    awaitingVerification,
+    awaitingPaymentOrVerification,
     inProduction,
     completedThisMonth,
     recentOrders,
@@ -381,7 +427,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
   if (
     responses.some((response) => response.error) ||
     awaitingPrice.count === null ||
-    awaitingVerification.count === null ||
+    awaitingPaymentOrVerification.count === null ||
     inProduction.count === null ||
     completedThisMonth.count === null ||
     recentOrders.data === null
@@ -393,7 +439,8 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     ok: true,
     metrics: {
       awaitingPrice: awaitingPrice.count,
-      awaitingVerification: awaitingVerification.count,
+      awaitingPaymentOrVerification:
+        awaitingPaymentOrVerification.count,
       inProduction: inProduction.count,
       completedThisMonth: completedThisMonth.count,
     },
@@ -410,35 +457,7 @@ export async function getAdminOrdersPage(
   function createFilteredQuery(page: number) {
     const from = (page - 1) * adminOrdersPageSize;
     const to = from + adminOrdersPageSize - 1;
-    let query = supabase
-      .from("orders")
-      .select(
-        "id, order_code, order_kind, status, customer_name, customer_whatsapp, product_name_snapshot, product_size, service_name_snapshot, quantity, price, created_at",
-        { count: "exact" },
-      );
-
-    if (filters.q) {
-      const searchPattern = `%${filters.q}%`;
-      query = query.or(
-        `order_code.ilike.${searchPattern},customer_name.ilike.${searchPattern},customer_whatsapp.ilike.${searchPattern}`,
-      );
-    }
-
-    if (filters.status === "produksi") {
-      query = query.in("status", [...productionStatuses]);
-    } else if (filters.status === "menunggu_verifikasi_pembayaran") {
-      query = query.in("status", [...paymentVerificationStatuses]);
-    } else if (filters.status !== "all") {
-      query = query.eq("status", filters.status);
-    }
-
-    if (filters.type !== "all") {
-      query = query.eq("order_kind", filters.type);
-    }
-
-    return query
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
+    return createFilteredAdminOrdersQuery(supabase, filters)
       .range(from, to)
       .returns<AdminOrderListRow[]>();
   }
@@ -482,6 +501,31 @@ export async function getAdminOrdersPage(
     pageSize: adminOrdersPageSize,
     totalPages: totalCount === 0 ? 0 : totalPages,
   };
+}
+
+export async function getAdminOrdersForExport(
+  filters: AdminOrderFilters,
+): Promise<AdminOrdersExportData> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const orders: AdminOrderListRow[] = [];
+
+  for (let from = 0; ; from += adminOrdersExportBatchSize) {
+    const to = from + adminOrdersExportBatchSize - 1;
+    const result = await createFilteredAdminOrdersQuery(supabase, filters)
+      .range(from, to)
+      .returns<AdminOrderListRow[]>();
+
+    if (result.error || result.data === null) {
+      return { ok: false };
+    }
+
+    orders.push(...result.data);
+
+    if (result.data.length < adminOrdersExportBatchSize) {
+      return { ok: true, orders };
+    }
+  }
 }
 
 export async function getAdminOrderDetail(

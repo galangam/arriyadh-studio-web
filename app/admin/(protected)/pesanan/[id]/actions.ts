@@ -6,7 +6,10 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAdminDesignReferenceSignedUrl } from "@/lib/orders/admin-design-reference";
 import { getAdminPaymentProofSignedUrl } from "@/lib/orders/admin-payment";
-import { getNextOrderStatus } from "@/lib/orders/order-workflows";
+import {
+  getNextOrderStatus,
+  isOrderCancellableStatus,
+} from "@/lib/orders/order-workflows";
 import { createClient } from "@/lib/supabase/server";
 
 export type SetOrderPriceState = {
@@ -25,6 +28,10 @@ export type PaymentProofLinkState = {
 export type DesignReferenceLinkState = PaymentProofLinkState;
 
 export type AdvanceOrderStatusState = {
+  error: string | null;
+};
+
+export type CancelOrderState = {
   error: string | null;
 };
 
@@ -372,6 +379,53 @@ export async function advanceOrderStatus(
   revalidatePath("/admin/pesanan");
   revalidatePath(`/admin/pesanan/${orderId}`);
   redirect(`/admin/pesanan/${orderId}`);
+}
+
+export async function cancelOrder(
+  orderId: string,
+  expectedStatus: string,
+  _previousState: CancelOrderState,
+  _formData: FormData,
+): Promise<CancelOrderState> {
+  void _previousState;
+  void _formData;
+  await requireAdmin();
+
+  if (
+    !uuidPattern.test(orderId) ||
+    !isOrderCancellableStatus(expectedStatus)
+  ) {
+    return {
+      error: "Pesanan tidak dapat dibatalkan dari status saat ini.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status: "dibatalkan" })
+    .eq("id", orderId)
+    .eq("status", expectedStatus)
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    return {
+      error:
+        "Pesanan gagal dibatalkan. Status ini mungkin tidak mengizinkan pembatalan.",
+    };
+  }
+
+  if (!data) {
+    return {
+      error: "Status pesanan sudah berubah. Muat ulang halaman lalu coba lagi.",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pesanan");
+  revalidatePath("/admin/pesanan/" + orderId);
+  redirect("/admin/pesanan/" + orderId);
 }
 
 export async function confirmProductCodOrder(

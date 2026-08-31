@@ -14,6 +14,26 @@ export const productionWorkflows = {
   product: ["diproses", "selesai"],
 } as const;
 
+const preProductionStatuses = [
+  "menunggu_harga",
+  "menunggu_pembayaran_dp",
+  "menunggu_konfirmasi_dp",
+  "menunggu_verifikasi",
+] as const;
+
+export const cancellableOrderStatuses = [
+  ...preProductionStatuses,
+  ...productionWorkflows.konveksi_sablon.filter(
+    (status) => status !== "selesai",
+  ),
+  ...productionWorkflows.permak.filter((status) => status !== "selesai"),
+  ...productionWorkflows.product.filter((status) => status !== "selesai"),
+] as const;
+
+export function isOrderCancellableStatus(status: string) {
+  return cancellableOrderStatuses.some((candidate) => candidate === status);
+}
+
 export type ProductionWorkflowStatus =
   (typeof productionWorkflows)[keyof typeof productionWorkflows][number];
 

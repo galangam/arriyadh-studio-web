@@ -14,6 +14,152 @@ export function createWhatsappUrl(phoneNumber: string, message: string) {
   return `https://wa.me/${normalizedNumber}?text=${encodeURIComponent(message)}`;
 }
 
+type ServiceOrderReviewWhatsappHandoff = {
+  orderCode: string;
+  serviceName: string | null;
+};
+
+export function createServiceOrderReviewWhatsappUrl(
+  order: ServiceOrderReviewWhatsappHandoff,
+) {
+  const serviceName = order.serviceName ?? "Layanan custom";
+  const message = [
+    "Halo Admin Arriyadh Studio.",
+    "",
+    "Saya ingin mengonfirmasi pesanan layanan saya.",
+    "",
+    "Order ID: " + order.orderCode,
+    "Layanan: " + serviceName,
+    "Status: Menunggu peninjauan harga.",
+    "",
+    "Mohon pesanan saya ditinjau. Terima kasih.",
+  ].join("\n");
+
+  return createWhatsappUrl(arriyadhWhatsappNumber, message);
+}
+
+type ServicePaymentWhatsappHandoff = {
+  orderCode: string;
+  serviceName: string | null;
+};
+
+export function createServicePaymentWhatsappUrl(
+  handoff: "transfer" | "cod",
+  order: ServicePaymentWhatsappHandoff,
+) {
+  const serviceName = order.serviceName ?? "Layanan custom";
+  const message =
+    handoff === "transfer"
+      ? [
+          "Halo Admin Arriyadh Studio.",
+          "",
+          "Saya ingin mengonfirmasi pembayaran pesanan saya.",
+          "",
+          `Order ID: ${order.orderCode}`,
+          `Layanan: ${serviceName}`,
+          "Status: Bukti pembayaran sudah dikirim dan sedang menunggu verifikasi.",
+          "",
+          "Mohon dicek ya. Terima kasih.",
+        ].join("\n")
+      : [
+          "Halo Admin Arriyadh Studio.",
+          "",
+          "Saya ingin mengonfirmasi pembayaran DP COD untuk pesanan saya.",
+          "",
+          `Order ID: ${order.orderCode}`,
+          `Layanan: ${serviceName}`,
+          "Status: Menunggu konfirmasi pembayaran DP COD.",
+          "",
+          "Mohon informasi jadwal/koordinasi selanjutnya. Terima kasih.",
+        ].join("\n");
+
+  return createWhatsappUrl(arriyadhWhatsappNumber, message);
+}
+
+type AdminOrderStatusWhatsappHandoff = {
+  customerWhatsapp: string;
+  customerName: string;
+  orderCode: string;
+  orderKind: "service" | "product";
+  orderName: string;
+  statusLabel: string;
+};
+
+export function createAdminOrderStatusWhatsappUrl(
+  update: "progress" | "product_processing" | "completed" | "cancelled",
+  order: AdminOrderStatusWhatsappHandoff,
+) {
+  const orderLabel = order.orderKind === "product" ? "Produk" : "Layanan";
+  let messageLines: string[];
+
+  if (update === "progress") {
+    messageLines = [
+      "Halo " + order.customerName + ",",
+      "",
+      "Update pesanan Arriyadh Studio:",
+      "",
+      "Order ID: " + order.orderCode,
+      orderLabel + ": " + order.orderName,
+      "Status terbaru: " + order.statusLabel,
+      "",
+      "Pesanan Anda sedang kami proses pada tahap tersebut.",
+      "Terima kasih.",
+    ];
+  } else if (update === "product_processing") {
+    messageLines = [
+      "Halo " + order.customerName + ",",
+      "",
+      "Pesanan produk Anda sedang disiapkan.",
+      "",
+      "Order ID: " + order.orderCode,
+      "Produk: " + order.orderName,
+      "Status terbaru: " + order.statusLabel,
+      "",
+      "Terima kasih.",
+    ];
+  } else if (update === "completed") {
+    messageLines =
+      order.orderKind === "product"
+        ? [
+            "Halo " + order.customerName + ",",
+            "",
+            "Pesanan produk Anda di Arriyadh Studio telah selesai disiapkan.",
+            "",
+            "Order ID: " + order.orderCode,
+            "Produk: " + order.orderName,
+            "",
+            "Silakan hubungi kami untuk koordinasi pengambilan.",
+            "Terima kasih.",
+          ]
+        : [
+            "Halo " + order.customerName + ",",
+            "",
+            "Pesanan Anda di Arriyadh Studio telah selesai.",
+            "",
+            "Order ID: " + order.orderCode,
+            "Layanan: " + order.orderName,
+            "",
+            "Silakan hubungi kami untuk koordinasi pengambilan atau informasi selanjutnya.",
+            "Terima kasih.",
+          ];
+  } else {
+    messageLines = [
+      "Halo " + order.customerName + ",",
+      "",
+      "Kami ingin menginformasikan bahwa pesanan berikut telah dibatalkan:",
+      "",
+      "Order ID: " + order.orderCode,
+      orderLabel + ": " + order.orderName,
+      "",
+      "Untuk informasi lebih lanjut mengenai pembayaran atau refund jika ada, silakan hubungi admin Arriyadh Studio.",
+      "",
+      "Terima kasih.",
+    ];
+  }
+
+  return createWhatsappUrl(order.customerWhatsapp, messageLines.join("\n"));
+}
+
 type ProductOrderWhatsappHandoff = {
   orderCode: string;
   productName: string;
