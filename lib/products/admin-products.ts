@@ -1,10 +1,18 @@
 import "server-only";
 
-import { resolveContentImageUrl } from "@/lib/content/content-images";
-import type { ProductVariant } from "@/lib/products/product-pricing";
 import { createClient } from "@/lib/supabase/server";
 
-export type PublicProduct = {
+export type AdminProductVariant = {
+  id: string;
+  product_id: string;
+  material: string;
+  sleeve_type: string | null;
+  base_unit_price: number;
+  large_size_surcharge: number;
+  is_active: boolean;
+};
+
+export type AdminProduct = {
   id: string;
   slug: string;
   name: string;
@@ -12,25 +20,28 @@ export type PublicProduct = {
   price: number;
   available_sizes: string[];
   image_url: string | null;
-  variants: ProductVariant[];
+  is_active: boolean;
+  sort_order: number;
+  variants: AdminProductVariant[];
 };
 
-type ProductRow = Omit<PublicProduct, "price" | "variants"> & {
+type AdminProductRow = Omit<AdminProduct, "price" | "sort_order" | "variants"> & {
   price: number | string;
+  sort_order: number | string;
 };
 
-type ProductVariantRow = Omit<
-  ProductVariant,
+type AdminProductVariantRow = Omit<
+  AdminProductVariant,
   "base_unit_price" | "large_size_surcharge"
 > & {
   base_unit_price: number | string;
   large_size_surcharge: number | string;
 };
 
-const productColumns =
-  "id, slug, name, description, price, available_sizes, image_url";
+const adminProductColumns =
+  "id, slug, name, description, price, available_sizes, image_url, is_active, sort_order";
 
-function normalizeVariant(row: ProductVariantRow): ProductVariant {
+function normalizeVariant(row: AdminProductVariantRow): AdminProductVariant {
   const baseUnitPrice = Number(row.base_unit_price);
   const largeSizeSurcharge = Number(row.large_size_surcharge);
 
@@ -50,20 +61,24 @@ function normalizeVariant(row: ProductVariantRow): ProductVariant {
   };
 }
 
-async function normalizeProduct(
-  row: ProductRow,
-  variants: ProductVariant[],
-): Promise<PublicProduct> {
+function normalizeProduct(
+  row: AdminProductRow,
+  variants: AdminProductVariant[],
+): AdminProduct {
   const price = Number(row.price);
+  const sortOrder = Number(row.sort_order);
 
   if (!Number.isFinite(price) || price < 0) {
     throw new Error("Invalid product price returned by the database.");
+  }
+  if (!Number.isSafeInteger(sortOrder) || sortOrder < 0) {
+    throw new Error("Invalid product sort order returned by the database.");
   }
 
   return {
     ...row,
     price,
-    image_url: await resolveContentImageUrl(row.image_url),
+    sort_order: sortOrder,
     available_sizes: row.available_sizes.filter(
       (size): size is string => typeof size === "string" && size.trim() !== "",
     ),
@@ -71,69 +86,65 @@ async function normalizeProduct(
   };
 }
 
-async function getActiveVariants(productIds: string[]) {
+async function getAdminProductVariants(productIds: string[]) {
   if (productIds.length === 0) return [];
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("product_variants")
     .select(
-      "id, product_id, material, sleeve_type, base_unit_price, large_size_surcharge",
+      "id, product_id, material, sleeve_type, base_unit_price, large_size_surcharge, is_active",
     )
     .in("product_id", productIds)
-    .eq("is_active", true)
     .order("material", { ascending: true })
     .order("sleeve_type", { ascending: true })
-    .returns<ProductVariantRow[]>();
+    .returns<AdminProductVariantRow[]>();
 
   if (error || !data) {
-    throw new Error("Active product variants could not be loaded.");
+    throw new Error("Varian produk gagal dimuat.");
   }
 
   return data.map(normalizeVariant);
 }
 
-export async function getActiveProducts(): Promise<PublicProduct[]> {
+export async function getAdminProducts(): Promise<AdminProduct[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select(productColumns)
-    .eq("is_active", true)
+    .select(adminProductColumns)
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true })
-    .returns<ProductRow[]>();
+    .returns<AdminProductRow[]>();
 
   if (error || !data) {
-    throw new Error("Active products could not be loaded.");
+    throw new Error("Daftar produk gagal dimuat.");
   }
 
-  const variants = await getActiveVariants(data.map((product) => product.id));
+  const variants = await getAdminProductVariants(data.map((product) => product.id));
 
-  return Promise.all(data.map((product) =>
+  return data.map((product) =>
     normalizeProduct(
       product,
       variants.filter((variant) => variant.product_id === product.id),
     ),
-  ));
+  );
 }
 
-export async function getActiveProductBySlug(
-  slug: string,
-): Promise<PublicProduct | null> {
+export async function getAdminProductById(
+  id: string,
+): Promise<AdminProduct | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select(productColumns)
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle<ProductRow>();
+    .select(adminProductColumns)
+    .eq("id", id)
+    .maybeSingle<AdminProductRow>();
 
   if (error) {
-    throw new Error("Product could not be loaded.");
+    throw new Error("Produk gagal dimuat.");
   }
-
   if (!data) return null;
 
-  const variants = await getActiveVariants([data.id]);
+  const variants = await getAdminProductVariants([data.id]);
   return normalizeProduct(data, variants);
 }
