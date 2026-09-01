@@ -5,72 +5,34 @@ import { PublicCta } from "@/components/layout/public-cta";
 import { PortfolioCarousel } from "@/components/sections/portfolio-carousel";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
+import {
+  getHomepageFeaturedProducts,
+  getHomepageFeaturedServices,
+} from "@/lib/content/featured-content";
+import { getHomepageContent } from "@/lib/content/homepage-content";
+import { getPublicPortfolio } from "@/lib/content/portfolio";
+import { getProductStartingPrice } from "@/lib/products/product-pricing";
 
-const services = [
-  {
-    title: "Permak",
-    description:
-      "Penyesuaian presisi untuk pakaian lama Anda agar kembali pas dan nyaman dipakai.",
-    href: "/layanan#permak",
-  },
-  {
-    title: "Sablon",
-    description:
-      "Teknik cetak berkualitas tinggi dengan tinta premium untuk hasil desain yang tajam dan tahan lama.",
-    href: "/layanan#sablon",
-  },
-  {
-    title: "Kaos",
-    description:
-      "Produksi kaos custom untuk event, komunitas, perusahaan, maupun kebutuhan retail.",
-    href: "/layanan#kaos",
-  },
-  {
-    title: "Kemeja",
-    description:
-      "Seragam kantor, PDH, atau kemeja kasual dengan jahitan rapi dan nyaman digunakan.",
-    href: "/layanan#kemeja",
-  },
-  {
-    title: "Jersey",
-    description:
-      "Pakaian olahraga dengan bahan breathable dan teknologi sublimasi modern.",
-    href: "/layanan#jersey",
-  },
-  {
-    title: "Lainnya",
-    description:
-      "Kebutuhan desain, banner, stiker, undangan, dan pengerjaan custom lainnya.",
-    href: "/layanan#lainnya",
-  },
-] as const;
-
-const products = [
-  {
-    title: "Kaos Polos",
-    material: "Cotton Combed 30s & 24s",
-    variant: "Tersedia dalam berbagai pilihan warna",
-    price: "Rp 45.000",
+const productPresentation: Record<
+  string,
+  { image: string; imageAlt: string; variant: string }
+> = {
+  "kaos-polos-premium": {
     image: "/images/home/product-kaos-main.jpeg",
     imageAlt: "Kaos polos premium Arriyadh Studio",
+    variant: "Tersedia dalam berbagai pilihan warna",
   },
-  {
-    title: "Celana Kolor",
-    material: "Bahan Microfiber",
-    variant: "Tersedia dalam berbagai pilihan motif",
-    price: "Rp 25.000",
+  "celana-kolor-santai": {
     image: "/images/home/product-celana-main.jpeg",
     imageAlt: "Pilihan motif celana kolor santai Arriyadh Studio",
+    variant: "Tersedia dalam berbagai pilihan motif",
   },
-] as const;
+};
 
-const portfolioImages = Array.from({ length: 33 }, (_, index) => {
-  const number = index + 1;
-
-  return {
-    src: `/images/home/portfolio-${number}.jpeg`,
-    alt: `Hasil produksi Arriyadh Studio ${number}`,
-  };
+const rupiah = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
 });
 
 function ArrowIcon() {
@@ -90,7 +52,18 @@ function ArrowIcon() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const [content, services, products, portfolio] = await Promise.all([
+    getHomepageContent(),
+    getHomepageFeaturedServices(),
+    getHomepageFeaturedProducts(),
+    getPublicPortfolio(),
+  ]);
+  const portfolioImages = portfolio.map((item) => ({
+    src: item.image_url,
+    alt: item.alt,
+  }));
+
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       {/* HERO */}
@@ -98,15 +71,18 @@ export default function Home() {
         aria-labelledby="hero-title"
         className="relative isolate bg-surface-container-low"
       >
-        <Image
-          src="/images/home/hero-workshop-demo.jpeg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="-z-20 object-cover object-[center_35%] opacity-40"
-          aria-hidden="true"
-        />
+        {content.hero_image_url ? (
+          <Image
+            src={content.hero_image_url}
+            alt=""
+            fill
+            priority
+            unoptimized={content.hero_image_url.startsWith("http")}
+            sizes="100vw"
+            className="-z-20 object-cover object-[center_35%] opacity-40"
+            aria-hidden="true"
+          />
+        ) : null}
 
         <div
           aria-hidden="true"
@@ -116,19 +92,18 @@ export default function Home() {
        <Container className="flex min-h-[520px] items-center py-16 md:min-h-[560px] md:py-section-gap lg:min-h-[600px]">
   <div className="max-w-2xl py-gutter md:w-[58%] md:py-10 lg:py-12">
     <p className="font-body text-label-md uppercase text-secondary">
-      Terpercaya Sejak 2010
+      {content.hero_eyebrow}
     </p>
 
     <h1
       id="hero-title"
       className="mt-margin-mobile max-w-xl font-heading text-heading-strong text-primary sm:text-display-lg"
     >
-      Solusi Konveksi &amp; Sablon Terbaik di Subang
+      {content.hero_title}
     </h1>
 
     <p className="mt-gutter max-w-xl font-body text-body-md text-on-surface-variant sm:text-body-lg">
-      Kualitas premium untuk seragam, kaos, dan merchandise custom Anda.
-      Pengerjaan tepat waktu dengan standar industri terpercaya.
+      {content.hero_description}
     </p>
 
     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -168,27 +143,25 @@ export default function Home() {
                   id="experience-title"
                   className="mt-base max-w-xl font-heading text-heading-lg text-primary"
                 >
-                  Keahlian yang Berakar dari Pengalaman
+                  {content.intro_title}
                 </h2>
 
                 <p className="mt-gutter max-w-2xl font-body text-body-md text-on-surface-variant">
-                  Arriyadh Studio telah menjadi mitra terpercaya di Subang
-                  selama lebih dari satu dekade. Kami memadukan teknik
-                  tradisional dengan teknologi modern untuk menghasilkan produk
-                  tekstil yang tidak hanya tahan lama tetapi juga representatif
-                  bagi identitas bisnis atau komunitas Anda.
+                  {content.intro_description}
                 </p>
               </div>
 
-              <div className="mt-10 border-t border-outline-variant pt-gutter md:mt-0 md:border-l md:border-t-0 md:py-margin-mobile md:pl-12">
+              {content.experience_value || content.experience_label ? (
+                <div className="mt-10 border-t border-outline-variant pt-gutter md:mt-0 md:border-l md:border-t-0 md:py-margin-mobile md:pl-12">
                 <p className="font-heading text-display-xl font-bold text-primary">
-                  10+
+                  {content.experience_value}
                 </p>
 
                 <p className="mt-base max-w-44 font-body text-label-md uppercase text-secondary">
-                  Tahun Pengalaman Industri
+                  {content.experience_label}
                 </p>
-              </div>
+                </div>
+              ) : null}
             </div>
           </Reveal>
         </Container>
@@ -232,12 +205,12 @@ export default function Home() {
             <div className="border-y border-outline-variant">
               {services.map((service, index) => (
                 <Reveal
-                  key={service.title}
+                  key={service.id}
                   delay={index * 70}
                   className="border-b border-outline-variant last:border-b-0"
                 >
                   <Link
-                    href={service.href}
+                    href={`/layanan#${service.slug}`}
                     className="group block px-base py-6 transition-colors hover:bg-surface-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:py-7"
                   >
                     <div className="grid grid-cols-[2.5rem_1fr_auto] items-start gap-margin-mobile md:grid-cols-[3rem_10rem_1fr_auto] md:gap-gutter">
@@ -246,7 +219,7 @@ export default function Home() {
                       </span>
 
                       <h3 className="font-heading text-heading-sm text-primary">
-                        {service.title}
+                        {service.name}
                       </h3>
 
                       <p className="hidden max-w-lg font-body text-body-sm text-on-surface-variant md:block">
@@ -303,17 +276,26 @@ export default function Home() {
           </Reveal>
 
           <div className="mt-10 grid gap-gutter md:grid-cols-2">
-            {products.map((product, index) => (
-              <Reveal key={product.title} delay={index * 120}>
+            {products.map((product, index) => {
+              const presentation = productPresentation[product.slug];
+              const image = product.image_url ?? presentation?.image;
+              const materials = [...new Set(product.variants.map((variant) => variant.material))];
+              const startingPrice = getProductStartingPrice(product.price, product.variants);
+
+              return (
+              <Reveal key={product.id} delay={index * 120}>
                 <article className="group overflow-hidden border border-outline-variant bg-surface-white">
                   <div className="relative aspect-[4/3] overflow-hidden border-b border-outline-variant bg-surface-container-low">
-                    <Image
-                      src={product.image}
-                      alt={product.imageAlt}
-                      fill
-                      sizes="(min-width: 768px) 50vw, 100vw"
-                      className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.015]"
-                    />
+                    {image ? (
+                      <Image
+                        src={image}
+                        alt={presentation?.imageAlt ?? product.name}
+                        fill
+                        unoptimized={image.startsWith("http")}
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.015]"
+                      />
+                    ) : null}
 
                     <span className="absolute left-margin-mobile top-margin-mobile bg-primary px-3 py-1 font-body text-label-sm uppercase text-on-primary">
                       Ready
@@ -324,19 +306,20 @@ export default function Home() {
                     <div className="flex flex-col gap-gutter sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <h3 className="font-heading text-heading-sm text-primary">
-                          {product.title}
+                          {product.name}
                         </h3>
 
                         <p className="mt-1 font-body text-body-sm text-on-surface-variant">
-                          {product.material}
+                          {materials.join(", ")}
                         </p>
 
                         <p className="mt-base font-body text-body-sm font-medium text-secondary">
-                          {product.variant}
+                          {presentation?.variant ?? product.description}
                         </p>
 
                         <p className="mt-margin-mobile font-heading text-heading-xs text-primary">
-                          {product.price}
+                          {product.variants.length > 1 ? "Mulai " : ""}
+                          {rupiah.format(startingPrice)}
                         </p>
                       </div>
 
@@ -350,7 +333,8 @@ export default function Home() {
                   </div>
                 </article>
               </Reveal>
-            ))}
+              );
+            })}
           </div>
         </Container>
       </section>
@@ -372,12 +356,11 @@ export default function Home() {
                   id="portfolio-title"
                   className="mt-base font-heading text-heading-lg text-primary"
                 >
-                  Hasil Produksi Kami
+                  {content.portfolio_title}
                 </h2>
 
                 <p className="mt-base font-body text-body-md text-on-surface-variant">
-                  Beberapa hasil produksi yang telah kami kerjakan untuk
-                  berbagai kebutuhan pelanggan.
+                  {content.portfolio_description}
                 </p>
               </div>
 
