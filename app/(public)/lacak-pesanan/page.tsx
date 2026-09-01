@@ -3,49 +3,48 @@ import type { Metadata } from "next";
 import { OrderTrackingForm } from "@/components/sections/order-tracking-form";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
+import { getSiteSettings } from "@/lib/content/site-settings";
+import { createWhatsappUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Lacak Pesanan | Arriyadh Studio",
   description:
-    "Halaman pelacakan status pesanan Arriyadh Studio menggunakan nomor pesanan.",
+    "Halaman pelacakan status pesanan Arriyadh Studio menggunakan kode pesanan.",
 };
-
-const whatsappHelpUrl =
-  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20memerlukan%20bantuan%20untuk%20melacak%20pesanan.";
 
 const trackingSteps = [
   {
-    title: "Masukkan ID",
+    title: "Masukkan Kode Pesanan",
     description:
-      "Temukan ID Pesanan pada pesan WhatsApp yang dikirimkan oleh admin.",
+      "Gunakan kode pesanan yang Anda dapatkan setelah membuat pesanan atau dari informasi pesanan yang dikirimkan oleh admin.",
   },
   {
     title: "Klik Cari",
     description:
-      "Pastikan nomor yang Anda masukkan benar dan tekan tombol 'Cari Pesanan' untuk memulai proses.",
+      "Pastikan kode pesanan yang Anda masukkan benar dan tekan tombol 'Cari Pesanan' untuk memulai proses.",
   },
   {
     title: "Lihat Status",
     description:
-      "Pantau tahapan produksi mulai dari desain, pemotongan, penjahitan, sablon, hingga pengiriman.",
+      "Pantau status dan tahapan pengerjaan pesanan berdasarkan pembaruan dari admin.",
   },
 ] as const;
 
 const faqs = [
   {
-    question: "Dimana saya bisa menemukan nomor pesanan?",
+    question: "Di mana saya bisa menemukan kode pesanan?",
     answer:
-      "Nomor pesanan diberikan melalui informasi pesanan yang dikirimkan oleh admin melalui WhatsApp. Pastikan Anda menyimpan nomor tersebut untuk melakukan pelacakan.",
+      "Kode pesanan ditampilkan setelah pesanan berhasil dibuat. Anda juga dapat menemukannya pada informasi pesanan yang dikirimkan oleh admin. Simpan kode tersebut untuk melacak perkembangan pesanan.",
   },
   {
     question: "Berapa lama status diperbarui?",
     answer:
-      "Status pesanan diperbarui mengikuti perkembangan proses pengerjaan. Informasi terbaru akan tersedia setelah tahap pesanan diperbarui oleh admin.",
+      "Status pesanan akan diperbarui oleh admin sesuai perkembangan pengerjaan. Perubahan terbaru akan tampil di halaman pelacakan setelah status pesanan diperbarui.",
   },
   {
-    question: "Nomor pesanan tidak ditemukan?",
+    question: "Kode pesanan tidak ditemukan?",
     answer:
-      "Periksa kembali nomor pesanan yang Anda masukkan. Jika masih tidak ditemukan, hubungi admin melalui WhatsApp untuk mendapatkan bantuan.",
+      "Periksa kembali kode pesanan yang Anda masukkan. Jika kode tetap tidak ditemukan, hubungi admin melalui WhatsApp untuk mendapatkan bantuan.",
   },
 ] as const;
 
@@ -66,25 +65,13 @@ function ChevronDownIcon() {
   );
 }
 
-function WhatsAppIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z" />
-      <path d="M9 8.5c.5 2.4 2.1 4 4.5 5" />
-    </svg>
+export default async function LacakPesananPage() {
+  const settings = await getSiteSettings();
+  const whatsappHelpUrl = createWhatsappUrl(
+    settings.whatsapp,
+    "Halo Arriyadh Studio, saya memerlukan bantuan untuk melacak pesanan.",
   );
-}
 
-export default function LacakPesananPage() {
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       {/* HERO + TRACKING */}
@@ -103,17 +90,17 @@ export default function LacakPesananPage() {
       </h1>
 
       <p className="mx-auto mt-margin-mobile max-w-2xl font-body text-body-md leading-relaxed text-on-surface-variant sm:text-body-lg">
-        Masukkan nomor pesanan Anda untuk melihat informasi perkembangan
+        Masukkan kode pesanan Anda untuk melihat informasi perkembangan
         pengerjaan.
       </p>
 
       <div className="mx-auto mt-10 max-w-4xl">
-        <OrderTrackingForm />
+        <OrderTrackingForm whatsappNumber={settings.whatsapp} />
       </div>
 
       <p className="mx-auto mt-margin-mobile max-w-2xl font-body text-body-sm text-on-surface-variant">
-        Nomor pesanan diberikan melalui informasi pesanan yang dikirimkan oleh
-        admin.
+        Kode pesanan dapat ditemukan setelah Anda berhasil membuat pesanan atau
+        pada informasi pesanan yang dikirimkan oleh admin.
       </p>
     </div>
   </Reveal>
@@ -239,16 +226,17 @@ export default function LacakPesananPage() {
                   rel="noopener noreferrer"
                  className="inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
-                  <WhatsAppIcon />
                   Hubungi WhatsApp
                 </a>
 
-                <a
-                  href={`mailto:ananang559@gmail.com`}
-                  className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
-                  Pusat Bantuan
-                </a>
+                {settings.email ? (
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    Pusat Bantuan
+                  </a>
+                ) : null}
               </div>
             </div>
           </Reveal>
