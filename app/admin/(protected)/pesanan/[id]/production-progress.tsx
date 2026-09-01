@@ -1,8 +1,6 @@
 import { AdvanceOrderStatusControl } from "@/app/admin/(protected)/pesanan/[id]/advance-order-status-control";
-import {
-  orderStatusLabels,
-  type AdminOrderDetail,
-} from "@/lib/orders/admin-orders";
+import type { AdminOrderDetail } from "@/lib/orders/admin-orders";
+import { orderStatusLabels } from "@/lib/orders/order-status";
 import {
   getNextOrderStatus,
   getOrderWorkflow,

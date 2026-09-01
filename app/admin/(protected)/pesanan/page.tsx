@@ -7,14 +7,16 @@ import {
   getAdminOrdersPage,
   getOrderSnapshotName,
   orderKindLabels,
-  orderStatusLabels,
   parseAdminOrderFilters,
   statusFilterOptions,
   type AdminOrderFilters,
   type AdminOrderListRow,
-  type OrderStatus,
   typeFilterOptions,
 } from "@/lib/orders/admin-orders";
+import {
+  orderStatusLabels,
+  type OrderStatus,
+} from "@/lib/orders/order-status";
 
 const orderTableColumns = [
   "Order ID",

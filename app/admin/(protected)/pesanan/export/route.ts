@@ -3,10 +3,10 @@ import {
   getAdminOrdersForExport,
   getOrderSnapshotName,
   orderKindLabels,
-  orderStatusLabels,
   parseAdminOrderFilters,
   type AdminOrderListRow,
 } from "@/lib/orders/admin-orders";
+import { orderStatusLabels } from "@/lib/orders/order-status";
 
 const csvHeaders = [
   "Order ID",

@@ -5,8 +5,8 @@ import {
   formatAdminOrderDate,
   getAdminDashboardData,
   getOrderSnapshotName,
-  orderStatusLabels,
 } from "@/lib/orders/admin-orders";
+import { orderStatusLabels } from "@/lib/orders/order-status";
 
 const activitySummary = [
   { key: "awaitingPrice", label: "Menunggu Harga" },

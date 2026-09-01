@@ -18,11 +18,11 @@ import {
   formatOrderPrice,
   getAdminOrderDetail,
   orderKindLabels,
-  orderStatusLabels,
   productionStatuses,
   type AdminDesignReference,
   type AdminOrderDetail,
 } from "@/lib/orders/admin-orders";
+import { orderStatusLabels } from "@/lib/orders/order-status";
 import { isOrderCancellableStatus } from "@/lib/orders/order-workflows";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import { getSiteOrigin } from "@/lib/site-origin";
