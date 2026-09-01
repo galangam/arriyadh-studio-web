@@ -2,12 +2,16 @@ import Image from "next/image";
 import { Reveal } from "@/components/ui/reveal";
 import { Container } from "@/components/ui/container";
 import { OrderChoiceDialog } from "@/components/ui/order-choice-dialog";
+import { getSiteSettings } from "@/lib/content/site-settings";
+import { arriyadhWhatsappNumber, createWhatsappUrl } from "@/lib/whatsapp";
 
-const whatsappUrl =
-  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20berkonsultasi%20mengenai%20pesanan.";
+export async function PublicCta() {
+  const settings = await getSiteSettings();
+  const whatsappUrl = createWhatsappUrl(
+    settings.whatsapp ?? arriyadhWhatsappNumber,
+    "Halo Arriyadh Studio, saya ingin berkonsultasi mengenai pesanan.",
+  );
 
-
-export function PublicCta() {
   return (
     <section
       aria-labelledby="public-cta-title"

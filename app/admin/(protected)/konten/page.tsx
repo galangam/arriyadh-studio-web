@@ -4,6 +4,14 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 
 const contentSections = [
   {
+    label: "Informasi Bisnis",
+    href: "/admin/konten/informasi-bisnis",
+  },
+  {
+    label: "Beranda",
+    href: "/admin/konten/beranda",
+  },
+  {
     label: "Tentang Kami",
     href: "/admin/konten/tentang-kami",
   },

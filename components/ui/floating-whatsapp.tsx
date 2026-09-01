@@ -1,9 +1,16 @@
 import Image from "next/image";
 
-const whatsappUrl =
-  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20berkonsultasi.";
+import { getSiteSettings } from "@/lib/content/site-settings";
+import { arriyadhWhatsappNumber, createWhatsappUrl } from "@/lib/whatsapp";
 
-export function FloatingWhatsapp() {
+export async function FloatingWhatsapp() {
+  const settings = await getSiteSettings();
+  const whatsappNumber = settings.whatsapp ?? arriyadhWhatsappNumber;
+  const whatsappUrl = createWhatsappUrl(
+    whatsappNumber,
+    "Halo Arriyadh Studio, saya ingin berkonsultasi.",
+  );
+
   return (
     <a
       href={whatsappUrl}
@@ -27,7 +34,7 @@ export function FloatingWhatsapp() {
         </span>
 
         <span className="block font-body text-body-sm font-semibold text-primary">
-          +62 812-1471-9630
+          {settings.phone ?? whatsappNumber}
         </span>
       </span>
     </a>

@@ -9,6 +9,8 @@ import {
   getActiveServices,
   type PublicService,
 } from "@/lib/services/public-services";
+import { getSiteSettings } from "@/lib/content/site-settings";
+import { createWhatsappUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Layanan | Arriyadh Studio",
@@ -134,9 +136,6 @@ const orderSteps = [
   },
 ] as const;
 
-const serviceOrderUrl =
-  "https://wa.me/6281214719630?text=Halo%20Arriyadh%20Studio%2C%20saya%20ingin%20berkonsultasi%20tentang%20layanan%20custom.";
-
 const presentationBySlug = new Map(
   servicePresentations.map((presentation) => [presentation.slug, presentation]),
 );
@@ -178,7 +177,15 @@ function ArrowIcon() {
 }
 
 export default async function LayananPage() {
-  const services = (await getActiveServices()).map(presentService);
+  const [activeServices, settings] = await Promise.all([
+    getActiveServices(),
+    getSiteSettings(),
+  ]);
+  const services = activeServices.map(presentService);
+  const serviceOrderUrl = createWhatsappUrl(
+    settings.whatsapp,
+    "Halo Arriyadh Studio, saya ingin berkonsultasi tentang layanan custom.",
+  );
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       <section

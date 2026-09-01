@@ -6,29 +6,15 @@ import Link from "next/link";
 import { PublicCta } from "@/components/layout/public-cta";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
+import { getAboutContent } from "@/lib/content/about-content";
+import { getPublicPortfolio } from "@/lib/content/portfolio";
+import { getSiteSettings } from "@/lib/content/site-settings";
 
 export const metadata: Metadata = {
   title: "Tentang Kami | Arriyadh Studio",
   description:
     "Mengenal Arriyadh Studio, jasa konveksi, sablon, dan pakaian custom di Subang sejak 2010.",
 };
-
-const portfolioImages = Array.from({ length: 32 }, (_, index) => {
-  const number = index + 1;
-
-  return {
-    src: `/images/home/portfolio-${number}.jpeg`,
-    alt: `Hasil produksi Arriyadh Studio ${number}`,
-  };
-});
-
-const contactInformation = {
-  address:
-    "Jl. Moch Idris, Dusun Cibodas, Kec. Kalijati, Kabupaten Subang, Jawa Barat, Indonesia",
-
-  mapsHref:
-    "https://www.google.com/maps/place/ARRIYADH+STUDIO/@-6.5269638,107.6929188,17z/data=!3m1!4b1!4m6!3m5!1s0x2e693d4dd1f64ee7:0x3c26c2cb7b7a7eb2!8m2!3d-6.5269638!4d107.6929188!16s%2Fg%2F11ygpmhxzz?entry=ttu&g_ep=EgoyMDI2MDgxOS4wIKXMDSoASAFQAw%3D%3D" ,
-} as const;
 
 function ArrowIcon() {
   return (
@@ -101,7 +87,18 @@ function EyeIcon() {
   );
 }
 
-export default function TentangKamiPage() {
+export default async function TentangKamiPage() {
+  const [content, settings, portfolio] = await Promise.all([
+    getAboutContent(),
+    getSiteSettings(),
+    getPublicPortfolio(),
+  ]);
+  const portfolioItems = portfolio.slice(0, 32);
+  const historyParagraphs = content.history_body
+    .split(/\r?\n\s*\r?\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       {/* INTRO */}
@@ -116,11 +113,11 @@ export default function TentangKamiPage() {
                 id="page-title"
                 className="font-heading text-heading-strong text-primary sm:text-display-md"
               >
-                Mengenal Arriyadh Studio
+                {content.page_title}
               </h1>
 
               <p className="mt-margin-mobile font-body text-body-lg font-medium text-secondary">
-                Jasa Konveksi &amp; Sablon Terpercaya di Subang
+                {content.page_subtitle}
               </p>
 
               <div
@@ -161,26 +158,15 @@ export default function TentangKamiPage() {
                   id="about-title"
                   className="mt-base font-heading text-heading-lg text-primary"
                 >
-                  Dedikasi pada Kualitas
+                  {content.history_title}
                 </h2>
 
                 <div className="mt-gutter space-y-margin-mobile font-body text-body-md leading-relaxed text-on-surface-variant">
-                  <p>
-                    Arriyadh Studio berdiri sejak tahun 2010 dan bergerak dalam
-                    layanan konveksi, sablon, serta kebutuhan pakaian custom.
-                  </p>
-
-                  <p>
-                    Selama lebih dari satu dekade, kami berkomitmen memberikan
-                    hasil produksi yang rapi, berkualitas, tepat waktu, dan
-                    sesuai kebutuhan pelanggan.
-                  </p>
-
-                  <p>
-                    Pelayanan kami mencakup kebutuhan individu, komunitas,
-                    organisasi, sekolah, perusahaan, maupun berbagai kebutuhan
-                    usaha lainnya.
-                  </p>
+                  {historyParagraphs.map((paragraph, index) => (
+                    <p key={`${index}-${paragraph.slice(0, 32)}`}>
+                      {paragraph}
+                    </p>
+                  ))}
                 </div>
 
                 <Link
@@ -198,7 +184,11 @@ export default function TentangKamiPage() {
 
       {/* STRENGTHS */}
       <section
-        aria-label="Pengalaman dan keunggulan Arriyadh Studio"
+        aria-label={
+          content.founded_year
+            ? `Pengalaman dan keunggulan Arriyadh Studio sejak ${content.founded_year}`
+            : "Pengalaman dan keunggulan Arriyadh Studio"
+        }
         className="bg-primary py-12 md:py-16"
       >
         <Container>
@@ -208,11 +198,11 @@ export default function TentangKamiPage() {
                 <HistoryIcon />
 
                 <h2 className="mt-margin-mobile font-heading text-heading-md">
-                  Sejak 2010
+                  {content.strength_1_title}
                 </h2>
 
                 <p className="mt-base font-body text-label-sm uppercase tracking-wide text-on-primary/60">
-                  Berpengalaman
+                  {content.strength_1_description}
                 </p>
               </article>
 
@@ -220,11 +210,11 @@ export default function TentangKamiPage() {
                 <ShirtIcon />
 
                 <h2 className="mt-margin-mobile font-heading text-heading-md">
-                  Kustom &amp; Permak
+                  {content.strength_2_title}
                 </h2>
 
                 <p className="mt-base font-body text-label-sm uppercase tracking-wide text-on-primary/60">
-                  Layanan Lengkap
+                  {content.strength_2_description}
                 </p>
               </article>
 
@@ -232,11 +222,11 @@ export default function TentangKamiPage() {
                 <EyeIcon />
 
                 <h2 className="mt-margin-mobile font-heading text-heading-md">
-                  Transparan
+                  {content.strength_3_title}
                 </h2>
 
                 <p className="mt-base font-body text-label-sm uppercase tracking-wide text-on-primary/60">
-                  Pengerjaan Terbuka
+                  {content.strength_3_description}
                 </p>
               </article>
             </div>
@@ -257,12 +247,11 @@ export default function TentangKamiPage() {
             id="workshop-title"
             className="font-heading text-heading-lg text-primary"
           >
-            Kunjungi Workshop Kami
+            {content.workshop_title}
           </h2>
 
           <p className="mt-gutter max-w-lg font-body text-body-md leading-relaxed text-on-surface-variant">
-            Kami menyambut Anda untuk berkonsultasi langsung atau melihat
-            proses pengerjaan di workshop kami yang berlokasi di Subang.
+            {content.workshop_description}
           </p>
 
           <div className="mt-8 space-y-6">
@@ -272,7 +261,7 @@ export default function TentangKamiPage() {
               </p>
 
               <p className="mt-base max-w-md font-body text-body-sm leading-relaxed text-on-surface-variant">
-                {contactInformation.address}
+                {settings.address}
               </p>
             </div>
 
@@ -282,13 +271,13 @@ export default function TentangKamiPage() {
               </p>
 
               <p className="mt-base font-body text-body-sm text-on-surface-variant">
-                Senin – Sabtu: 09.00 – 17.00 WIB
+                {settings.operating_hours}
               </p>
             </div>
           </div>
 
           <a
-            href={contactInformation.mapsHref}
+            href={settings.maps_url}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -299,19 +288,22 @@ export default function TentangKamiPage() {
         </div>
 
         <a
-          href={contactInformation.mapsHref}
+          href={settings.maps_url}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Buka lokasi Arriyadh Studio di Google Maps"
           className="group relative block aspect-[16/10] overflow-hidden border border-outline-variant bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          <Image
-            src="/images/home/about/workshop-map.png"
-            alt="Peta lokasi workshop Arriyadh Studio di Subang"
-            fill
-            sizes="(min-width: 1024px) 55vw, 100vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-          />
+          {content.workshop_image_url ? (
+            <Image
+              src={content.workshop_image_url}
+              alt="Peta lokasi workshop Arriyadh Studio di Subang"
+              fill
+              unoptimized={content.workshop_image_url.startsWith("http")}
+              sizes="(min-width: 1024px) 55vw, 100vw"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+            />
+          ) : null}
 
           <div className="absolute inset-x-0 bottom-0 bg-primary/45 px-gutter py-3 text-on-primary backdrop-blur-[2px]">
             <div className="flex items-center justify-between gap-gutter">
@@ -369,12 +361,12 @@ export default function TentangKamiPage() {
 
           <Reveal delay={100} className="mt-12">
         <div className="grid grid-flow-dense grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {portfolioImages.map((image, index) => {
+              {portfolioItems.map((image, index) => {
                 const featured = index % 8 === 0;
 
                 return (
                   <figure
-                    key={image.src}
+                    key={image.id}
                     className={`group relative overflow-hidden bg-surface-container-low ${
                       featured
                         ? "col-span-2 aspect-[2/1]"
@@ -382,9 +374,10 @@ export default function TentangKamiPage() {
                     }`}
                   >
                     <Image
-                      src={image.src}
+                      src={image.image_url}
                       alt={image.alt}
                       fill
+                      unoptimized={image.image_url.startsWith("http")}
                       sizes={
                         featured
                           ? "(min-width: 1024px) 50vw, (min-width: 768px) 66vw, 100vw"

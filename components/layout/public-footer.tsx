@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { getSiteSettings } from "@/lib/content/site-settings";
+
 const quickServices = [
   { label: "Sablon Kaos", href: "/layanan#sablon" },
   { label: "Pembuatan Kemeja / PDH", href: "/layanan#kemeja" },
@@ -16,41 +18,40 @@ const informationLinks = [
   { label: "Kebijakan Privasi", href: "/kebijakan-privasi" },
 ];
 
-const contactInformation = {
-  address:
-    "Jl. Moch Idris, Dusun Cibodas, Kec. Kalijati, Kabupaten Subang, Jawa Barat, Indonesia",
-  phone: "+62 812-1471-9630",
-  phoneHref: "tel:+6281214719630",
-  email: "ananang559@gmail.com",
-  emailHref: "mailto:ananang559@gmail.com",
-};
-
-const socialLinks = [
+const socialLinkDefinitions = [
   {
-    label: "TikTok Arriyadh Studio",
-    href: "https://www.tiktok.com/@arriyadh_studio",
+    key: "tiktok_url",
+    label: "TikTok",
     icon: "/icons/social/tiktok.svg",
     width: 30,
     height: 30,
   },
   {
-    label: "Instagram Arriyadh Studio",
-    href: "https://www.instagram.com/azs_creator422/",
+    key: "instagram_url",
+    label: "Instagram",
     icon: "/icons/social/instagram.svg",
     width: 18,
     height: 18,
   },
   {
-    label: "Facebook Arriyadh Studio",
-    href: "https://www.facebook.com/share/1PQa5yvU6z/",
+    key: "facebook_url",
+    label: "Facebook",
     icon: "/icons/social/facebook.svg",
     width: 20,
     height: 20,
   },
-];
+] as const;
 
-export function PublicFooter() {
+export async function PublicFooter() {
+  const settings = await getSiteSettings();
   const currentYear = new Date().getFullYear();
+  const socialLinks = socialLinkDefinitions.flatMap((social) => {
+    const href = settings[social.key];
+    return href ? [{ ...social, href }] : [];
+  });
+  const phoneHref = settings.phone
+    ? `tel:${settings.phone.replace(/[^+\d]/g, "")}`
+    : null;
 
   return (
     <footer className="bg-primary text-on-primary">
@@ -62,8 +63,7 @@ export function PublicFooter() {
               href="/"
               className="inline-block font-heading text-heading-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-primary"
             >
-              <span className="font-bold">Arriyadh</span>{" "}
-              <span className="font-normal">Studio</span>
+              <span className="font-bold">{settings.business_name}</span>
             </Link>
 
             <p className="mt-margin-mobile max-w-sm font-body text-body-sm text-on-primary/70">
@@ -80,11 +80,11 @@ export function PublicFooter() {
               <div className="mt-margin-mobile flex gap-3">
                 {socialLinks.map((social) => (
                   <a
-                    key={social.label}
+                    key={social.key}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={social.label}
+                    aria-label={`${social.label} ${settings.business_name}`}
                     className="flex size-10 items-center justify-center rounded-lg border border-on-primary/60 text-on-primary transition-colors hover:bg-on-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
                   >
                     <Image
@@ -145,31 +145,33 @@ export function PublicFooter() {
             <h2 className="font-body text-body-md font-bold">Hubungi Kami</h2>
 
             <address className="mt-margin-mobile space-y-4 font-body text-body-sm not-italic text-on-primary/70">
-              <p>{contactInformation.address}</p>
+              {settings.address ? <p>{settings.address}</p> : null}
 
-              <p>
+              {settings.operating_hours ? <p>{settings.operating_hours}</p> : null}
+
+              {settings.phone && phoneHref ? <p>
                 <a
-                  href={contactInformation.phoneHref}
+                  href={phoneHref}
                   className="transition-colors hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
                 >
-                  {contactInformation.phone}
+                  {settings.phone}
                 </a>
-              </p>
+              </p> : null}
 
-              <p>
+              {settings.email ? <p>
                 <a
-                  href={contactInformation.emailHref}
+                  href={`mailto:${settings.email}`}
                   className="transition-colors hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
                 >
-                  {contactInformation.email}
+                  {settings.email}
                 </a>
-              </p>
+              </p> : null}
             </address>
           </div>
         </div>
 
         <p className="pt-gutter font-body text-body-sm text-on-primary/60">
-          © {currentYear} Arriyadh Studio. All rights reserved.
+          © {currentYear} {settings.business_name}. All rights reserved.
         </p>
       </div>
     </footer>
