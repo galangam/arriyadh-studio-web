@@ -101,6 +101,7 @@ export function PortfolioCarousel({ images }: PortfolioCarouselProps) {
                 src={previousImage.src}
                 alt=""
                 fill
+                unoptimized={previousImage.src.startsWith("http")}
                 sizes="25vw"
                 className="object-cover"
                 aria-hidden="true"
@@ -118,6 +119,7 @@ export function PortfolioCarousel({ images }: PortfolioCarouselProps) {
               alt={activeImage.alt}
               fill
               priority={activeIndex === 0}
+              unoptimized={activeImage.src.startsWith("http")}
               sizes="(min-width: 768px) 52vw, 100vw"
               className="object-cover"
             />
@@ -139,6 +141,7 @@ export function PortfolioCarousel({ images }: PortfolioCarouselProps) {
                 src={nextImage.src}
                 alt=""
                 fill
+                unoptimized={nextImage.src.startsWith("http")}
                 sizes="25vw"
                 className="object-cover"
                 aria-hidden="true"
