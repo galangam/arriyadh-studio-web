@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolveContentImageUrl } from "@/lib/content/content-images";
 import { createClient } from "@/lib/supabase/server";
 
 export const publicServiceFlows = ["konveksi_sablon", "permak"] as const;
@@ -31,6 +32,15 @@ function normalizeService(row: ServiceRow): PublicService {
   return { ...row, flow: row.flow };
 }
 
+async function normalizePublicService(row: ServiceRow): Promise<PublicService> {
+  const service = normalizeService(row);
+
+  return {
+    ...service,
+    image_url: await resolveContentImageUrl(service.image_url),
+  };
+}
+
 export async function getActiveServices(): Promise<PublicService[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -46,7 +56,7 @@ export async function getActiveServices(): Promise<PublicService[]> {
     throw new Error("Active services could not be loaded.");
   }
 
-  return data.map(normalizeService);
+  return Promise.all(data.map(normalizePublicService));
 }
 
 export async function getActiveServiceBySlug(
@@ -63,7 +73,7 @@ export async function getActiveServiceBySlug(
 
   if (error) throw new Error("Service could not be loaded.");
 
-  return data ? normalizeService(data) : null;
+  return data ? normalizePublicService(data) : null;
 }
 
 export async function getActiveServiceById(
@@ -79,5 +89,5 @@ export async function getActiveServiceById(
 
   if (error) throw new Error("Service could not be loaded.");
 
-  return data ? normalizeService(data) : null;
+  return data ? normalizePublicService(data) : null;
 }
