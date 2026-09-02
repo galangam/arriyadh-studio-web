@@ -382,20 +382,20 @@ export default async function LayananPage() {
               </p>
             </div>
 
-            <ol className="mx-auto mt-12 grid max-w-7xl md:grid-cols-5">
+            <ol className="mx-auto mt-12 grid max-w-7xl gap-10 md:grid-cols-5 md:gap-0">
               {orderSteps.map((step, index) => (
                 <li
                   key={step.title}
-                  className="relative border-l border-outline-variant py-margin-mobile pl-gutter last:pb-0 md:border-l-0 md:border-t md:px-gutter md:pb-0 md:pt-gutter md:first:pl-0 md:last:pr-0"
+                  className="relative text-center md:border-t md:border-outline-variant md:px-gutter md:pb-0 md:pt-gutter md:text-left md:first:pl-0 md:last:pr-0"
                 >
-                  <span className="absolute -left-[4.5px] top-gutter size-base rounded-full bg-primary md:-top-[4.5px] md:left-gutter md:first:left-0" />
+                  <span className="absolute hidden size-base rounded-full bg-primary md:-top-[4.5px] md:left-gutter md:block md:first:left-0" />
                   <p className="font-body text-label-md text-secondary">
                     {String(index + 1).padStart(2, "0")}
                   </p>
                   <h3 className="mt-base font-heading text-heading-xs text-primary">
                     {step.title}
                   </h3>
-                  <p className="mt-base max-w-52 font-body text-body-sm text-on-surface-variant">
+                  <p className="mx-auto mt-base max-w-52 font-body text-body-sm text-on-surface-variant md:mx-0">
                     {step.description}
                   </p>
                 </li>

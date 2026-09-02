@@ -33,60 +33,6 @@ function ArrowIcon() {
   );
 }
 
-function HistoryIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-7"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <path d="M3 4v5h5" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
-
-function ShirtIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-7"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M8 4 5 5.5 2.5 9 6 11v9h12v-9l3.5-2L19 5.5 16 4a5 5 0 0 1-8 0Z" />
-    </svg>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-7"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-      <circle cx="12" cy="12" r="2.5" />
-    </svg>
-  );
-}
-
 export default async function TentangKamiPage() {
   const [content, settings, portfolio] = await Promise.all([
     getAboutContent(),
@@ -98,7 +44,6 @@ export default async function TentangKamiPage() {
     .split(/\r?\n\s*\r?\n/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
-
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       {/* INTRO */}
@@ -140,7 +85,7 @@ export default async function TentangKamiPage() {
               <div className="relative mx-auto w-full max-w-2xl">
                 <div className="relative aspect-[4/3] overflow-hidden bg-surface-container-low">
                   <Image
-                    src="/images/home/hero-workshop-demo.jpeg"
+                    src="/images/home/hero-workshop.jpeg"
                     alt="Aktivitas produksi di workshop Arriyadh Studio"
                     fill
                     sizes="(min-width: 1024px) 50vw, 100vw"
@@ -182,62 +127,10 @@ export default async function TentangKamiPage() {
         </Container>
       </section>
 
-      {/* STRENGTHS */}
-      <section
-        aria-label={
-          content.founded_year
-            ? `Pengalaman dan keunggulan Arriyadh Studio sejak ${content.founded_year}`
-            : "Pengalaman dan keunggulan Arriyadh Studio"
-        }
-        className="bg-primary py-12 md:py-16"
-      >
-        <Container>
-          <Reveal>
-            <div className="grid gap-gutter md:grid-cols-3">
-              <article className="flex min-h-44 flex-col items-center justify-center border border-on-primary/35 px-gutter py-8 text-center text-on-primary">
-                <HistoryIcon />
-
-                <h2 className="mt-margin-mobile font-heading text-heading-md">
-                  {content.strength_1_title}
-                </h2>
-
-                <p className="mt-base font-body text-label-sm uppercase tracking-wide text-on-primary/60">
-                  {content.strength_1_description}
-                </p>
-              </article>
-
-              <article className="flex min-h-44 flex-col items-center justify-center border border-on-primary/35 px-gutter py-8 text-center text-on-primary">
-                <ShirtIcon />
-
-                <h2 className="mt-margin-mobile font-heading text-heading-md">
-                  {content.strength_2_title}
-                </h2>
-
-                <p className="mt-base font-body text-label-sm uppercase tracking-wide text-on-primary/60">
-                  {content.strength_2_description}
-                </p>
-              </article>
-
-              <article className="flex min-h-44 flex-col items-center justify-center border border-on-primary/35 px-gutter py-8 text-center text-on-primary">
-                <EyeIcon />
-
-                <h2 className="mt-margin-mobile font-heading text-heading-md">
-                  {content.strength_3_title}
-                </h2>
-
-                <p className="mt-base font-body text-label-sm uppercase tracking-wide text-on-primary/60">
-                  {content.strength_3_description}
-                </p>
-              </article>
-            </div>
-          </Reveal>
-        </Container>
-      </section>
-
       {/* WORKSHOP */}
      <section
   aria-labelledby="workshop-title"
-  className="bg-surface py-section-gap md:py-24"
+  className="bg-surface pb-section-gap pt-8 md:pb-24 md:pt-12"
 >
   <Container>
     <Reveal>
