@@ -79,14 +79,16 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
       className="border border-outline-variant bg-surface-white p-6 sm:p-8"
     >
       <p className="font-body text-label-md font-semibold uppercase tracking-label text-secondary">
-        {isProduct ? "Pembayaran Diproses" : "Pembayaran Terkirim"}
+        {isTransfer
+          ? "Menunggu Verifikasi Admin"
+          : "Menunggu Konfirmasi Admin"}
       </p>
       <h2
         id="payment-state-heading"
         className="mt-2 font-heading text-heading-md text-primary"
       >
         {isTransfer
-          ? "Bukti pembayaran telah dikirim."
+          ? "Bukti pembayaran sudah diterima sistem."
           : "Metode pembayaran COD telah dipilih."}
       </h2>
       <p className="mt-3 font-body text-body-md text-on-surface-variant">
@@ -114,7 +116,7 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
             href={whatsappConfirmationUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
           >
             {whatsappButtonLabel}
           </a>
@@ -141,7 +143,7 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
       <dl className="mt-6 grid gap-5 sm:grid-cols-2">
         <div>
           <dt className="font-body text-label-md text-on-surface-variant">
-            Order ID
+            Kode Pesanan
           </dt>
           <dd className="mt-1 break-words font-body text-body-md font-semibold text-primary">
             {order.order_code}
@@ -157,6 +159,16 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
               : (order.service_name_snapshot ?? "Layanan Custom")}
           </dd>
         </div>
+        {order.payment_method ? (
+          <div>
+            <dt className="font-body text-label-md text-on-surface-variant">
+              Metode Pembayaran
+            </dt>
+            <dd className="mt-1 font-body text-body-md font-semibold text-primary">
+              {order.payment_method === "cod" ? "COD" : "Transfer Bank BRI"}
+            </dd>
+          </div>
+        ) : null}
         {isProduct ? (
           order.material ? (
             <div>
@@ -254,8 +266,12 @@ export default async function PublicPaymentPage({
             </h1>
             <p className="mx-auto mt-3 max-w-xl font-body text-body-md text-on-surface-variant">
               {isProduct
-                ? "Periksa total pesanan lalu unggah bukti pembayaran transfer."
-                : "Periksa ringkasan pesanan sebelum memilih metode pembayaran."}
+                ? canSubmitPayment
+                  ? "Periksa total pesanan lalu unggah bukti pembayaran transfer."
+                  : "Periksa ringkasan pesanan dan status verifikasi pembayaran Anda."
+                : canSubmitPayment
+                  ? "Periksa ringkasan pesanan sebelum memilih metode pembayaran."
+                  : "Periksa ringkasan pesanan dan langkah berikutnya dari admin."}
             </p>
           </header>
 

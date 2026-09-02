@@ -26,7 +26,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   return (
     <div className="grid gap-1 border-b border-outline-variant py-4 last:border-b-0 sm:grid-cols-[11rem_1fr]">
       <dt className="font-body text-body-sm text-on-surface-variant">{label}</dt>
-      <dd className="font-body text-body-md font-semibold text-on-surface">
+      <dd className="min-w-0 break-words font-body text-body-md font-semibold text-on-surface">
         {value}
       </dd>
     </div>
@@ -90,12 +90,12 @@ export default async function OrderConfirmationPage({
       <Container>
         <section className="mx-auto max-w-3xl border border-outline-variant bg-surface-white p-6 sm:p-10">
           <p className="font-body text-label-md uppercase text-success-green">
-            Pesanan Berhasil Dibuat
+            Konfirmasi Pesanan
           </p>
           <h1 className="mt-2 font-heading text-heading-lg text-primary">
             {isAwaitingQuote
               ? "Menunggu Peninjauan Harga"
-              : "Detail Pesanan Anda"}
+              : "Pesanan Berhasil Dibuat"}
           </h1>
           <p className="mt-3 font-body text-body-md text-on-surface-variant">
             {isAwaitingQuote
@@ -103,7 +103,7 @@ export default async function OrderConfirmationPage({
               : isService
                 ? "Pesanan layanan Anda telah tersimpan. Ikuti informasi pembayaran atau proses berikutnya dari admin."
                 : order.payment_method === "cod"
-                  ? "Pesanan COD telah dibuat. Pembayaran dilakukan saat pesanan diterima sesuai proses COD Arriyadh Studio."
+                  ? "Pesanan COD telah dibuat. Admin akan mengoordinasikan proses berikutnya sesuai metode COD yang dipilih."
                   : "Pesanan produk Anda telah tersimpan. Lanjutkan pembayaran sesuai petunjuk yang tersedia."}
           </p>
 
@@ -231,13 +231,30 @@ export default async function OrderConfirmationPage({
           ) : null}
 
           {productCodWhatsappUrl || canContinueToPayment ? (
-            <div className="mt-8 flex flex-wrap gap-3">
+            <section
+              aria-labelledby="confirmation-next-step"
+              className="mt-8 border-t border-outline-variant pt-6"
+            >
+              <h2
+                id="confirmation-next-step"
+                className="font-heading text-heading-sm text-primary"
+              >
+                Langkah Berikutnya
+              </h2>
+              <p className="mt-2 font-body text-body-sm text-on-surface-variant">
+                {productCodWhatsappUrl
+                  ? "Hubungi admin untuk mengonfirmasi pesanan dengan metode COD."
+                  : isService
+                    ? "Lanjutkan ke halaman pembayaran untuk memilih metode dan membayar DP."
+                    : "Lanjutkan ke halaman pembayaran untuk menyelesaikan transfer."}
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {productCodWhatsappUrl ? (
                 <a
                   href={productCodWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
                 >
                   Konfirmasi Pesanan COD ke Admin
                 </a>
@@ -245,12 +262,13 @@ export default async function OrderConfirmationPage({
               {canContinueToPayment ? (
                 <Link
                   href={`/pembayaran/${token}`}
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container"
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
                 >
                   {isService ? "Bayar DP" : "Lanjut ke Pembayaran"}
                 </Link>
               ) : null}
-            </div>
+              </div>
+            </section>
           ) : null}
           {assistanceWhatsappUrl ? (
             <section className="mt-8 border-t border-outline-variant pt-6">
@@ -266,22 +284,21 @@ export default async function OrderConfirmationPage({
                 href={assistanceWhatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
+                className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
               >
                 Konfirmasi via WhatsApp
               </a>
             </section>
           ) : null}
-          {!assistanceWhatsappUrl && !productCodWhatsappUrl ? (
-            <div className="mt-8">
-              <Link
-                href={isService ? "/layanan" : "/produk"}
-                className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline px-gutter font-body text-button text-primary hover:bg-surface-container-low"
-              >
-                Kembali
-              </Link>
-            </div>
-          ) : null}
+          <section className="mt-8 border-t border-outline-variant pt-6">
+            <h2 className="font-heading text-heading-sm text-primary">
+              Pantau Pesanan
+            </h2>
+            <p className="mt-2 font-body text-body-sm text-on-surface-variant">
+              Simpan Kode Pesanan di atas. Anda dapat menggunakannya kapan saja
+              pada halaman Lacak Pesanan untuk melihat perkembangan pesanan.
+            </p>
+          </section>
         </section>
       </Container>
     </main>

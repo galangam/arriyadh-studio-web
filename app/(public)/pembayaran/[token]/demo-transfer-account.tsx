@@ -4,16 +4,16 @@ export function DemoTransferAccount() {
   return (
     <aside
       aria-labelledby="demo-transfer-account-heading"
-      className="mt-6 border border-status-amber/40 bg-surface-container-low p-5"
+      className="border border-outline-variant bg-surface-container-low p-5"
     >
-      <p className="font-body text-label-md font-semibold uppercase tracking-label text-status-amber">
-        Rekening Demo
+      <p className="font-body text-label-md font-semibold uppercase tracking-label text-secondary">
+        Informasi Rekening
       </p>
       <h3
         id="demo-transfer-account-heading"
         className="mt-1 font-heading text-heading-sm text-primary"
       >
-        Informasi Transfer Demonstrasi
+        Transfer Bank BRI
       </h3>
       
         <dl className="mt-4 grid gap-3 font-body text-body-sm sm:grid-cols-3">
@@ -36,6 +36,11 @@ export function DemoTransferAccount() {
           </dd>
         </div>
       </dl>
+
+      <p className="mt-4 border-t border-status-amber/40 pt-4 font-body text-body-sm text-on-surface-variant">
+        Catatan pengembangan: rekening yang ditampilkan merupakan data demo dan
+        belum boleh dianggap sebagai rekening pembayaran produksi.
+      </p>
     </aside>
   );
 }

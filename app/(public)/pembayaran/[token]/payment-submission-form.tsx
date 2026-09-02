@@ -73,7 +73,7 @@ export function PaymentSubmissionForm({
             Pilih Metode Pembayaran
           </legend>
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
+          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:font-semibold focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
             <input
               type="radio"
               name="paymentMethod"
@@ -91,12 +91,12 @@ export function PaymentSubmissionForm({
                 Transfer
               </span>
               <span className="mt-1 block font-body text-body-sm text-on-surface-variant">
-                Transfer DP melalui rekening demo berikut, lalu unggah bukti pembayaran.
+                Transfer DP melalui Bank BRI, lalu unggah bukti pembayaran.
               </span>
             </span>
           </label>
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
+          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-outline-variant p-4 transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:font-semibold focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
             <input
               type="radio"
               name="paymentMethod"
@@ -122,14 +122,23 @@ export function PaymentSubmissionForm({
       )}
 
       {method === "transfer" && (
-        <div className="space-y-4 border-l-2 border-primary pl-4">
+        <section
+          aria-labelledby="transfer-instructions-heading"
+          className="space-y-5 border-t border-outline-variant pt-6"
+        >
+          <h3
+            id="transfer-instructions-heading"
+            className="font-heading text-heading-sm text-primary"
+          >
+            Instruksi Transfer
+          </h3>
           <p className="font-body text-body-sm text-on-surface-variant">
             {isProduct
-              ? "Transfer total pembayaran melalui rekening demo berikut, lalu unggah bukti pembayaran untuk dikirim kepada admin."
-              : "Transfer DP sesuai jumlah yang ditampilkan melalui rekening demo berikut, lalu unggah Bukti Pembayaran DP dan kirim untuk verifikasi admin."}
+              ? "Transfer total pembayaran ke rekening BRI berikut, lalu unggah bukti pembayaran."
+              : "Transfer DP sesuai jumlah yang ditampilkan ke rekening BRI berikut, lalu unggah bukti pembayaran DP."}
           </p>
           <DemoTransferAccount />
-          <div className="space-y-2">
+          <div className="space-y-2 border-t border-outline-variant pt-5">
             <label
               htmlFor="payment-proof"
               className="block font-body text-label-md font-semibold text-primary"
@@ -157,8 +166,11 @@ export function PaymentSubmissionForm({
             >
               JPG, PNG, atau WebP. Maksimal 5 MB.
             </p>
+            <p className="font-body text-body-sm text-on-surface-variant">
+              Setelah dikirim, bukti pembayaran tetap menunggu verifikasi admin.
+            </p>
           </div>
-        </div>
+        </section>
       )}
 
       <p className="font-body text-body-sm text-on-surface-variant">
@@ -190,7 +202,7 @@ export function PaymentSubmissionForm({
             ? "Kirim Bukti Pembayaran"
             : method === "transfer"
               ? "Kirim Bukti Pembayaran DP"
-              : "Kirim Pembayaran"}
+              : "Konfirmasi Metode COD"}
       </button>
     </form>
   );
