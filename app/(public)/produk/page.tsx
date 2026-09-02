@@ -73,7 +73,7 @@ export default async function ProdukPage() {
               <h2 className="font-heading text-heading-md text-primary">Produk belum tersedia</h2>
               <p className="mt-2 font-body text-body-md text-on-surface-variant">Silakan kembali lagi untuk melihat koleksi ready-stock terbaru.</p>
             </div>
-          ) : <div className="grid items-stretch gap-gutter lg:grid-cols-2">
+          ) : <div className="grid items-stretch gap-x-gutter gap-y-14 sm:gap-y-gutter lg:grid-cols-2">
             {products.map((product, index) => {
               const [primary, ...alternatives] = productImages(product);
               const canPurchase = product.available_sizes.length > 0;
@@ -86,12 +86,12 @@ export default async function ProdukPage() {
               return (
                 <Reveal key={product.id} className="h-full">
                   <article aria-labelledby={`product-${product.id}-title`} className="group flex h-full flex-col border border-outline-variant bg-surface-white">
-                    <div className="flex h-[560px] flex-col">
-                      <div className="relative min-h-0 flex-1 overflow-hidden bg-surface-container-low">
+                    <div className="flex flex-col">
+                      <div className="relative aspect-[16/10] overflow-hidden bg-surface-container-low sm:aspect-[16/9] lg:aspect-[16/10]">
                         {primary ? <Image src={primary.src} alt={primary.alt} fill unoptimized={primary.src.startsWith("http")} sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.015] motion-reduce:transition-none" /> :
                           <div className="flex h-full items-center justify-center font-body text-body-sm text-on-surface-variant">Gambar produk belum tersedia</div>}
                       </div>
-                      {alternatives.length > 0 ? <div className="grid h-40 shrink-0 grid-cols-2 gap-3 border-t border-outline-variant p-3">
+                      {alternatives.length > 0 ? <div className="grid h-28 shrink-0 grid-cols-2 gap-3 border-t border-outline-variant p-3 sm:h-32">
                         {alternatives.map((image) => <figure key={image.src} className="relative h-full overflow-hidden bg-surface-container-low">
                           <Image src={image.src} alt={image.alt} fill unoptimized={image.src.startsWith("http")} sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.015] motion-reduce:transition-none" />
                         </figure>)}
@@ -100,35 +100,33 @@ export default async function ProdukPage() {
                     <div className="flex flex-1 flex-col border-t border-outline-variant p-gutter sm:p-8">
                       <p className="font-body text-label-md uppercase text-secondary">Ready Stock {String(index + 1).padStart(2, "0")}</p>
                       <h2 id={`product-${product.id}-title`} className="mt-base font-heading text-heading-strong text-primary">{product.name}</h2>
-                      <dl className="mt-gutter border-y border-outline-variant">
-                        {materials.length > 0 ? (
-                          <div className="grid grid-cols-[6rem_1fr] gap-gutter border-b border-outline-variant py-margin-mobile">
-                            <dt className="font-body text-label-md uppercase text-secondary">Bahan</dt>
-                            <dd className="font-body text-body-md text-on-surface">{materials.join(", ")}</dd>
-                          </div>
-                        ) : null}
-                        <div className="grid grid-cols-[6rem_1fr] gap-gutter border-b border-outline-variant py-margin-mobile">
-                          <dt className="font-body text-label-md uppercase text-secondary">Ukuran</dt>
-                          <dd className="font-body text-body-md text-on-surface">{canPurchase ? product.available_sizes.join(", ") : "Belum tersedia"}</dd>
-                        </div>
-                        <div className="grid grid-cols-[6rem_1fr] items-baseline gap-gutter py-margin-mobile">
+                      {product.description ? <p className="mt-base font-body text-body-sm text-on-surface-variant sm:mt-margin-mobile">{product.description}</p> : null}
+                      <dl className="mt-5 border-y border-outline-variant sm:mt-gutter">
+                        <div className="grid grid-cols-[6rem_1fr] items-baseline gap-gutter border-b border-outline-variant py-3 sm:py-margin-mobile">
                           <dt className="font-body text-label-md uppercase text-secondary">Harga</dt>
                           <dd className="font-heading text-heading-md text-primary">
                             {product.variants.length > 1 ? "Mulai " : ""}
                             {rupiah.format(startingPrice)}
                           </dd>
                         </div>
+                        {materials.length > 0 ? (
+                          <div className="grid grid-cols-[6rem_1fr] gap-gutter border-b border-outline-variant py-3 sm:py-margin-mobile">
+                            <dt className="font-body text-label-md uppercase text-secondary">Bahan</dt>
+                            <dd className="font-body text-body-md text-on-surface">{materials.join(", ")}</dd>
+                          </div>
+                        ) : null}
+                        <div className="grid grid-cols-[6rem_1fr] gap-gutter py-3 sm:py-margin-mobile">
+                          <dt className="font-body text-label-md uppercase text-secondary">Ukuran</dt>
+                          <dd className="font-body text-body-md text-on-surface">{canPurchase ? product.available_sizes.join(", ") : "Belum tersedia"}</dd>
+                        </div>
                       </dl>
-                      <div className="mt-gutter bg-surface-container-low p-gutter">
-                        <p className="font-heading text-heading-xs text-primary">{canPurchase ? "Tersedia untuk dipesan" : "Pilihan ukuran belum tersedia"}</p>
-                        {product.description ? <p className="mt-base font-body text-body-sm text-on-surface-variant">{product.description}</p> : null}
-                      </div>
-                      <div className="mt-auto flex flex-wrap items-center gap-4 pt-8">
-                        <Link href={`/produk/${product.slug}/checkout`} aria-disabled={!canPurchase} className={`inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${canPurchase ? "" : "pointer-events-none opacity-60"}`}>
+                      <p className="mt-5 font-body text-body-sm font-semibold text-primary sm:mt-margin-mobile">{canPurchase ? "Tersedia untuk dipesan" : "Pilihan ukuran belum tersedia"}</p>
+                      <div className="mt-auto flex flex-col items-start gap-3 pt-margin-mobile sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:pt-gutter">
+                        <Link href={`/produk/${product.slug}/checkout`} aria-disabled={!canPurchase} className={`inline-flex min-h-12 w-full items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto ${canPurchase ? "" : "pointer-events-none opacity-60"}`}>
                           Beli Sekarang <ArrowIcon />
                         </Link>
                         {availabilitySupport && availabilitySupportUrl ? (
-                          <a href={availabilitySupportUrl} target="_blank" rel="noopener noreferrer" className="font-body text-button text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                          <a href={availabilitySupportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-primary px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-h-0 sm:w-auto sm:rounded-none sm:border-0 sm:px-0 sm:underline sm:underline-offset-4">
                             {availabilitySupport.label}
                           </a>
                         ) : null}

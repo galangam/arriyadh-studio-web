@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -55,6 +56,18 @@ export default async function ProductCheckoutPage({
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
             <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">
+              {product.image_url ? (
+                <div className="relative -mx-6 -mt-6 mb-6 aspect-[16/10] overflow-hidden border-b border-outline-variant bg-surface-container-low sm:-mx-8 sm:-mt-8 sm:mb-8">
+                  <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    fill
+                    unoptimized={product.image_url.startsWith("http")}
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover object-center"
+                  />
+                </div>
+              ) : null}
               <p className="font-body text-label-md uppercase text-secondary">
                 Produk Dipilih
               </p>
@@ -89,8 +102,8 @@ export default async function ProductCheckoutPage({
                 </div>
               </dl>
               <p className="mt-5 font-body text-body-sm text-on-surface-variant">
-                Harga final dihitung ulang oleh sistem dari varian, ukuran, dan
-                jumlah setelah formulir dikirim.
+                Harga pada ringkasan akan menyesuaikan pilihan varian, ukuran,
+                dan jumlah Anda.
               </p>
               {availabilitySupport && availabilitySupportUrl ? (
                 <div className="mt-5 border-t border-outline-variant pt-5">
