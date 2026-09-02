@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { Container } from "@/components/ui/container";
 import { getSiteSettings } from "@/lib/content/site-settings";
 
 const quickServices = [
@@ -55,8 +56,8 @@ export async function PublicFooter() {
 
   return (
     <footer className="bg-primary text-on-primary">
-      <div className="mx-auto w-full px-margin-mobile py-12 md:px-gutter md:py-section-gap lg:px-16 xl:px-24 2xl:px-32">
-        <div className="grid gap-12 border-b border-on-primary/20 pb-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:gap-16">
+      <Container className="py-12 md:py-16">
+        <div className="grid gap-10 border-b border-on-primary/20 pb-10 sm:grid-cols-2 lg:grid-cols-[1.35fr_0.9fr_0.9fr_1.15fr] lg:gap-10 xl:gap-14">
           {/* Brand */}
           <div>
             <Link
@@ -72,7 +73,7 @@ export async function PublicFooter() {
               dan kepuasan pelanggan.
             </p>
 
-            <div className="mt-gutter">
+            <div className="mt-5">
               <p className="font-body text-label-md text-on-primary">
                 SOSIAL MEDIA
               </p>
@@ -106,7 +107,7 @@ export async function PublicFooter() {
 
             <nav
               aria-label="Layanan cepat"
-              className="mt-margin-mobile flex flex-col gap-3"
+              className="mt-margin-mobile flex flex-col gap-2.5"
             >
               {quickServices.map((service) => (
                 <Link
@@ -126,7 +127,7 @@ export async function PublicFooter() {
 
             <nav
               aria-label="Informasi footer"
-              className="mt-margin-mobile flex flex-col gap-3"
+              className="mt-margin-mobile flex flex-col gap-2.5"
             >
               {informationLinks.map((item) => (
                 <Link
@@ -144,7 +145,7 @@ export async function PublicFooter() {
           <div>
             <h2 className="font-body text-body-md font-bold">Hubungi Kami</h2>
 
-            <address className="mt-margin-mobile space-y-4 font-body text-body-sm not-italic text-on-primary/70">
+            <address className="mt-margin-mobile space-y-3 font-body text-body-sm not-italic text-on-primary/70">
               {settings.address ? <p>{settings.address}</p> : null}
 
               {settings.operating_hours ? <p>{settings.operating_hours}</p> : null}
@@ -170,10 +171,10 @@ export async function PublicFooter() {
           </div>
         </div>
 
-        <p className="pt-gutter font-body text-body-sm text-on-primary/60">
+        <p className="pt-5 font-body text-body-sm text-on-primary/60">
           © {currentYear} {settings.business_name}. All rights reserved.
         </p>
-      </div>
+      </Container>
     </footer>
   );
 }

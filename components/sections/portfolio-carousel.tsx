@@ -10,6 +10,7 @@ type PortfolioImage = {
 
 type PortfolioCarouselProps = {
   images: readonly PortfolioImage[];
+  compact?: boolean;
 };
 
 function CarouselArrow({ direction }: { direction: "previous" | "next" }) {
@@ -31,7 +32,10 @@ function CarouselArrow({ direction }: { direction: "previous" | "next" }) {
   );
 }
 
-export function PortfolioCarousel({ images }: PortfolioCarouselProps) {
+export function PortfolioCarousel({
+  images,
+  compact = false,
+}: PortfolioCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
@@ -82,9 +86,9 @@ export function PortfolioCarousel({ images }: PortfolioCarouselProps) {
   }
 
   return (
-    <div className="mt-12">
+    <div className={compact ? "mt-10" : "mt-12"}>
       <div
-        className="relative mx-auto max-w-6xl"
+        className={`relative mx-auto ${compact ? "max-w-5xl" : "max-w-6xl"}`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -112,7 +116,7 @@ export function PortfolioCarousel({ images }: PortfolioCarouselProps) {
           {/* Active */}
           <figure
             key={activeImage.src}
-            className="portfolio-focus relative aspect-[4/3] overflow-hidden border border-outline bg-surface-white shadow-md"
+            className={`portfolio-focus relative overflow-hidden border border-outline bg-surface-white shadow-md ${compact ? "aspect-[16/10]" : "aspect-[4/3]"}`}
           >
             <Image
               src={activeImage.src}

@@ -79,17 +79,17 @@ export default async function Home() {
             priority
             unoptimized={content.hero_image_url.startsWith("http")}
             sizes="100vw"
-            className="-z-20 object-cover object-[center_35%] opacity-40"
+            className="-z-20 object-cover object-[center_35%] opacity-70"
             aria-hidden="true"
           />
         ) : null}
 
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-surface-white/55"
+          className="absolute inset-0 -z-10 bg-surface-white/40"
         />
 
-       <Container className="flex min-h-[520px] items-center py-16 md:min-h-[560px] md:py-section-gap lg:min-h-[600px]">
+       <Container className="flex min-h-[480px] items-center py-12 sm:min-h-[520px] sm:py-16 md:min-h-[560px] md:py-section-gap lg:min-h-[580px]">
   <div className="max-w-2xl py-gutter md:w-[58%] md:py-10 lg:py-12">
     <p className="font-body text-label-md uppercase text-secondary">
       {content.hero_eyebrow}
@@ -102,7 +102,7 @@ export default async function Home() {
       {content.hero_title}
     </h1>
 
-    <p className="mt-gutter max-w-xl font-body text-body-md text-on-surface-variant sm:text-body-lg">
+    <p className="mt-gutter max-w-lg font-body text-body-md text-on-surface-variant sm:text-body-lg">
       {content.hero_description}
     </p>
 
@@ -285,7 +285,7 @@ export default async function Home() {
               return (
               <Reveal key={product.id} delay={index * 120}>
                 <article className="group overflow-hidden border border-outline-variant bg-surface-white">
-                  <div className="relative aspect-[4/3] overflow-hidden border-b border-outline-variant bg-surface-container-low">
+                  <div className="relative aspect-[16/10] overflow-hidden border-b border-outline-variant bg-surface-container-low sm:aspect-[16/9] md:aspect-[16/10]">
                     {image ? (
                       <Image
                         src={image}
@@ -302,8 +302,8 @@ export default async function Home() {
                     </span>
                   </div>
 
-                  <div className="p-gutter">
-                    <div className="flex flex-col gap-gutter sm:flex-row sm:items-end sm:justify-between">
+                  <div className="p-margin-mobile sm:p-gutter">
+                    <div className="flex flex-col gap-margin-mobile sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <h3 className="font-heading text-heading-sm text-primary">
                           {product.name}
@@ -375,7 +375,7 @@ export default async function Home() {
           </Reveal>
 
           <Reveal delay={120}>
-            <PortfolioCarousel images={portfolioImages} />
+            <PortfolioCarousel images={portfolioImages} compact />
           </Reveal>
         </Container>
       </section>
