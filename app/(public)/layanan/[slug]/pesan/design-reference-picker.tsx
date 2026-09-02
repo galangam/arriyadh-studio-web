@@ -176,10 +176,10 @@ export function DesignReferencePicker({
     >
       <p className="font-body text-label-md font-semibold text-primary">
         {required ? (
-          "Referensi Desain"
+          "File Referensi (Wajib)"
         ) : (
           <>
-            Referensi Pendukung{" "}
+            File Referensi{" "}
             <span className="font-normal text-on-surface-variant">
               (Opsional)
             </span>
@@ -210,7 +210,7 @@ export function DesignReferencePicker({
         disabled={pending || selectedReferences.length >= maxFiles}
         aria-describedby="design-reference-help design-reference-error"
         onClick={() => pickerInputRef.current?.click()}
-        className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-primary px-4 font-body text-button text-primary hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
         Tambah File
       </button>
@@ -229,8 +229,8 @@ export function DesignReferencePicker({
         className="mt-2 font-body text-body-sm text-on-surface-variant"
       >
         {required
-          ? "Wajib unggah minimal 1 gambar atau PDF sebagai referensi desain. Maksimal 5 file, masing-masing maksimal 10 MB."
-          : "Unggah gambar atau PDF jika tersedia. Maksimal 5 file, masing-masing maksimal 10 MB."}
+          ? "Unggah minimal 1 file JPEG, PNG, WebP, atau PDF. Maksimal 5 file, masing-masing maksimal 10 MB."
+          : "Jika tersedia, unggah JPEG, PNG, WebP, atau PDF. Maksimal 5 file, masing-masing maksimal 10 MB."}
       </p>
 
       {selectedReferences.length > 0 ? (
@@ -281,7 +281,7 @@ export function DesignReferencePicker({
                   onClick={() => removeFile(key)}
                   disabled={pending}
                   aria-label={`Hapus ${file.name}`}
-                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-outline-variant font-body text-heading-sm text-primary hover:bg-surface-container"
+                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-error/30 font-body text-heading-sm text-error hover:bg-error-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error"
                 >
                   <span aria-hidden="true">&times;</span>
                 </button>

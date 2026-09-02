@@ -145,13 +145,16 @@ export function ServiceVariantFields({
   return (
     <fieldset
       aria-busy={pending}
-      className="border border-outline-variant bg-surface-container-low p-4 sm:p-5"
+      className="min-w-0"
     >
-      <legend className="px-2 font-heading text-heading-sm text-primary">
+      <legend className="font-body text-label-md font-semibold text-primary">
         {heading}
       </legend>
+      <p className="mt-1 font-body text-body-sm text-on-surface-variant">
+        Pisahkan varian jika material, jenis lengan, atau rincian ukurannya berbeda.
+      </p>
 
-      <div className="mt-2 space-y-4">
+      <div className="mt-4 space-y-4">
         {variants.map((variant, index) => {
           const variantSubtotal = subtotal(variant);
           const variantInvalid =
@@ -168,7 +171,7 @@ export function ServiceVariantFields({
               data-variant-invalid={variantInvalid ? "true" : undefined}
               aria-labelledby={`variant-${variant.id}-heading`}
               tabIndex={-1}
-              className="border border-outline-variant bg-surface-white p-4"
+              className="rounded-md border border-outline-variant bg-surface-container-low p-4 focus:outline-none focus:ring-2 focus:ring-primary sm:p-5"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3
@@ -186,7 +189,7 @@ export function ServiceVariantFields({
                       )
                     }
                     disabled={pending}
-                    className="font-body text-button text-error underline-offset-4 hover:underline"
+                    className="inline-flex min-h-10 items-center rounded-md px-2 font-body text-button text-error underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error disabled:opacity-50"
                   >
                     Hapus Varian
                   </button>
@@ -213,7 +216,7 @@ export function ServiceVariantFields({
                           });
                         }
                       }}
-                      className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md font-normal text-on-surface"
+                      className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md font-normal text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     >
                       {jerseyVariantTypes.map((variantType) => (
                         <option key={variantType} value={variantType}>
@@ -237,7 +240,7 @@ export function ServiceVariantFields({
                         });
                       }
                     }}
-                    className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md font-normal text-on-surface"
+                    className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md font-normal text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary aria-[invalid=true]:border-error aria-[invalid=true]:focus:ring-error"
                   >
                     {currentMaterialOptions.map((material) => (
                       <option key={material}>{material}</option>
@@ -257,7 +260,7 @@ export function ServiceVariantFields({
                         });
                       }
                     }}
-                    className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md font-normal text-on-surface"
+                    className="mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md font-normal text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {serviceVariantSleeveTypes.map((sleeveType) => (
                       <option key={sleeveType}>{sleeveType}</option>
@@ -266,11 +269,14 @@ export function ServiceVariantFields({
                 </label>
               </div>
 
-              <fieldset className="mt-5">
+              <fieldset className="mt-6 border-t border-outline-variant pt-5">
                 <legend className="font-body text-label-md font-semibold text-primary">
                   Ukuran & Jumlah
                 </legend>
-                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-6">
+                <p className="mt-1 font-body text-body-sm text-on-surface-variant">
+                  Biarkan kosong atau isi 0 untuk ukuran yang tidak dipesan.
+                </p>
+                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
                   {serviceVariantSizes.map((size) => (
                     <label
                       key={size}
@@ -295,14 +301,14 @@ export function ServiceVariantFields({
                           })
                         }
                         aria-label={`Jumlah ukuran ${size}, varian ${index + 1}`}
-                        className="mt-1 block min-h-11 w-full rounded-md border border-outline-variant bg-surface-white px-3 font-body text-body-md font-normal text-on-surface"
+                        className="mt-1 block min-h-11 w-full rounded-md border border-outline-variant bg-surface-white px-3 font-body text-body-md font-normal text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </label>
                   ))}
                 </div>
               </fieldset>
 
-              <p className="mt-4 font-body text-body-md font-semibold text-primary">
+              <p className="mt-5 border-t border-outline-variant pt-4 font-body text-body-md font-semibold text-primary">
                 Subtotal Varian: {variantSubtotal} pcs
               </p>
               {variantSubtotal === 0 ? (
@@ -333,13 +339,13 @@ export function ServiceVariantFields({
           ]);
           setNextId((value) => value + 1);
         }}
-        className="mt-4 min-h-11 rounded-md border border-outline px-4 font-body text-button text-primary disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-4 min-h-11 rounded-md border border-primary px-4 font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
         + Tambah Varian
       </button>
 
       <p
-        className="mt-4 font-body text-body-md font-semibold text-primary"
+        className="mt-5 border-t border-outline-variant pt-4 font-body text-body-md font-semibold text-primary"
         aria-live="polite"
       >
         Total Pesanan: {total} pcs

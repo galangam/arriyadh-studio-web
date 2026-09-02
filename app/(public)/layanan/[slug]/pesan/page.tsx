@@ -25,7 +25,7 @@ export default async function ServiceOrderPage({
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
       <Container>
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-4xl">
           <Link
             href="/layanan"
             className="font-body text-button text-on-surface-variant underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -33,38 +33,43 @@ export default async function ServiceOrderPage({
             ← Kembali ke Layanan
           </Link>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
-            <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">
-              <p className="font-body text-label-md uppercase text-secondary">
-                Layanan Dipilih
-              </p>
-              <h1 className="mt-2 font-heading text-heading-lg text-primary">
-                {service.name}
-              </h1>
-              {service.description ? (
-                <p className="mt-3 font-body text-body-md text-on-surface-variant">
-                  {service.description}
-                </p>
-              ) : null}
-              <div className="mt-6 border-t border-outline-variant pt-5">
-                <h2 className="font-heading text-heading-sm text-primary">
-                  Setelah Pesanan Dikirim
-                </h2>
-                <p className="mt-2 font-body text-body-sm text-on-surface-variant">
-                  Admin akan meninjau kebutuhan Anda dan menentukan harga.
-                  Pembayaran belum diperlukan pada tahap ini.
-                </p>
+          <div className="mt-6 space-y-6">
+            <section className="border border-outline-variant bg-surface-white px-6 py-5 sm:px-8 sm:py-6">
+              <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(240px,0.6fr)] sm:items-end">
+                <div>
+                  <p className="font-body text-label-md uppercase text-secondary">
+                    Layanan Dipilih
+                  </p>
+                  <h1 className="mt-2 font-heading text-heading-lg text-primary">
+                    {service.name}
+                  </h1>
+                  {service.description ? (
+                    <p className="mt-2 max-w-2xl font-body text-body-sm text-on-surface-variant">
+                      {service.description}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="border-t border-outline-variant pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+                  <h2 className="font-heading text-heading-sm text-primary">
+                    Setelah Pesanan Dikirim
+                  </h2>
+                  <p className="mt-2 font-body text-body-sm text-on-surface-variant">
+                    Admin akan meninjau kebutuhan Anda dan menentukan harga.
+                    Pembayaran belum diperlukan pada tahap ini.
+                  </p>
+                </div>
               </div>
             </section>
 
-            <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">
+            <section className="border border-outline-variant bg-surface-white p-6 sm:p-8 md:p-10">
               <h2 className="font-heading text-heading-md text-primary">
-                Detail Pesanan
+                Formulir Pesanan
               </h2>
               <p className="mt-2 font-body text-body-md text-on-surface-variant">
-                Lengkapi kebutuhan layanan dan informasi yang dapat dihubungi.
+                Isi informasi pemesan dan rincian kebutuhan layanan Anda.
               </p>
-              <div className="mt-6">
+              <div className="mt-8">
                 <ServiceOrderForm
                   serviceId={service.id}
                   serviceSlug={service.slug}

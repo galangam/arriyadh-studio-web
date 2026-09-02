@@ -45,7 +45,7 @@ const emptyValues: ServiceOrderSubmittedValues = {
 };
 
 const inputClassName =
-  "mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
+  "mt-2 block min-h-12 w-full rounded-md border border-outline-variant bg-surface-white px-4 font-body text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary aria-[invalid=true]:border-error aria-[invalid=true]:focus:ring-error";
 
 const globalValidationMessage =
   "Pesanan belum berhasil dibuat. Periksa kembali data yang ditandai.";
@@ -263,9 +263,17 @@ export function ServiceOrderForm({
       action={formAction}
       onInvalidCapture={handleInvalid}
       onSubmitCapture={handleSubmitCapture}
-      className="space-y-6"
+      className="space-y-0"
     >
-      <div className="grid gap-6 sm:grid-cols-2">
+      <fieldset className="pb-8">
+        <legend className="font-heading text-heading-sm text-primary">
+          Informasi Pemesan
+        </legend>
+        <p className="mt-1 font-body text-body-sm text-on-surface-variant">
+          Gunakan nama dan nomor WhatsApp yang aktif agar admin mudah menghubungi Anda.
+        </p>
+
+      <div className="mt-5 grid gap-6 sm:grid-cols-2">
         <div>
           <label
             htmlFor="customerName"
@@ -329,6 +337,17 @@ export function ServiceOrderForm({
           />
         </div>
       </div>
+      </fieldset>
+
+      <fieldset className="border-t border-outline-variant py-8">
+        <legend className="font-heading text-heading-sm text-primary">
+          Detail Pesanan
+        </legend>
+        <p className="mt-1 font-body text-body-sm text-on-surface-variant">
+          Lengkapi rincian sesuai layanan yang Anda pilih.
+        </p>
+
+        <div className="mt-5 space-y-6">
 
       {!usesVariants ? (
       <div>
@@ -349,7 +368,7 @@ export function ServiceOrderForm({
           value={values.quantity}
           onChange={(event) => updateValue("quantity", event.target.value)}
           required
-          className={inputClassName}
+          className={`${inputClassName} sm:max-w-xs`}
         />
         <FieldError id="quantity-error" message={fieldError("quantity")} />
       </div>
@@ -461,17 +480,35 @@ export function ServiceOrderForm({
           />
         </div>
       )}
+        </div>
+      </fieldset>
 
       {referenceRequirement !== "unsupported" ? (
-        <DesignReferencePicker
-          serverError={fieldError("designReferences")}
-          responseRevision={state.revision}
-          pending={isPending}
-          requirement={referenceRequirement}
-        />
+        <section
+          aria-labelledby="design-reference-section-title"
+          className="border-t border-outline-variant py-8"
+        >
+          <h3
+            id="design-reference-section-title"
+            className="font-heading text-heading-sm text-primary"
+          >
+            Referensi Desain
+          </h3>
+          <p className="mt-1 font-body text-body-sm text-on-surface-variant">
+            Lampirkan file agar kebutuhan visual dapat dipahami dengan lebih jelas.
+          </p>
+          <div className="mt-5">
+            <DesignReferencePicker
+              serverError={fieldError("designReferences")}
+              responseRevision={state.revision}
+              pending={isPending}
+              requirement={referenceRequirement}
+            />
+          </div>
+        </section>
       ) : null}
 
-      <fieldset className="border-t border-outline-variant pt-6">
+      <fieldset className="border-t border-outline-variant py-8">
         <legend className="font-heading text-heading-sm text-primary">
           Informasi Tambahan
         </legend>
@@ -561,34 +598,49 @@ export function ServiceOrderForm({
         </div>
       </fieldset>
 
-      <div aria-live="assertive" aria-atomic="true">
-        {validationFailed || serverValidationFailed ? (
-          <div
-            id="service-order-error-summary"
-            role="alert"
-            tabIndex={-1}
-            className="border border-error/30 bg-error-container px-4 py-3 font-body text-body-sm text-on-error-container"
-          >
-            <p className="font-semibold">{globalValidationMessage}</p>
-            {state.formError ? (
-              <p className="mt-1">{state.formError}</p>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      <button
-        type="submit"
-        disabled={isPending}
-        onClick={() => {
-          clientFocusScheduledRef.current = false;
-          setClientFieldErrors({});
-          setValidationFailed(false);
-        }}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+      <section
+        aria-labelledby="submit-section-title"
+        className="border-t border-outline-variant pt-8"
       >
-        {isPending ? "Membuat Pesanan..." : "Kirim Pesanan"}
-      </button>
+        <h3
+          id="submit-section-title"
+          className="font-heading text-heading-sm text-primary"
+        >
+          Kirim Pesanan
+        </h3>
+        <p className="mt-1 font-body text-body-sm text-on-surface-variant">
+          Periksa kembali rincian Anda sebelum pesanan dikirim ke admin.
+        </p>
+
+        <div className="mt-5" aria-live="assertive" aria-atomic="true">
+          {validationFailed || serverValidationFailed ? (
+            <div
+              id="service-order-error-summary"
+              role="alert"
+              tabIndex={-1}
+              className="border border-error/30 bg-error-container px-4 py-3 font-body text-body-sm text-on-error-container"
+            >
+              <p className="font-semibold">{globalValidationMessage}</p>
+              {state.formError ? (
+                <p className="mt-1">{state.formError}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isPending}
+          onClick={() => {
+            clientFocusScheduledRef.current = false;
+            setClientFieldErrors({});
+            setValidationFailed(false);
+          }}
+          className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        >
+          {isPending ? "Membuat Pesanan..." : "Kirim Pesanan"}
+        </button>
+      </section>
     </form>
   );
 }
