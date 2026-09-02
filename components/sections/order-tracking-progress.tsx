@@ -76,7 +76,7 @@ export function OrderTrackingProgress(props: OrderTrackingProgressProps) {
             ? "Tahapan penyiapan produk"
             : "Tahapan produksi pesanan"
         }
-        className="mt-5 flex flex-col gap-3 md:grid md:gap-2"
+        className="mt-5 flex flex-col gap-2.5 lg:grid lg:gap-2"
         style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))` }}
       >
         {stages.map((stage, index) => {
@@ -97,7 +97,7 @@ export function OrderTrackingProgress(props: OrderTrackingProgressProps) {
             <li
               key={stage.key}
               aria-current={isCurrent ? "step" : undefined}
-              className={`grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] gap-3 border-l-2 px-3 py-2.5 md:block md:border-l-0 md:border-t-2 md:px-2 ${stateClassName}`}
+              className={`grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] gap-3 border-l-2 px-3 py-2 lg:block lg:border-l-0 lg:border-t-2 lg:px-2 lg:py-2.5 ${stateClassName}`}
             >
               <span
                 aria-hidden="true"
@@ -105,7 +105,7 @@ export function OrderTrackingProgress(props: OrderTrackingProgressProps) {
               >
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <span className="min-w-0 md:mt-2 md:block">
+              <span className="min-w-0 lg:mt-2 lg:block">
                 <span className="block break-words font-body text-body-sm font-semibold text-primary">
                   {stage.label}
                 </span>

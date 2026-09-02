@@ -158,7 +158,7 @@ export default async function LacakPesananPage() {
 {/* FAQ */}
 <section
   aria-labelledby="tracking-faq-title"
-  className="bg-surface-container-low py-section-gap md:py-24"
+  className="bg-surface-container-low py-16 md:py-20"
 >
   <Container>
     <Reveal>
@@ -170,7 +170,7 @@ export default async function LacakPesananPage() {
           Pertanyaan Umum Pelacakan
         </h2>
 
-        <div className="mt-10 space-y-3">
+        <div className="mt-8 space-y-3">
           {faqs.map((faq) => (
             <details
               key={faq.question}
@@ -202,14 +202,14 @@ export default async function LacakPesananPage() {
       {/* HELP */}
      <section
   aria-labelledby="tracking-help-title"
-  className="bg-surface-white py-section-gap md:py-20"
+  className="bg-surface-white py-16 md:py-20"
       >
         <Container>
           <Reveal>
             <div className="mx-auto max-w-3xl text-center">
               <h2
                 id="tracking-help-title"
-                className="font-heading text-heading-lg text-primary"
+                className="font-heading text-heading-md text-primary"
               >
                 Butuh Bantuan Lebih Lanjut?
               </h2>

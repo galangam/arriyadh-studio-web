@@ -121,8 +121,8 @@ function getStateMessage(order: TrackingOrder) {
 function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="font-body text-label-md text-on-surface-variant">{label}</dt>
-      <dd className="mt-1 break-words font-body text-body-md font-semibold text-on-surface">
+      <dt className="font-body text-label-sm text-on-surface-variant">{label}</dt>
+      <dd className="mt-1 break-words font-body text-body-sm font-semibold text-on-surface sm:text-body-md">
         {value}
       </dd>
     </div>
@@ -164,18 +164,18 @@ function ServiceDetails({
       >
         Rincian Varian
       </h3>
-      <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+      <ul className="mt-4 grid gap-x-6 gap-y-5 sm:grid-cols-2">
         {order.variants.map((variant, index) => (
           <li
             key={`${variant.variantType ?? "variant"}-${variant.material}-${variant.sleeveType}-${index}`}
-            className="min-w-0 border border-outline-variant bg-surface-container-low p-4"
+            className="min-w-0 border-l-2 border-outline-variant bg-surface-container-low/50 px-4 py-3"
           >
             <h4 className="break-words font-heading text-heading-xs text-primary">
               {variant.variantType
                 ? getJerseyVariantTypeLabel(variant.variantType)
                 : `Varian ${index + 1}`}
             </h4>
-            <dl className="mt-3 grid gap-3">
+            <dl className="mt-3 grid gap-2.5">
               <DetailItem label="Material" value={variant.material} />
               <DetailItem label="Jenis Lengan" value={variant.sleeveType} />
               <DetailItem label="Subtotal" value={`${variant.quantity} pcs`} />
@@ -189,7 +189,7 @@ function ServiceDetails({
                   {variant.sizes.map((size) => (
                     <li
                       key={size.size}
-                      className="rounded-md border border-outline-variant bg-surface-white px-3 py-2 font-body text-body-sm text-on-surface"
+                      className="rounded-md border border-outline-variant bg-surface-white px-2.5 py-1.5 font-body text-body-sm text-on-surface"
                     >
                       {size.size} × {size.quantity}
                     </li>
@@ -273,31 +273,40 @@ export function OrderTrackingResult({
     <section
       aria-labelledby="tracking-result-heading"
       aria-live="polite"
-      className="mt-8 border border-outline-variant bg-surface-white p-5 text-left shadow-sm sm:p-8"
+      className="mt-8 border border-outline-variant bg-surface-white p-5 text-left sm:p-8"
     >
-      <div className="flex flex-col gap-4 border-b border-outline-variant pb-6 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="font-body text-label-md uppercase text-secondary">
-            Status Pesanan
-          </p>
-          <h2
-            id="tracking-result-heading"
-            className="mt-1 font-heading text-heading-md text-primary"
-          >
-            {stateMessage.heading}
-          </h2>
-          <p className="mt-2 max-w-2xl font-body text-body-md text-on-surface-variant">
-            {stateMessage.message}
-          </p>
+      <div className="border-b border-outline-variant pb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-body text-label-md uppercase text-secondary">
+              Status Pesanan
+            </p>
+            <h2
+              id="tracking-result-heading"
+              className="mt-1 font-heading text-heading-md text-primary"
+            >
+              {stateMessage.heading}
+            </h2>
+            <p className="mt-2 max-w-2xl font-body text-body-md text-on-surface-variant">
+              {stateMessage.message}
+            </p>
+          </div>
+
+          <span className="inline-flex w-fit shrink-0 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 font-body text-label-md font-semibold text-primary">
+            Status: {orderStatusLabels[order.status]}
+          </span>
         </div>
 
-        <span className="inline-flex w-fit shrink-0 rounded-full bg-surface-container-low px-4 py-2 font-body text-label-md font-semibold text-primary">
-          {orderStatusLabels[order.status]}
-        </span>
+        <div className="mt-5 grid gap-4 border-t border-outline-variant pt-5 sm:grid-cols-2">
+          <DetailItem label="Kode Pesanan" value={order.orderCode} />
+          <DetailItem
+            label={order.kind === "service" ? "Layanan" : "Produk"}
+            value={itemName}
+          />
+        </div>
       </div>
 
-      <dl className="grid gap-5 py-6 sm:grid-cols-2 lg:grid-cols-3">
-        <DetailItem label="Kode Pesanan" value={order.orderCode} />
+      <dl className="grid gap-4 py-6 sm:grid-cols-3">
         <DetailItem
           label="Tanggal Pesanan"
           value={jakartaDateFormatter.format(new Date(order.createdAt))}
@@ -305,10 +314,6 @@ export function OrderTrackingResult({
         <DetailItem
           label="Jenis Pesanan"
           value={order.kind === "service" ? "Layanan" : "Produk"}
-        />
-        <DetailItem
-          label={order.kind === "service" ? "Layanan" : "Produk"}
-          value={itemName}
         />
         <DetailItem label="Jumlah" value={`${order.quantity} pcs`} />
       </dl>
@@ -340,7 +345,7 @@ export function OrderTrackingResult({
           >
             Ringkasan Pembayaran
           </h3>
-          <dl className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {order.kind === "product" && order.unitPrice !== null ? (
               <DetailItem
                 label="Harga Satuan"
@@ -372,15 +377,15 @@ export function OrderTrackingResult({
       {order.kind === "service" && order.designReferenceCount > 0 ? (
         <section
           aria-labelledby="tracking-reference-heading"
-          className="border-t border-outline-variant pt-6"
+          className="border-t border-outline-variant pt-5"
         >
           <h3
             id="tracking-reference-heading"
-            className="font-heading text-heading-sm text-primary"
+            className="font-body text-label-md font-semibold text-primary"
           >
             Referensi Desain
           </h3>
-          <p className="mt-2 font-body text-body-md text-on-surface-variant">
+          <p className="mt-1 font-body text-body-sm text-on-surface-variant">
             {order.designReferenceCount} referensi desain telah tersimpan.
           </p>
         </section>
@@ -422,11 +427,11 @@ export function OrderTrackingResult({
 
       <section
         aria-labelledby="tracking-support-heading"
-        className="border-t border-outline-variant pt-6"
+        className="mt-6 border-t border-outline-variant pt-5"
       >
         <h3
           id="tracking-support-heading"
-          className="font-heading text-heading-sm text-primary"
+          className="font-heading text-heading-xs text-primary"
         >
           Butuh Bantuan?
         </h3>
@@ -437,7 +442,7 @@ export function OrderTrackingResult({
           href={trackingWhatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md border border-outline bg-surface-container-low px-gutter font-body text-button font-semibold text-primary transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
         >
           Tanyakan Pesanan via WhatsApp
         </a>
