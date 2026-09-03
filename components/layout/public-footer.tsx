@@ -172,7 +172,7 @@ export async function PublicFooter() {
         </div>
 
         <p className="pt-5 font-body text-body-sm text-on-primary/60">
-          © {currentYear} {settings.business_name}. All rights reserved.
+          © {currentYear} {settings.business_name}. Seluruh hak dilindungi.
         </p>
       </Container>
     </footer>
