@@ -19,7 +19,7 @@ export default async function AboutAdminPage() {
             Tentang Kami
           </h1>
           <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
-            Kelola pengantar, profil, keunggulan, dan informasi visual workshop pada halaman Tentang Kami.
+            Kelola pengantar, profil, konten keunggulan tersimpan, dan informasi visual workshop.
           </p>
         </section>
 

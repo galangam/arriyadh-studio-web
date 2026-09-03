@@ -6,26 +6,38 @@ const contentSections = [
   {
     label: "Informasi Bisnis",
     href: "/admin/konten/informasi-bisnis",
+    description: "Identitas, kontak, lokasi, dan media sosial.",
+    group: "Informasi & Halaman Utama",
   },
   {
     label: "Beranda",
     href: "/admin/konten/beranda",
+    description: "Hero, pengantar, dan konten unggulan beranda.",
+    group: "Informasi & Halaman Utama",
   },
   {
     label: "Tentang Kami",
     href: "/admin/konten/tentang-kami",
+    description: "Profil, sejarah, dan informasi workshop.",
+    group: "Informasi & Halaman Utama",
   },
   {
     label: "Layanan",
     href: "/admin/konten/layanan",
+    description: "Daftar dan informasi layanan yang ditawarkan.",
+    group: "Katalog",
   },
   {
     label: "Produk",
     href: "/admin/konten/produk",
+    description: "Produk ready stock, varian, dan harga.",
+    group: "Katalog",
   },
   {
     label: "Portofolio",
     href: "/admin/konten/portofolio",
+    description: "Dokumentasi hasil pekerjaan Arriyadh Studio.",
+    group: "Portofolio",
   },
 ] as const;
 
@@ -50,39 +62,28 @@ export default async function AdminContentPage() {
           </p>
         </section>
 
-        <nav
-          aria-label="Bagian kelola konten"
-          className="overflow-x-auto border-b border-outline-variant"
-        >
-          <ul className="flex min-w-max gap-8 px-1 pt-1">
-            {contentSections.map((section) => (
-              <li key={section.href}>
-                <Link
-                  href={section.href}
-                  className="block border-b-2 border-transparent px-1 py-4 text-admin-label text-on-surface-variant transition-colors hover:border-primary hover:text-primary focus-visible:rounded-sm focus-visible:border-primary focus-visible:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
-                >
-                  {section.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <nav aria-label="Bagian kelola konten" className="mt-8 space-y-9">
+          {["Informasi & Halaman Utama", "Katalog", "Portofolio"].map((group) => (
+            <section key={group} aria-labelledby={`content-${group.toLowerCase().replaceAll(" ", "-").replace("&", "dan")}`}>
+              <h2 id={`content-${group.toLowerCase().replaceAll(" ", "-").replace("&", "dan")}`} className="font-heading text-heading-xs text-primary">
+                {group}
+              </h2>
+              <ul className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {contentSections.filter((section) => section.group === group).map((section) => (
+                  <li key={section.href}>
+                    <Link href={section.href} className="group flex h-full min-h-32 flex-col justify-between rounded-md border border-outline-variant bg-surface-white p-5 transition-colors hover:border-primary/40 hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                      <span>
+                        <span className="block font-heading text-admin-section text-primary">{section.label}</span>
+                        <span className="mt-1.5 block text-admin-body text-on-surface-variant">{section.description}</span>
+                      </span>
+                      <span className="mt-4 text-admin-label font-semibold text-primary">Edit konten <span aria-hidden="true">→</span></span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </nav>
-
-        <section
-          aria-labelledby="content-empty-heading"
-          className="border-b border-outline-variant py-10 md:py-12"
-        >
-          <h2
-            id="content-empty-heading"
-            className="font-heading text-heading-xs text-primary"
-          >
-            Pilih bagian konten
-          </h2>
-          <p className="mt-1.5 max-w-xl text-admin-body text-on-surface-variant">
-            Gunakan navigasi di atas untuk mulai mengelola konten website
-            Arriyadh Studio.
-          </p>
-        </section>
       </div>
     </main>
   );

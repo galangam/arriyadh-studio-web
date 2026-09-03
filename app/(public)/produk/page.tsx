@@ -122,9 +122,15 @@ export default async function ProdukPage() {
                       </dl>
                       <p className="mt-5 font-body text-body-sm font-semibold text-primary sm:mt-margin-mobile">{canPurchase ? "Tersedia untuk dipesan" : "Pilihan ukuran belum tersedia"}</p>
                       <div className="mt-auto flex flex-col items-start gap-3 pt-margin-mobile sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:pt-gutter">
-                        <Link href={`/produk/${product.slug}/checkout`} aria-disabled={!canPurchase} className={`inline-flex min-h-12 w-full items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto ${canPurchase ? "" : "pointer-events-none opacity-60"}`}>
-                          Beli Sekarang <ArrowIcon />
-                        </Link>
+                        {canPurchase ? (
+                          <Link href={`/produk/${product.slug}/checkout`} className="inline-flex min-h-12 w-full items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto">
+                            Beli Sekarang <ArrowIcon />
+                          </Link>
+                        ) : (
+                          <span aria-disabled="true" className="inline-flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary opacity-60 sm:w-auto">
+                            Beli Sekarang <ArrowIcon />
+                          </span>
+                        )}
                         {availabilitySupport && availabilitySupportUrl ? (
                           <a href={availabilitySupportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-primary px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-h-0 sm:w-auto sm:rounded-none sm:border-0 sm:px-0 sm:underline sm:underline-offset-4">
                             {availabilitySupport.label}

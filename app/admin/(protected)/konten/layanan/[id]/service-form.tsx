@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState, useState } from "react";
 
 import {
@@ -22,7 +23,7 @@ const flowLabels = {
   permak: "Permak",
 } as const;
 
-export function ServiceForm({ service }: { service: AdminService }) {
+export function ServiceForm({ service, imagePreviewUrl }: { service: AdminService; imagePreviewUrl: string | null }) {
   const updateCurrentService = updateService.bind(null, service.id);
   const [state, formAction, isPending] = useActionState(
     updateCurrentService,
@@ -43,35 +44,39 @@ export function ServiceForm({ service }: { service: AdminService }) {
   }
 
   return (
-    <form action={formAction} onSubmit={confirmDeactivation} className="space-y-8">
-      <section aria-labelledby="service-system-fields" className="space-y-5">
+    <form action={formAction} onSubmit={confirmDeactivation} className="flex max-w-5xl flex-col gap-8">
+      <section aria-labelledby="service-system-fields" className="order-3 space-y-5 border-t border-outline-variant pt-8">
         <div>
           <h2 id="service-system-fields" className="font-heading text-heading-xs text-primary">
             Informasi Sistem
           </h2>
           <p className="mt-1.5 text-admin-body text-on-surface-variant">
-            Slug dan alur layanan dikendalikan sistem karena terhubung dengan route, persyaratan pesanan, serta workflow produksi.
+            Slug dan alur layanan dikendalikan sistem karena digunakan oleh form pesanan dan workflow.
           </p>
         </div>
-        <dl className="grid gap-5 md:grid-cols-2">
+        <dl className="grid gap-5 md:grid-cols-3">
+          <div>
+            <dt className="text-admin-label text-primary">ID</dt>
+            <dd className="mt-2 break-all rounded-md bg-surface-container-low px-4 py-3 font-mono text-admin-caption text-on-surface-variant">{service.id}</dd>
+          </div>
           <div>
             <dt className="text-admin-label text-primary">Slug</dt>
-            <dd className="mt-2 border border-outline-variant bg-surface-container-low px-4 py-3 font-mono text-admin-body text-on-surface-variant">
+            <dd className="mt-2 break-words rounded-md bg-surface-container-low px-4 py-3 font-mono text-admin-body text-on-surface-variant">
               {service.slug}
             </dd>
           </div>
           <div>
             <dt className="text-admin-label text-primary">Flow / Alur Layanan</dt>
-            <dd className="mt-2 border border-outline-variant bg-surface-container-low px-4 py-3 text-admin-body text-on-surface-variant">
+            <dd className="mt-2 rounded-md bg-surface-container-low px-4 py-3 text-admin-body text-on-surface-variant">
               {flowLabels[service.flow]} ({service.flow})
             </dd>
           </div>
         </dl>
       </section>
 
-      <section aria-labelledby="service-editable-fields" className="space-y-6 border-t border-outline-variant pt-8">
+      <section aria-labelledby="service-editable-fields" className="order-1 space-y-6">
         <h2 id="service-editable-fields" className="font-heading text-heading-xs text-primary">
-          Informasi Katalog
+          Konten yang Dapat Diedit
         </h2>
 
         <div>
@@ -90,7 +95,12 @@ export function ServiceForm({ service }: { service: AdminService }) {
           {state.errors.description ? <p id="description-error" className="mt-1.5 text-admin-caption text-error">{state.errors.description}</p> : null}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+          <div>
+            <p className="text-admin-label text-primary">Gambar layanan saat ini</p>
+            {imagePreviewUrl ? <Image src={imagePreviewUrl} alt={`Preview gambar layanan ${service.name}`} width={576} height={360} className="mt-2 aspect-[8/5] w-full rounded-md border border-outline-variant object-cover" /> : <p className="mt-2 rounded-md border border-outline-variant bg-surface-container-low p-4 text-admin-body text-on-surface-variant">Belum ada gambar layanan.</p>}
+          </div>
+          <div className="space-y-6">
           <div>
             <label htmlFor="image_url" className="text-admin-label text-primary">
               Nilai Gambar Layanan
@@ -103,22 +113,26 @@ export function ServiceForm({ service }: { service: AdminService }) {
           </div>
           <div>
             <label htmlFor="service_image" className="text-admin-label text-primary">
-              Gambar Layanan
+              Unggah Pengganti Gambar <span className="font-normal text-on-surface-variant">(opsional)</span>
             </label>
-            <input id="service_image" name="service_image" type="file" accept="image/jpeg,image/png,image/webp" aria-invalid={Boolean(state.errors.service_image)} aria-describedby={state.errors.service_image ? "service-image-error" : "service-image-help"} className={`${fieldClassName} file:mr-4 file:rounded-md file:border-0 file:bg-surface-container file:px-3 file:py-2 file:text-admin-label file:text-primary`} />
+            <input id="service_image" name="service_image" type="file" accept="image/jpeg,image/png,image/webp" aria-invalid={Boolean(state.errors.service_image)} aria-describedby={state.errors.service_image ? "service-image-error" : "service-image-help"} className={`${fieldClassName} max-w-full file:mr-4 file:rounded-md file:border-0 file:bg-surface-container file:px-3 file:py-2 file:text-admin-label file:text-primary`} />
             <p id="service-image-help" className="mt-1.5 text-admin-caption text-on-surface-variant">
-              JPEG, PNG, atau WebP. Maksimal 5 MiB.
+              JPEG, PNG, atau WebP. Maksimal 5 MiB. Kosongkan untuk mempertahankan gambar saat ini.
             </p>
             {state.errors.service_image ? <p id="service-image-error" className="mt-1.5 text-admin-caption text-error">{state.errors.service_image}</p> : null}
           </div>
+          </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="border-t border-outline-variant pt-8">
+          <h3 className="font-heading text-admin-section text-primary">Pengaturan Publik</h3>
+          <div className="mt-5 grid gap-6 md:grid-cols-2">
           <div>
             <label htmlFor="sort_order" className="text-admin-label text-primary">
               Urutan Tampil <span aria-hidden="true">*</span>
             </label>
-            <input id="sort_order" name="sort_order" type="number" inputMode="numeric" min={0} max={100000} step={1} required defaultValue={service.sort_order} aria-invalid={Boolean(state.errors.sort_order)} aria-describedby={state.errors.sort_order ? "sort-order-error" : undefined} className={fieldClassName} />
+            <input id="sort_order" name="sort_order" type="number" inputMode="numeric" min={0} max={100000} step={1} required defaultValue={service.sort_order} aria-invalid={Boolean(state.errors.sort_order)} aria-describedby={state.errors.sort_order ? "sort-order-error" : "service-sort-help"} className={fieldClassName} />
+            <p id="service-sort-help" className="mt-1.5 text-admin-caption text-on-surface-variant">Angka lebih kecil tampil lebih awal.</p>
             {state.errors.sort_order ? <p id="sort-order-error" className="mt-1.5 text-admin-caption text-error">{state.errors.sort_order}</p> : null}
           </div>
 
@@ -128,11 +142,13 @@ export function ServiceForm({ service }: { service: AdminService }) {
               <input name="is_active" type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} className="size-4 accent-primary" />
               {isActive ? "Aktif — tampil di halaman publik" : "Nonaktif — disembunyikan dari halaman publik"}
             </label>
+            {service.is_active && !isActive ? <p className="mt-2 rounded-md border border-error/30 bg-error-container px-3 py-2 text-admin-caption text-on-error-container">Layanan akan hilang dari katalog publik dan pesanan baru akan diblokir. Pesanan lama tetap tersimpan.</p> : null}
+          </div>
           </div>
         </div>
       </section>
 
-      <div className="border-t border-outline-variant pt-6">
+      <div className="order-4 border-t border-outline-variant pt-6">
         <div aria-live="polite" aria-atomic="true" className="min-h-6">
           {state.message ? (
             <p className={state.status === "success" ? "text-admin-body text-success-green" : "text-admin-body text-error"}>
@@ -140,7 +156,7 @@ export function ServiceForm({ service }: { service: AdminService }) {
             </p>
           ) : null}
         </div>
-        <button type="submit" disabled={isPending} className="mt-4 min-h-12 rounded-md bg-primary px-6 text-admin-label text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+        <button type="submit" disabled={isPending} className="mt-4 min-h-12 w-full rounded-md bg-primary px-6 text-admin-label text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
           {isPending ? "Menyimpan..." : "Simpan Perubahan"}
         </button>
       </div>

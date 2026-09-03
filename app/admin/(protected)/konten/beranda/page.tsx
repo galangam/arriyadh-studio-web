@@ -49,8 +49,14 @@ export default async function HomepageAdminPage() {
           <HomepageContentForm content={content} />
         </section>
 
-        <FeaturedSelectionForm title="Layanan Unggulan" description="Pilih layanan aktif dan atur urutannya pada beranda." options={serviceOptions} initialSelectedIds={featuredServices.map((service) => service.id)} action={updateFeaturedServices} />
-        <FeaturedSelectionForm title="Produk Unggulan" description="Pilih produk aktif dan atur urutannya. Harga tetap mengikuti katalog dan varian produk." options={productOptions} initialSelectedIds={featuredProducts.map((product) => product.id)} action={updateFeaturedProducts} />
+        <section aria-labelledby="homepage-featured-heading" className="mt-2">
+          <h2 id="homepage-featured-heading" className="font-heading text-heading-xs text-primary">Konten Unggulan</h2>
+          <p className="mt-1.5 max-w-2xl text-admin-body text-on-surface-variant">Pilih item aktif yang ditampilkan pada beranda, lalu atur urutannya.</p>
+          <div className="mt-6">
+            <FeaturedSelectionForm title="Layanan Unggulan" description="Pilih layanan aktif dan atur urutannya pada beranda." options={serviceOptions} initialSelectedIds={featuredServices.map((service) => service.id)} action={updateFeaturedServices} />
+            <FeaturedSelectionForm title="Produk Unggulan" description="Pilih produk aktif dan atur urutannya. Harga tetap mengikuti katalog dan varian produk." options={productOptions} initialSelectedIds={featuredProducts.map((product) => product.id)} action={updateFeaturedProducts} />
+          </div>
+        </section>
       </div>
     </main>
   );

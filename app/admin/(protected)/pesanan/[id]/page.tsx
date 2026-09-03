@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { OrderStatusBadge } from "@/components/admin/order-status-badge";
+import { WhatsappMessagePreview } from "@/components/admin/whatsapp-message-preview";
 import { CancelOrderControl } from "@/app/admin/(protected)/pesanan/[id]/cancel-order-control";
 import { DesignReferenceControl } from "@/app/admin/(protected)/pesanan/[id]/design-reference-control";
 import { AdminPaymentSummary } from "@/app/admin/(protected)/pesanan/[id]/admin-payment-summary";
@@ -127,16 +129,39 @@ export default async function AdminOrderDetailPage({
     order.dp_amount !== null &&
     order.status !== "menunggu_harga" &&
     ["menunggu_pembayaran_dp", "menunggu_konfirmasi_dp", "menunggu_verifikasi"].includes(order.status) &&
+    !(order.payment_method === "transfer" && order.payment_proof_path) &&
     siteOrigin !== null;
-  const paymentUrl = showServicePaymentLink
+  const servicePaymentUrl = showServicePaymentLink
     ? `${siteOrigin}/pembayaran/${order.payment_token}`
     : null;
-  const paymentWhatsappUrl = paymentUrl
+  const servicePaymentWhatsappUrl = servicePaymentUrl
     ? createWhatsappUrl(
         order.customer_whatsapp,
-        `Halo ${order.customer_name},\n\nHarga pesanan Anda sudah ditentukan.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${order.service_name_snapshot ?? "Layanan custom"}\nTotal Pesanan: ${formatOrderPrice(order.price)}\nDP: ${formatOrderPrice(order.dp_amount)}\n\nSilakan pilih metode pembayaran dan lakukan pembayaran DP melalui link berikut:\n${paymentUrl}\n\nTerima kasih.`,
+        `Halo ${order.customer_name},\n\nHarga pesanan Anda sudah ditentukan.\n\nKode Pesanan: ${order.order_code}\nLayanan: ${order.service_name_snapshot ?? "Layanan custom"}\nTotal Pesanan: ${formatOrderPrice(order.price)}\nDP: ${formatOrderPrice(order.dp_amount)}\n\nSilakan pilih metode pembayaran dan lakukan pembayaran DP melalui link berikut:\n${servicePaymentUrl}\n\nTerima kasih.`,
       )
     : null;
+  const showProductTransferPaymentLink =
+    order.order_kind === "product" &&
+    order.payment_method === "transfer" &&
+    order.status === "menunggu_verifikasi" &&
+    !order.payment_proof_path &&
+    order.payment_token !== null &&
+    siteOrigin !== null;
+  const productPaymentUrl = showProductTransferPaymentLink
+    ? `${siteOrigin}/pembayaran/${order.payment_token}`
+    : null;
+  const productPaymentWhatsappUrl = productPaymentUrl
+    ? createWhatsappUrl(
+        order.customer_whatsapp,
+        `Halo ${order.customer_name},\n\nSilakan selesaikan pembayaran pesanan Anda.\n\nKode Pesanan: ${order.order_code}\nProduk: ${order.product_name_snapshot ?? "Produk"}\n\nLakukan pembayaran Transfer Bank BRI dan unggah bukti pembayaran melalui link berikut:\n${productPaymentUrl}\n\nTerima kasih.`,
+      )
+    : null;
+  const servicePaymentWhatsappMessage = servicePaymentWhatsappUrl
+    ? new URL(servicePaymentWhatsappUrl).searchParams.get("text") ?? ""
+    : "";
+  const productPaymentWhatsappMessage = productPaymentWhatsappUrl
+    ? new URL(productPaymentWhatsappUrl).searchParams.get("text") ?? ""
+    : "";
   const isServiceProductionStatus =
     order.order_kind === "service" &&
     productionStatuses.some((status) => status === order.status);
@@ -168,7 +193,33 @@ export default async function AdminOrderDetailPage({
       : statusWhatsappUpdate === "cancelled"
         ? "Hubungi Pelanggan via WhatsApp"
         : "Kirim Update via WhatsApp";
+  const statusWhatsappMessage = statusWhatsappUrl
+    ? new URL(statusWhatsappUrl).searchParams.get("text")
+    : null;
   const statusDetails: DetailItem[] = [];
+  const nextAction =
+    order.order_kind === "service" && order.status === "menunggu_harga"
+      ? { href: "#set-order-price", label: "Tetapkan harga pesanan" }
+      : order.payment_method === "transfer" &&
+          order.status === "menunggu_verifikasi" &&
+          order.payment_proof_path
+        ? { href: "#verify-payment", label: "Verifikasi pembayaran" }
+        : order.order_kind === "service" &&
+            order.payment_method === "cod" &&
+            order.status === "menunggu_konfirmasi_dp"
+          ? { href: "#confirm-cod", label: "Konfirmasi COD" }
+          : order.order_kind === "product" &&
+              order.payment_method === "cod" &&
+              order.status === "menunggu_verifikasi"
+            ? { href: "#confirm-product-cod", label: "Konfirmasi pesanan COD" }
+            : productPaymentUrl
+              ? { href: "#product-payment-link", label: "Kirim link pembayaran" }
+              : servicePaymentUrl
+              ? { href: "#service-payment-link", label: "Kirim link pembayaran" }
+              : isServiceProductionStatus ||
+                  (order.order_kind === "product" && order.status === "diproses")
+                ? { href: "#production-progress", label: "Perbarui progres pesanan" }
+                : null;
 
   if (order.quoted_at) {
     statusDetails.push({
@@ -202,14 +253,23 @@ export default async function AdminOrderDetailPage({
           Kembali ke Daftar Pesanan
         </Link>
 
-        <header className="mt-5">
-          <p className="text-admin-label text-on-surface-variant">
-            {orderKindLabels[order.order_kind]}
-          </p>
-          <h1 className="mt-1 break-words font-heading text-admin-title text-primary">
-            Detail Pesanan {order.order_code}
+        <header className="mt-5 border-b border-outline-variant pb-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-admin-label text-on-surface-variant">
+              {orderKindLabels[order.order_kind]}
+            </p>
+            <OrderStatusBadge status={order.status} />
+          </div>
+          <h1 className="mt-2 break-words font-heading text-admin-title text-primary">
+            {order.order_code}
           </h1>
-          <p className="mt-2 text-admin-body text-on-surface-variant">
+          <p className="mt-2 break-words text-admin-body font-semibold text-on-surface">
+            {order.order_kind === "product"
+              ? order.product_name_snapshot
+              : order.service_name_snapshot}
+            <span className="font-normal text-on-surface-variant"> · {order.customer_name}</span>
+          </p>
+          <p className="mt-1 text-admin-caption text-on-surface-variant">
             Dibuat pada {formatAdminOrderDateTime(order.created_at)}
           </p>
         </header>
@@ -394,14 +454,18 @@ export default async function AdminOrderDetailPage({
             {order.order_kind === "service" &&
               order.status === "menunggu_harga" && (
                 <section
+                  id="set-order-price"
                   aria-labelledby="set-order-price-heading"
-                  className="border border-outline-variant bg-surface-white p-5 md:p-6"
+                  className="scroll-mt-24 border border-primary/30 bg-surface-white p-5 md:p-6"
                 >
+                  <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+                    Tindakan berikutnya
+                  </p>
                   <h2
                     id="set-order-price-heading"
-                    className="font-heading text-admin-section text-primary"
+                    className="mt-1 font-heading text-admin-section text-primary"
                   >
-                    Set Harga Pesanan
+                    Tetapkan Harga Pesanan
                   </h2>
                   <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
                     Tentukan total harga pesanan. DP sekitar 50% akan dihitung
@@ -411,27 +475,74 @@ export default async function AdminOrderDetailPage({
                 </section>
               )}
 
-            {paymentUrl && paymentWhatsappUrl ? (
-              <ServicePaymentLinkSection
-                paymentUrl={paymentUrl}
-                whatsappUrl={paymentWhatsappUrl}
-              />
+            {productPaymentUrl && productPaymentWhatsappUrl ? (
+              <section
+                id="product-payment-link"
+                aria-labelledby="product-payment-link-heading"
+                className="scroll-mt-24 border border-primary/30 bg-surface-white p-5 md:p-6"
+              >
+                <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+                  Tindakan berikutnya
+                </p>
+                <h2
+                  id="product-payment-link-heading"
+                  className="mt-1 font-heading text-admin-section text-primary"
+                >
+                  Kirim Link Pembayaran
+                </h2>
+                <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+                  Pelanggan memilih Transfer Bank BRI tetapi belum mengirim
+                  bukti pembayaran. Kirim link pembayaran agar pelanggan dapat
+                  menyelesaikan transfer dan mengunggah bukti pembayaran.
+                </p>
+                <div className="mt-5">
+                  <WhatsappMessagePreview
+                    message={productPaymentWhatsappMessage}
+                  />
+                </div>
+                <a
+                  href={productPaymentWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-center text-admin-label font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
+                >
+                  Kirim Link Pembayaran via WhatsApp
+                </a>
+              </section>
+            ) : null}
+
+            {servicePaymentUrl && servicePaymentWhatsappUrl ? (
+              <div id="service-payment-link" className="scroll-mt-24">
+                <ServicePaymentLinkSection
+                  paymentUrl={servicePaymentUrl}
+                  message={servicePaymentWhatsappMessage}
+                  whatsappUrl={servicePaymentWhatsappUrl}
+                />
+              </div>
             ) : null}
 
             {order.payment_method === "transfer" &&
               order.status === "menunggu_verifikasi" &&
               order.payment_proof_path && (
                 <section
+                  id="verify-payment"
                   aria-labelledby="verify-payment-heading"
-                  className="border border-outline-variant bg-surface-white p-5 md:p-6"
+                  className="scroll-mt-24 border border-primary/30 bg-surface-white p-5 md:p-6"
                 >
+                  <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+                    Tindakan berikutnya
+                  </p>
                   <h2
                     id="verify-payment-heading"
-                    className="font-heading text-admin-section text-primary"
+                    className="mt-1 font-heading text-admin-section text-primary"
                   >
                     Verifikasi Pembayaran
                   </h2>
-                  <div className="mt-4">
+                  <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+                    Periksa bukti pembayaran sebelum memverifikasi dan
+                    melanjutkan pesanan.
+                  </p>
+                  <div className="mt-5">
                     <DetailList
                       items={[
                         { label: "Metode", value: "Transfer" },
@@ -459,12 +570,16 @@ export default async function AdminOrderDetailPage({
               order.payment_method === "cod" &&
               order.status === "menunggu_konfirmasi_dp" && (
                 <section
+                  id="confirm-cod"
                   aria-labelledby="confirm-cod-heading"
-                  className="border border-outline-variant bg-surface-white p-5 md:p-6"
+                  className="scroll-mt-24 border border-primary/30 bg-surface-white p-5 md:p-6"
                 >
+                  <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+                    Tindakan berikutnya
+                  </p>
                   <h2
                     id="confirm-cod-heading"
-                    className="font-heading text-admin-section text-primary"
+                    className="mt-1 font-heading text-admin-section text-primary"
                   >
                     Konfirmasi COD
                   </h2>
@@ -479,26 +594,32 @@ export default async function AdminOrderDetailPage({
 
             <ProductionProgress order={order} />
 
-            {statusWhatsappUrl ? (
+            {statusWhatsappUrl && statusWhatsappMessage ? (
               <section
                 aria-labelledby="status-whatsapp-heading"
                 className="border border-outline-variant bg-surface-white p-5 md:p-6"
               >
+                <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+                  Informasikan pelanggan
+                </p>
                 <h2
                   id="status-whatsapp-heading"
-                  className="font-heading text-admin-section text-primary"
+                  className="mt-1 font-heading text-admin-section text-primary"
                 >
-                  Informasikan Status ke Pelanggan
+                  Kirim Update Status
                 </h2>
                 <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
                   Status pesanan sudah tersimpan. Pengiriman pesan WhatsApp
                   bersifat opsional dan tetap dilakukan secara manual.
                 </p>
+                <div className="mt-5">
+                  <WhatsappMessagePreview message={statusWhatsappMessage} />
+                </div>
                 <a
                   href={statusWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label font-semibold text-on-primary hover:bg-primary-container"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-outline-variant px-5 text-admin-label font-semibold text-primary hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
                 >
                   {statusWhatsappButtonLabel}
                 </a>
@@ -525,7 +646,7 @@ export default async function AdminOrderDetailPage({
             {isOrderCancellableStatus(order.status) ? (
               <section
                 aria-labelledby="cancel-order-heading"
-                className="border border-error/30 bg-surface-white p-5 md:p-6"
+                className="mt-10 border border-error/30 bg-surface-white p-5 md:p-6"
               >
                 <h2
                   id="cancel-order-heading"
@@ -548,7 +669,7 @@ export default async function AdminOrderDetailPage({
 
           <aside
             aria-label="Status dan pembayaran"
-            className="space-y-6 xl:sticky xl:top-24"
+            className="order-first space-y-4 xl:order-none xl:sticky xl:top-24"
           >
             <section
               aria-labelledby="order-status-heading"
@@ -560,9 +681,15 @@ export default async function AdminOrderDetailPage({
               >
                 Status Pesanan
               </h2>
-              <p className="mt-4 text-admin-body font-semibold text-primary">
-                {orderStatusLabels[order.status]}
-              </p>
+              <div className="mt-4"><OrderStatusBadge status={order.status} /></div>
+              {nextAction ? (
+                <div className="mt-5 border-t border-outline-variant pt-4">
+                  <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">Tindakan berikutnya</p>
+                  <a href={nextAction.href} className="mt-2 inline-flex min-h-10 items-center text-admin-label font-semibold text-primary underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                    {nextAction.label} <span aria-hidden="true">↓</span>
+                  </a>
+                </div>
+              ) : null}
             </section>
             <AdminPaymentSummary order={order} />
           </aside>

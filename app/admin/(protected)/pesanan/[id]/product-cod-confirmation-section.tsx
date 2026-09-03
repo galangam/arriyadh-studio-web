@@ -16,12 +16,16 @@ export function ProductCodConfirmationSection({
 
   return (
     <section
+      id="confirm-product-cod"
       aria-labelledby="confirm-product-cod-heading"
-      className="border border-outline-variant bg-surface-white p-5 md:p-6"
+      className="scroll-mt-24 border border-primary/30 bg-surface-white p-5 md:p-6"
     >
+      <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
+        Tindakan berikutnya
+      </p>
       <h2
         id="confirm-product-cod-heading"
-        className="font-heading text-admin-section text-primary"
+        className="mt-1 font-heading text-admin-section text-primary"
       >
         Konfirmasi Pesanan COD
       </h2>

@@ -58,38 +58,44 @@ export function FeaturedSelectionForm({
   }
 
   return (
-    <form action={formAction} className="border-t border-outline-variant pt-8">
+    <form action={formAction} className="border-t border-outline-variant py-8">
       <h2 className="font-heading text-heading-xs text-primary">{title}</h2>
       <p className="mt-1.5 max-w-2xl text-admin-body text-on-surface-variant">
         {description}
       </p>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-2">
-        <fieldset>
+        <fieldset className="min-w-0">
           <legend className="text-admin-label text-primary">Pilihan tersedia</legend>
+          <p className="mt-1 text-admin-caption text-on-surface-variant">Centang item untuk menambahkannya ke beranda.</p>
           <div className="mt-3 space-y-2">
-            {options.map((option) => (
-              <label key={option.id} className="flex min-h-11 items-center gap-3 border border-outline-variant bg-surface-white px-4 py-2 text-admin-body text-on-surface">
-                <input type="checkbox" checked={selectedIds.includes(option.id)} onChange={() => toggle(option.id)} className="size-4 accent-primary" />
-                {option.name}
-              </label>
-            ))}
+            {options.map((option) => {
+              const isSelected = selectedIds.includes(option.id);
+              return (
+                <label key={option.id} className={`flex min-h-11 items-center gap-3 rounded-md border px-4 py-2 text-admin-body transition-colors ${isSelected ? "border-primary/40 bg-surface-container-low font-semibold text-primary" : "border-outline-variant bg-surface-white text-on-surface"}`}>
+                  <input type="checkbox" checked={isSelected} onChange={() => toggle(option.id)} className="size-4 shrink-0 accent-primary" />
+                  <span className="min-w-0 break-words">{option.name}</span>
+                  {isSelected ? <span className="ml-auto text-admin-caption font-normal text-on-surface-variant">Terpilih</span> : null}
+                </label>
+              );
+            })}
           </div>
         </fieldset>
 
         <div>
           <h3 className="text-admin-label text-primary">Urutan di beranda</h3>
+          <p className="mt-1 text-admin-caption text-on-surface-variant">Item nomor satu ditampilkan paling awal.</p>
           <ol className="mt-3 space-y-2">
             {selectedIds.map((id, index) => {
               const option = optionById.get(id);
               if (!option) return null;
               return (
-                <li key={id} className="flex min-h-12 items-center gap-3 border border-outline-variant bg-surface-white px-4 py-2">
+                <li key={id} className="flex min-h-12 min-w-0 items-center gap-2 rounded-md border border-outline-variant bg-surface-white px-3 py-2 sm:gap-3 sm:px-4">
                   <input type="hidden" name="featured_ids" value={id} />
                   <span className="w-7 text-admin-caption text-on-surface-variant">{index + 1}.</span>
-                  <span className="flex-1 text-admin-body text-on-surface">{option.name}</span>
-                  <button type="button" onClick={() => move(id, -1)} disabled={index === 0} aria-label={`Naikkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary disabled:opacity-40">↑</button>
-                  <button type="button" onClick={() => move(id, 1)} disabled={index === selectedIds.length - 1} aria-label={`Turunkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary disabled:opacity-40">↓</button>
+                  <span className="min-w-0 flex-1 break-words text-admin-body text-on-surface">{option.name}</span>
+                  <button type="button" onClick={() => move(id, -1)} disabled={index === 0} aria-label={`Naikkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-40">↑</button>
+                  <button type="button" onClick={() => move(id, 1)} disabled={index === selectedIds.length - 1} aria-label={`Turunkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-40">↓</button>
                 </li>
               );
             })}
@@ -105,7 +111,7 @@ export function FeaturedSelectionForm({
           <p className={state.status === "success" ? "text-admin-body text-success-green" : "text-admin-body text-error"}>{state.message}</p>
         ) : null}
       </div>
-      <button type="submit" disabled={isPending} className="mt-3 min-h-12 rounded-md bg-primary px-6 text-admin-label text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="submit" disabled={isPending} className="mt-3 min-h-12 w-full rounded-md bg-primary px-6 text-admin-label text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
         {isPending ? "Menyimpan..." : "Simpan Perubahan"}
       </button>
     </form>

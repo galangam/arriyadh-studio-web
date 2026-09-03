@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ServiceForm } from "@/app/admin/(protected)/konten/layanan/[id]/service-form";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { resolveContentImageUrl } from "@/lib/content/content-images";
 import { getAdminServiceById } from "@/lib/services/admin-services";
 
 const uuidPattern =
@@ -20,6 +21,7 @@ export default async function AdminServiceDetailPage({
 
   const service = await getAdminServiceById(id);
   if (!service) notFound();
+  const imagePreviewUrl = await resolveContentImageUrl(service.image_url);
 
   return (
     <main className="w-full px-margin-mobile py-8 md:px-gutter md:py-10">
@@ -37,7 +39,7 @@ export default async function AdminServiceDetailPage({
         </section>
 
         <div className="py-8">
-          <ServiceForm service={service} />
+          <ServiceForm service={service} imagePreviewUrl={imagePreviewUrl} />
         </div>
       </div>
     </main>

@@ -275,7 +275,7 @@ export default async function Home() {
             </div>
           </Reveal>
 
-          <div className="mt-10 grid gap-gutter md:grid-cols-2">
+          <div className="mt-10 grid gap-x-gutter gap-y-14 sm:gap-y-gutter md:grid-cols-2">
             {products.map((product, index) => {
               const presentation = productPresentation[product.slug];
               const image = product.image_url ?? presentation?.image;

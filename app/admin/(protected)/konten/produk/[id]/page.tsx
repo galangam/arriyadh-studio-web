@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ProductForm } from "@/app/admin/(protected)/konten/produk/[id]/product-form";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { resolveContentImageUrl } from "@/lib/content/content-images";
 import { getAdminProductById } from "@/lib/products/admin-products";
 
 const uuidPattern =
@@ -20,6 +21,7 @@ export default async function AdminProductDetailPage({
 
   const product = await getAdminProductById(id);
   if (!product) notFound();
+  const imagePreviewUrl = await resolveContentImageUrl(product.image_url);
 
   return (
     <main className="w-full px-margin-mobile py-8 md:px-gutter md:py-10">
@@ -37,7 +39,7 @@ export default async function AdminProductDetailPage({
         </section>
 
         <div className="py-8">
-          <ProductForm product={product} />
+          <ProductForm product={product} imagePreviewUrl={imagePreviewUrl} />
         </div>
       </div>
     </main>

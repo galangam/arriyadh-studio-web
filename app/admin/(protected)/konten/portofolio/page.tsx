@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { ContentStatusBadge } from "@/components/admin/content-status-badge";
 import { DeletePortfolioButton } from "@/app/admin/(protected)/konten/portofolio/delete-portfolio-button";
 import { PortfolioForm } from "@/app/admin/(protected)/konten/portofolio/portfolio-form";
 import { requireAdmin } from "@/lib/auth/require-admin";
@@ -39,7 +40,7 @@ export default async function AdminPortfolioPage() {
             Kelola karya yang ditampilkan pada beranda dan halaman Tentang Kami.
           </p>
           <p className="mt-3 max-w-3xl border border-outline-variant bg-surface-container-low px-4 py-3 text-admin-body text-on-surface-variant">
-            Setelah minimal satu portofolio CMS dipublikasikan, halaman publik akan menggunakan item CMS sebagai sumber utama dan tidak mencampurnya dengan gambar fallback lokal.
+            Jika belum ada portofolio CMS yang dipublikasikan, website menggunakan 33 gambar galeri bawaan. Setelah minimal satu item dipublikasikan, halaman publik hanya menggunakan item portofolio dari CMS.
           </p>
         </section>
 
@@ -65,7 +66,7 @@ export default async function AdminPortfolioPage() {
               </p>
             </div>
           ) : (
-            <div className="mt-6 overflow-x-auto border border-outline-variant">
+            <div className="mt-6 overflow-x-auto overscroll-x-contain rounded-md border border-outline-variant" tabIndex={0} aria-label="Daftar portofolio, dapat digulir horizontal">
               <table className="w-full min-w-[1040px] border-collapse text-left">
                 <thead className="bg-surface-container-low">
                   <tr className="border-b border-outline-variant">
@@ -101,15 +102,13 @@ export default async function AdminPortfolioPage() {
                           {service ? `${service.name}${service.is_active ? "" : " (Nonaktif)"}` : "Tidak terkait"}
                         </td>
                         <td className="px-4 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-admin-caption font-semibold ${item.is_published ? "bg-success-green/10 text-success-green" : "bg-surface-container text-on-surface-variant"}`}>
-                            {item.is_published ? "Dipublikasikan" : "Disembunyikan"}
-                          </span>
+                          <ContentStatusBadge active={item.is_published} activeLabel="Dipublikasikan" inactiveLabel="Disembunyikan" />
                         </td>
                         <td className="px-4 py-4 text-admin-body text-on-surface">{item.sort_order}</td>
                         <td className="px-4 py-4 text-admin-caption text-on-surface-variant">{dateFormatter.format(new Date(item.created_at))}</td>
                         <td className="space-y-3 px-4 py-4 text-right">
                           <Link href={`/admin/konten/portofolio/${item.id}`} className="block text-admin-label text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                            Edit
+                            Edit item
                           </Link>
                           <DeletePortfolioButton itemId={item.id} title={item.title} />
                         </td>

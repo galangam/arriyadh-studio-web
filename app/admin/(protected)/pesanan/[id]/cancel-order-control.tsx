@@ -36,7 +36,7 @@ export function CancelOrderControl({
         type="button"
         disabled={isPending}
         onClick={() => dialogRef.current?.showModal()}
-        className="inline-flex min-h-11 items-center justify-center rounded-md border border-error px-5 text-admin-label font-semibold text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-error px-5 text-admin-label font-semibold text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         Batalkan Pesanan
       </button>

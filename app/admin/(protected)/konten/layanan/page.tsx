@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ContentStatusBadge } from "@/components/admin/content-status-badge";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAdminServices } from "@/lib/services/admin-services";
 
@@ -31,7 +32,8 @@ export default async function AdminServicesPage() {
           <h2 id="services-list-heading" className="sr-only">
             Daftar layanan
           </h2>
-          <div className="overflow-x-auto border border-outline-variant">
+          <p className="mb-4 text-admin-caption text-on-surface-variant">Slug dan alur merupakan metadata sistem. Gunakan Edit untuk mengubah konten publik dan pengaturan layanan.</p>
+          <div className="overflow-x-auto overscroll-x-contain rounded-md border border-outline-variant" tabIndex={0} aria-label="Daftar layanan, dapat digulir horizontal">
             <table className="w-full min-w-[760px] border-collapse text-left">
               <thead className="bg-surface-container-low">
                 <tr className="border-b border-outline-variant">
@@ -45,19 +47,15 @@ export default async function AdminServicesPage() {
               </thead>
               <tbody>
                 {services.map((service) => (
-                  <tr key={service.id} className="border-b border-outline-variant last:border-b-0">
+                  <tr key={service.id} className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container-low/60">
                     <th scope="row" className="px-4 py-4 font-heading text-admin-body text-primary">{service.name}</th>
                     <td className="px-4 py-4 font-mono text-admin-caption text-on-surface-variant">{service.slug}</td>
                     <td className="px-4 py-4 text-admin-body text-on-surface-variant">{flowLabels[service.flow]}</td>
-                    <td className="px-4 py-4">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-admin-caption font-semibold ${service.is_active ? "bg-success-green/10 text-success-green" : "bg-surface-container text-on-surface-variant"}`}>
-                        {service.is_active ? "Aktif" : "Nonaktif"}
-                      </span>
-                    </td>
+                    <td className="px-4 py-4"><ContentStatusBadge active={service.is_active} /></td>
                     <td className="px-4 py-4 text-admin-body text-on-surface">{service.sort_order}</td>
                     <td className="px-4 py-4 text-right">
                       <Link href={`/admin/konten/layanan/${service.id}`} className="text-admin-label text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                        Edit
+                        Edit layanan
                       </Link>
                     </td>
                   </tr>

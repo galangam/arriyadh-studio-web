@@ -41,7 +41,7 @@ export function AdvanceOrderStatusControl({
         type="button"
         disabled={isPending}
         onClick={() => dialogRef.current?.showModal()}
-        className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-center text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {isPending
           ? "Memperbarui..."

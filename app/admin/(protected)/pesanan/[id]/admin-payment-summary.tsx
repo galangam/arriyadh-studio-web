@@ -17,12 +17,18 @@ function getProductPaymentState(order: AdminOrderDetail) {
   }
 
   return order.payment_proof_path
-    ? "Bukti dikirim, menunggu verifikasi"
-    : "Bukti pembayaran belum dikirim";
+    ? "Menunggu Verifikasi Pembayaran"
+    : "Menunggu Bukti Pembayaran";
 }
 
 export function AdminPaymentSummary({ order }: { order: AdminOrderDetail }) {
   const isProduct = order.order_kind === "product";
+  const productPaymentState = isProduct ? getProductPaymentState(order) : null;
+  const isProductTransferAwaitingProof =
+    isProduct &&
+    order.payment_method === "transfer" &&
+    order.status === "menunggu_verifikasi" &&
+    !order.payment_proof_path;
 
   return (
     <section
@@ -36,11 +42,11 @@ export function AdminPaymentSummary({ order }: { order: AdminOrderDetail }) {
         Ringkasan Pembayaran
       </h2>
       <dl className="mt-5 space-y-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="rounded-md bg-surface-container-low p-4">
           <dt className="text-admin-body text-on-surface-variant">
             Total Harga
           </dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
+          <dd className="mt-1 break-words font-heading text-heading-xs text-primary">
             {formatOrderPrice(order.price)}
           </dd>
         </div>
@@ -48,7 +54,7 @@ export function AdminPaymentSummary({ order }: { order: AdminOrderDetail }) {
         {!isProduct ? (
           <div className="flex items-start justify-between gap-4 border-t border-outline-variant pt-4">
             <dt className="text-admin-body text-on-surface-variant">DP</dt>
-            <dd className="text-right text-admin-body font-semibold text-primary">
+            <dd className="break-words text-right text-admin-body font-semibold text-primary">
               {order.dp_amount === null
                 ? "Belum ditentukan"
                 : formatOrderPrice(order.dp_amount)}
@@ -60,7 +66,7 @@ export function AdminPaymentSummary({ order }: { order: AdminOrderDetail }) {
           <dt className="text-admin-body text-on-surface-variant">
             Metode Pembayaran
           </dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
+          <dd className="break-words text-right text-admin-body font-semibold text-primary">
             {order.payment_method === "transfer"
               ? "Transfer Bank BRI"
               : order.payment_method === "cod"
@@ -73,12 +79,17 @@ export function AdminPaymentSummary({ order }: { order: AdminOrderDetail }) {
           <dt className="text-admin-body text-on-surface-variant">
             {isProduct ? "Status Pembayaran" : "Status Verifikasi"}
           </dt>
-          <dd className="text-right text-admin-body font-semibold text-primary">
+          <dd className="max-w-40 break-words text-right text-admin-body font-semibold text-primary">
             {isProduct
-              ? getProductPaymentState(order)
+              ? productPaymentState
               : order.payment_verified_at
                 ? "Terverifikasi"
                 : "Belum diverifikasi"}
+            {isProductTransferAwaitingProof ? (
+              <span className="mt-1 block text-admin-caption font-normal text-on-surface-variant">
+                Pelanggan belum mengirim bukti pembayaran.
+              </span>
+            ) : null}
           </dd>
         </div>
       </dl>

@@ -37,7 +37,7 @@ export function DeletePortfolioButton({
 
   return (
     <form action={formAction} onSubmit={confirmDelete} className="text-right">
-      <button type="submit" disabled={isPending} className="text-admin-label text-error underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="submit" disabled={isPending} className="rounded-sm text-admin-label text-error underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
         {isPending ? "Menghapus..." : "Hapus"}
       </button>
       {state.status === "error" && state.message ? (

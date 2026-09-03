@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   formatAdminOrderDate,
@@ -13,13 +14,9 @@ import {
   type AdminOrderListRow,
   typeFilterOptions,
 } from "@/lib/orders/admin-orders";
-import {
-  orderStatusLabels,
-  type OrderStatus,
-} from "@/lib/orders/order-status";
 
 const orderTableColumns = [
-  "Order ID",
+  "Kode Pesanan",
   "Pelanggan",
   "Tipe & Detail",
   "Total Harga",
@@ -99,12 +96,6 @@ function OrderDetail({ order }: { order: AdminOrderListRow }) {
   );
 }
 
-function statusClassName(status: OrderStatus) {
-  if (status === "selesai") return "text-success-green";
-  if (status === "dibatalkan") return "text-error";
-  return "text-primary";
-}
-
 export default async function AdminOrdersPage({
   searchParams,
 }: {
@@ -124,13 +115,24 @@ export default async function AdminOrdersPage({
   return (
     <main className="w-full px-margin-mobile py-8 md:px-gutter md:py-10">
       <div className="mx-auto w-full max-w-content">
-        <section aria-labelledby="orders-heading">
-          <h1 id="orders-heading" className="font-heading text-admin-title text-primary">
-            Daftar Pesanan
-          </h1>
-          <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
-            Kelola dan pantau seluruh pesanan pelanggan Arriyadh Studio.
-          </p>
+        <section
+          aria-labelledby="orders-heading"
+          className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
+          <div>
+            <h1 id="orders-heading" className="font-heading text-admin-title text-primary">
+              Daftar Pesanan
+            </h1>
+            <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
+              Kelola dan pantau seluruh pesanan pelanggan Arriyadh Studio.
+            </p>
+          </div>
+          <a
+            href={createOrdersExportHref(filters)}
+            className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-5 text-admin-label font-semibold text-primary hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
+          >
+            Export CSV
+          </a>
         </section>
 
         <section aria-label="Daftar dan kontrol pesanan" className="mt-8">
@@ -138,7 +140,7 @@ export default async function AdminOrdersPage({
             key={`${filters.q}:${filters.status}:${filters.type}`}
             action="/admin/pesanan"
             method="get"
-            className="grid gap-4 border border-outline-variant bg-surface-white p-4 md:grid-cols-[minmax(18rem,1fr)_13rem_13rem_auto] md:items-end"
+            className="grid gap-4 rounded-md border border-outline-variant bg-surface-white p-4 lg:grid-cols-[minmax(16rem,1fr)_12rem_12rem_auto] lg:items-end"
           >
             <div className="space-y-2">
               <label htmlFor="order-search" className="block text-admin-label text-primary">
@@ -191,19 +193,13 @@ export default async function AdminOrdersPage({
               </select>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="submit"
                 className="min-h-10 rounded-md bg-primary px-4 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Terapkan
               </button>
-              <a
-                href={createOrdersExportHref(filters)}
-                className="inline-flex min-h-10 items-center rounded-md border border-outline-variant px-3 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                Export CSV
-              </a>
               {hasActiveFilters && (
                 <Link
                   href="/admin/pesanan"
@@ -224,15 +220,26 @@ export default async function AdminOrdersPage({
             </p>
           )}
 
-          <div className="mt-5 max-w-full overflow-hidden rounded-md border border-outline-variant bg-surface-white">
-            <div className="max-w-full overflow-x-auto">
+          <div className="mt-5">
+            <div>
+              <h2 className="font-heading text-admin-section text-primary">Hasil Pesanan</h2>
+              <p className="mt-1 text-admin-caption text-on-surface-variant">
+                {ordersData.ok
+                  ? `${ordersData.totalCount.toLocaleString("id-ID")} pesanan ditemukan`
+                  : "Data belum tersedia"}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 max-w-full overflow-hidden rounded-md border border-outline-variant bg-surface-white">
+            <div className="max-w-full overflow-x-auto overscroll-x-contain" tabIndex={0} aria-label="Tabel daftar pesanan, dapat digulir horizontal">
               <table
                 aria-describedby={
                   !ordersData.ok || ordersData.orders.length === 0
                     ? "orders-table-state"
                     : undefined
                 }
-                className="w-full min-w-[760px] border-collapse text-left"
+                className="w-full min-w-[820px] border-collapse text-left"
               >
                 <caption className="sr-only">
                   Daftar pesanan pelanggan Arriyadh Studio.
@@ -275,13 +282,13 @@ export default async function AdminOrdersPage({
                     </tr>
                   ) : (
                     ordersData.orders.map((order) => (
-                      <tr key={order.id} className="border-b border-outline-variant last:border-b-0">
-                        <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface">
+                      <tr key={order.id} className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container-low/60">
+                        <td className="whitespace-nowrap px-4 py-3.5 text-admin-body text-on-surface">
                           <span className="block font-semibold text-primary">{order.order_code}</span>
                           <span className="mt-0.5 block text-admin-caption text-on-surface-variant">{formatAdminOrderDate(order.created_at)}</span>
                         </td>
-                        <td className="px-4 py-3 text-admin-body text-on-surface">
-                          <span className="block font-semibold text-primary">{order.customer_name}</span>
+                        <td className="max-w-56 px-4 py-3.5 text-admin-body text-on-surface">
+                          <span className="block break-words font-semibold text-primary">{order.customer_name}</span>
                           <span className="mt-0.5 block whitespace-nowrap text-admin-caption text-on-surface-variant">{order.customer_whatsapp}</span>
                         </td>
                         <td className="px-4 py-3 text-admin-body text-on-surface">
@@ -289,13 +296,13 @@ export default async function AdminOrdersPage({
                           <OrderDetail order={order} />
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-admin-body font-semibold text-primary">{formatOrderPrice(order.price)}</td>
-                        <td className={`whitespace-nowrap px-4 py-3 text-admin-body font-semibold ${statusClassName(order.status)}`}>{orderStatusLabels[order.status]}</td>
+                        <td className="px-4 py-3.5"><OrderStatusBadge status={order.status} /></td>
                         <td className="px-4 py-3 text-center text-admin-body">
                           <Link
                             href={"/admin/pesanan/" + order.id}
                             className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                           >
-                            Lihat
+                            Buka detail
                           </Link>
                         </td>
                       </tr>

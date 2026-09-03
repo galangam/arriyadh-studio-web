@@ -1,12 +1,12 @@
 import Link from "next/link";
 
+import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   formatAdminOrderDate,
   getAdminDashboardData,
   getOrderSnapshotName,
 } from "@/lib/orders/admin-orders";
-import { orderStatusLabels } from "@/lib/orders/order-status";
 
 const activitySummary = [
   { key: "awaitingPrice", label: "Menunggu Harga" },
@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
             {activitySummary.map((item) => (
               <div
                 key={item.key}
-                className="flex min-h-32 flex-col justify-between rounded-md border border-outline-variant bg-surface-white p-5"
+                className={`flex min-h-32 flex-col justify-between rounded-md border bg-surface-white p-5 ${item.key === "awaitingPrice" || item.key === "awaitingPaymentOrVerification" ? "border-primary/30" : "border-outline-variant"}`}
               >
                 <dt className="text-admin-label text-on-surface-variant">
                   {item.label}
@@ -99,7 +99,7 @@ export default async function AdminDashboardPage() {
           </div>
 
           <div className="mt-5 max-w-full overflow-hidden rounded-md border border-outline-variant bg-surface-white">
-            <div className="max-w-full overflow-x-auto">
+            <div className="max-w-full overflow-x-auto overscroll-x-contain" tabIndex={0} aria-label="Tabel pesanan terbaru, dapat digulir horizontal">
               <table
                 aria-describedby={
                   !dashboardData.ok || dashboardData.recentOrders.length === 0
@@ -141,18 +141,18 @@ export default async function AdminDashboardPage() {
                     </tr>
                   ) : (
                     dashboardData.recentOrders.map((order) => (
-                      <tr key={order.id} className="border-b border-outline-variant last:border-b-0">
-                        <td className="whitespace-nowrap px-4 py-3 text-admin-body font-semibold text-primary">{order.order_code}</td>
-                        <td className="px-4 py-3 text-admin-body text-on-surface">{order.customer_name}</td>
+                      <tr key={order.id} className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container-low/60">
+                        <td className="whitespace-nowrap px-4 py-3.5 text-admin-body font-semibold text-primary">{order.order_code}</td>
+                        <td className="max-w-52 break-words px-4 py-3.5 text-admin-body text-on-surface">{order.customer_name}</td>
                         <td className="px-4 py-3 text-admin-body text-on-surface"><span className="block font-semibold text-primary">{getOrderSnapshotName(order)}</span></td>
-                        <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface">{orderStatusLabels[order.status]}</td>
+                        <td className="px-4 py-3.5"><OrderStatusBadge status={order.status} /></td>
                         <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface-variant">{formatAdminOrderDate(order.created_at)}</td>
                         <td className="px-4 py-3 text-center text-admin-body">
                           <Link
                             href={"/admin/pesanan/" + order.id}
                             className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                           >
-                            Lihat
+                            Buka detail
                           </Link>
                         </td>
                       </tr>

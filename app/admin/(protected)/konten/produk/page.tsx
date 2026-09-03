@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ContentStatusBadge } from "@/components/admin/content-status-badge";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAdminProducts } from "@/lib/products/admin-products";
 import { getProductStartingPrice } from "@/lib/products/product-pricing";
@@ -33,7 +34,8 @@ export default async function AdminProductsPage() {
           <h2 id="products-list-heading" className="sr-only">
             Daftar produk
           </h2>
-          <div className="overflow-x-auto border border-outline-variant">
+          <p className="mb-4 text-admin-caption text-on-surface-variant">Harga awal dihitung dari data harga sistem dan hanya ditampilkan sebagai referensi.</p>
+          <div className="overflow-x-auto overscroll-x-contain rounded-md border border-outline-variant" tabIndex={0} aria-label="Daftar produk, dapat digulir horizontal">
             <table className="w-full min-w-[940px] border-collapse text-left">
               <thead className="bg-surface-container-low">
                 <tr className="border-b border-outline-variant">
@@ -52,14 +54,10 @@ export default async function AdminProductsPage() {
                   const startingPrice = getProductStartingPrice(product.price, activeVariants);
 
                   return (
-                    <tr key={product.id} className="border-b border-outline-variant last:border-b-0">
+                    <tr key={product.id} className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container-low/60">
                       <th scope="row" className="px-4 py-4 font-heading text-admin-body text-primary">{product.name}</th>
                       <td className="px-4 py-4 font-mono text-admin-caption text-on-surface-variant">{product.slug}</td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-admin-caption font-semibold ${product.is_active ? "bg-success-green/10 text-success-green" : "bg-surface-container text-on-surface-variant"}`}>
-                          {product.is_active ? "Aktif" : "Nonaktif"}
-                        </span>
-                      </td>
+                      <td className="px-4 py-4"><ContentStatusBadge active={product.is_active} /></td>
                       <td className="px-4 py-4 text-admin-body text-on-surface">{product.sort_order}</td>
                       <td className="px-4 py-4 text-admin-body text-on-surface-variant">{product.available_sizes.join(", ")}</td>
                       <td className="px-4 py-4 text-admin-body text-on-surface-variant">
@@ -68,7 +66,7 @@ export default async function AdminProductsPage() {
                       </td>
                       <td className="px-4 py-4 text-right">
                         <Link href={`/admin/konten/produk/${product.id}`} className="text-admin-label text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                          Edit
+                          Edit produk
                         </Link>
                       </td>
                     </tr>

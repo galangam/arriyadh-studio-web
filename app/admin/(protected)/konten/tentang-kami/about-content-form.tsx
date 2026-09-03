@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useActionState } from "react";
 
 import {
@@ -76,7 +78,11 @@ function TextField({
     <div>
       <label htmlFor={name} className="text-admin-label text-primary">
         {label}
-        {name !== "workshop_image_url" ? <span aria-hidden="true"> *</span> : null}
+        {name !== "workshop_image_url" ? (
+          <span aria-hidden="true"> *</span>
+        ) : (
+          <span className="ml-1 font-normal text-on-surface-variant">(opsional)</span>
+        )}
       </label>
       {multiline ? (
         <textarea {...commonProps} rows={rows} />
@@ -99,7 +105,7 @@ export function AboutContentForm({ content }: { content: AboutContent }) {
   );
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form action={formAction} className="max-w-5xl space-y-10">
       <section aria-labelledby="about-page-fields" className="space-y-6">
         <h2 id="about-page-fields" className="font-heading text-heading-xs text-primary">
           Pengantar Halaman
@@ -116,7 +122,11 @@ export function AboutContentForm({ content }: { content: AboutContent }) {
         </h2>
         <TextField name="history_title" label="Judul Sejarah / Profil" value={content.history_title} error={state.errors.history_title} maxLength={180} />
         <TextField name="history_body" label="Deskripsi Sejarah" value={content.history_body} error={state.errors.history_body} multiline rows={8} maxLength={5000} />
-        <div>
+        <p className="-mt-4 text-admin-caption text-on-surface-variant">Gunakan baris kosong untuk memisahkan paragraf. HTML tidak diperlukan.</p>
+        <div className="border-t border-outline-variant pt-6">
+          <h3 className="font-heading text-admin-section text-primary">Tahun Berdiri</h3>
+          <p className="mt-1.5 text-admin-body text-on-surface-variant">Tahun yang digunakan pada ringkasan pengalaman bisnis.</p>
+          <div className="mt-5 max-w-xs">
           <label htmlFor="founded_year" className="text-admin-label text-primary">
             Tahun Berdiri <span aria-hidden="true">*</span>
           </label>
@@ -126,6 +136,7 @@ export function AboutContentForm({ content }: { content: AboutContent }) {
               {state.errors.founded_year}
             </p>
           ) : null}
+          </div>
         </div>
       </section>
 
@@ -133,6 +144,9 @@ export function AboutContentForm({ content }: { content: AboutContent }) {
         <h2 id="about-strength-fields" className="font-heading text-heading-xs text-primary">
           Keunggulan
         </h2>
+        <p className="rounded-md border border-outline-variant bg-surface-container-low px-4 py-3 text-admin-body text-on-surface-variant">
+          Bagian keunggulan saat ini tidak ditampilkan pada halaman publik. Nilai tersimpan tetap dapat dikelola di sini.
+        </p>
         {strengthFields.map(({ number, titleName, descriptionName }) => {
           return (
             <div key={number} className="grid gap-6 md:grid-cols-2">
@@ -147,23 +161,37 @@ export function AboutContentForm({ content }: { content: AboutContent }) {
         <h2 id="about-workshop-fields" className="font-heading text-heading-xs text-primary">
           Workshop
         </h2>
+        <p className="text-admin-body text-on-surface-variant">
+          Alamat, jam operasional, dan tautan Maps dikelola melalui{" "}
+          <Link href="/admin/konten/informasi-bisnis" className="font-semibold text-primary underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Informasi Bisnis</Link>.
+        </p>
         <TextField name="workshop_title" label="Judul Workshop" value={content.workshop_title} error={state.errors.workshop_title} maxLength={180} />
         <TextField name="workshop_description" label="Deskripsi Workshop" value={content.workshop_description} error={state.errors.workshop_description} multiline maxLength={2000} />
-        <div className="grid gap-6 md:grid-cols-2">
-          <TextField name="workshop_image_url" label="Nilai Gambar Workshop" value={content.workshop_image_url} error={state.errors.workshop_image_url} maxLength={2048} />
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
           <div>
+            <p className="text-admin-label text-primary">Gambar workshop saat ini</p>
+            {content.workshop_image_url ? (
+              <Image src={content.workshop_image_url} alt="Preview gambar workshop yang saat ini digunakan" width={576} height={360} className="mt-2 aspect-[8/5] w-full rounded-md border border-outline-variant object-cover" />
+            ) : (
+              <p className="mt-2 rounded-md border border-outline-variant bg-surface-container-low p-4 text-admin-body text-on-surface-variant">Belum ada gambar workshop.</p>
+            )}
+          </div>
+          <div className="space-y-6">
+            <TextField name="workshop_image_url" label="Nilai Gambar Workshop" value={content.workshop_image_url} error={state.errors.workshop_image_url} maxLength={2048} />
+            <div>
             <label htmlFor="workshop_image" className="text-admin-label text-primary">
-              Gambar Workshop
+              Unggah Pengganti Gambar Workshop <span className="font-normal text-on-surface-variant">(opsional)</span>
             </label>
-            <input id="workshop_image" name="workshop_image" type="file" accept="image/jpeg,image/png,image/webp" aria-invalid={Boolean(state.errors.workshop_image)} aria-describedby={state.errors.workshop_image ? "workshop-image-error" : "workshop-image-help"} className={`${fieldClassName} file:mr-4 file:rounded-md file:border-0 file:bg-surface-container file:px-3 file:py-2 file:text-admin-label file:text-primary`} />
+            <input id="workshop_image" name="workshop_image" type="file" accept="image/jpeg,image/png,image/webp" aria-invalid={Boolean(state.errors.workshop_image)} aria-describedby={state.errors.workshop_image ? "workshop-image-error" : "workshop-image-help"} className={`${fieldClassName} max-w-full file:mr-4 file:rounded-md file:border-0 file:bg-surface-container file:px-3 file:py-2 file:text-admin-label file:text-primary`} />
             <p id="workshop-image-help" className="mt-1.5 text-admin-caption text-on-surface-variant">
-              JPEG, PNG, atau WebP. Maksimal 5 MiB. Kosongkan untuk mempertahankan gambar saat ini.
+              JPEG, PNG, atau WebP. Maksimal 5 MiB. Kosongkan untuk mempertahankan gambar saat ini. Gambar pengganti digunakan setelah perubahan disimpan.
             </p>
             {state.errors.workshop_image ? (
               <p id="workshop-image-error" className="mt-1.5 text-admin-caption text-error">
                 {state.errors.workshop_image}
               </p>
             ) : null}
+            </div>
           </div>
         </div>
       </section>
@@ -176,7 +204,7 @@ export function AboutContentForm({ content }: { content: AboutContent }) {
             </p>
           ) : null}
         </div>
-        <button type="submit" disabled={isPending} className="mt-4 min-h-12 rounded-md bg-primary px-6 text-admin-label text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+        <button type="submit" disabled={isPending} className="mt-4 min-h-12 w-full rounded-md bg-primary px-6 text-admin-label text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
           {isPending ? "Menyimpan..." : "Simpan Perubahan"}
         </button>
       </div>
