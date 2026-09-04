@@ -9,6 +9,7 @@ import {
   getActiveServices,
   type PublicService,
 } from "@/lib/services/public-services";
+import { getServiceImageFallback } from "@/lib/services/service-image-fallbacks";
 import { getSiteSettings } from "@/lib/content/site-settings";
 import { createWhatsappUrl } from "@/lib/whatsapp";
 
@@ -22,8 +23,6 @@ type ServicePresentation = {
   slug: string;
   detail: string;
   useCases: readonly string[];
-  image?: string;
-  imageAlt?: string | null;
   visualKicker?: string | null;
   visualTitle?: string | null;
 };
@@ -38,8 +37,6 @@ const servicePresentations: readonly ServicePresentation[] = [
       "Perbaikan bagian pakaian",
       "Perapian potongan dan detail",
     ],
-    image: "/images/home/permak.jpg",
-    imageAlt: "Proses pengerjaan permak pakaian",
     visualKicker: "Penyesuaian · Perbaikan · Perapian",
     visualTitle: "Pakaian kembali nyaman digunakan.",
   },
@@ -52,8 +49,6 @@ const servicePresentations: readonly ServicePresentation[] = [
       "Acara dan kegiatan",
       "Usaha dan kebutuhan personal",
     ],
-    image: "/images/home/portfolio-5.jpeg",
-    imageAlt: "Proses pengerjaan pakaian di workshop Arriyadh Studio",
     visualKicker: null,
     visualTitle: null,
   },
@@ -66,8 +61,6 @@ const servicePresentations: readonly ServicePresentation[] = [
       "Organisasi dan perusahaan",
       "Merchandise dan retail",
     ],
-    image: "/images/home/portfolio-18.jpeg",
-    imageAlt: "Kaos custom hasil produksi Arriyadh Studio",
     visualKicker: null,
     visualTitle: null,
   },
@@ -80,8 +73,6 @@ const servicePresentations: readonly ServicePresentation[] = [
       "Kemeja bergaya PDH",
       "Pakaian organisasi",
     ],
-    image: "/images/home/portfolio-23.jpeg",
-    imageAlt: "Kemeja seragam custom hasil produksi Arriyadh Studio",
     visualKicker: null,
     visualTitle: null,
   },
@@ -90,8 +81,6 @@ const servicePresentations: readonly ServicePresentation[] = [
     detail:
       "Desain jersey dapat disesuaikan dengan identitas tim atau kegiatan yang akan menggunakannya.",
     useCases: ["Tim olahraga", "Komunitas", "Turnamen dan kegiatan olahraga"],
-    image: "/images/home/portfolio-10.jpeg",
-    imageAlt: "Jersey olahraga custom hasil produksi Arriyadh Studio",
     visualKicker: null,
     visualTitle: null,
   },
@@ -106,8 +95,6 @@ const servicePresentations: readonly ServicePresentation[] = [
       "Undangan",
       "Kebutuhan custom lainnya",
     ],
-    image: "/images/home/portfolio-20.jpeg",
-    imageAlt: null,
     visualKicker: "Desain · Cetak · Kebutuhan Custom",
     visualTitle: "Media pendukung sesuai kebutuhan Anda.",
   },
@@ -140,10 +127,15 @@ const presentationBySlug = new Map(
   servicePresentations.map((presentation) => [presentation.slug, presentation]),
 );
 
-type PresentedService = PublicService & ServicePresentation;
+type PresentedService = PublicService &
+  ServicePresentation & {
+    image?: string;
+    imageAlt: string;
+  };
 
 function presentService(service: PublicService): PresentedService {
   const presentation = presentationBySlug.get(service.slug);
+  const imageFallback = getServiceImageFallback(service.slug);
 
   return {
     ...service,
@@ -152,8 +144,8 @@ function presentService(service: PublicService): PresentedService {
       presentation?.detail ??
       "Sampaikan detail kebutuhan Anda agar admin dapat meninjau pengerjaan dan menentukan harga.",
     useCases: presentation?.useCases ?? ["Kebutuhan custom"],
-    image: service.image_url ?? presentation?.image,
-    imageAlt: presentation?.imageAlt ?? service.name,
+    image: service.image_url ?? imageFallback?.src,
+    imageAlt: imageFallback?.alt ?? service.name,
     visualKicker: presentation?.visualKicker ?? "Layanan Custom",
     visualTitle: presentation?.visualTitle ?? service.name,
   };

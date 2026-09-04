@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { PaymentSubmissionForm } from "@/app/(public)/pembayaran/[token]/payment-submission-form";
 import { Container } from "@/components/ui/container";
+import { getSiteSettings } from "@/lib/content/site-settings";
 import {
   getPublicPaymentOrder,
   type PublicPaymentOrder,
@@ -132,7 +133,7 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
   return (
     <section
       aria-labelledby="payment-order-summary"
-      className="mt-8 border border-outline-variant bg-surface-white p-6 sm:p-8"
+      className="border border-outline-variant bg-surface-white p-6 sm:p-8 lg:sticky lg:top-24"
     >
       <h2
         id="payment-order-summary"
@@ -140,7 +141,7 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
       >
         Ringkasan Pesanan
       </h2>
-      <dl className="mt-6 grid gap-5 sm:grid-cols-2">
+      <dl className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
         <div>
           <dt className="font-body text-label-md text-on-surface-variant">
             Kode Pesanan
@@ -227,7 +228,7 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
             {rupiahFormatter.format(order.price)}
           </dd>
         </div>
-        <div className="border-t border-outline-variant pt-5 sm:col-span-2">
+        <div className="border-t border-outline-variant pt-5 sm:col-span-2 lg:col-span-1">
           <dt className="font-body text-label-md text-on-surface-variant">
             {isProduct ? "Jumlah yang Harus Dibayar" : "DP yang Harus Dibayar"}
           </dt>
@@ -246,7 +247,10 @@ export default async function PublicPaymentPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const order = await getPublicPaymentOrder(token);
+  const [order, settings] = await Promise.all([
+    getPublicPaymentOrder(token),
+    getSiteSettings(),
+  ]);
   const isProduct = order.order_kind === "product";
   const canSubmitPayment = isProduct
     ? !order.has_payment_proof
@@ -256,7 +260,7 @@ export default async function PublicPaymentPage({
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
       <Container>
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-6xl">
           <header className="text-center">
             <p className="font-body text-label-md font-semibold uppercase tracking-label text-secondary">
               {isProduct ? "Pembayaran Produk" : "Pembayaran Layanan"}
@@ -275,33 +279,39 @@ export default async function PublicPaymentPage({
             </p>
           </header>
 
-          <OrderSummary order={order} />
-
-          <div className="mt-6">
-            {canSubmitPayment ? (
-              <section
-                aria-labelledby="payment-method-heading"
-                className="border border-outline-variant bg-surface-white p-6 sm:p-8"
-              >
-                <h2
-                  id="payment-method-heading"
-                  className="font-heading text-heading-md text-primary"
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)] lg:items-start lg:gap-8">
+            <div>
+              {canSubmitPayment ? (
+                <section
+                  aria-labelledby="payment-method-heading"
+                  className="border border-outline-variant bg-surface-white p-6 sm:p-8"
                 >
-                  {isProduct ? "Bukti Pembayaran" : "Pilih Metode Pembayaran"}
-                </h2>
-                <p className="mt-2 font-body text-body-md text-on-surface-variant">
-                  {isProduct
-                    ? "Bayar total penuh melalui Transfer Bank BRI, lalu unggah bukti pembayaran."
-                    : "Pilih Transfer atau COD untuk melanjutkan pesanan."}
-                </p>
-                <PaymentSubmissionForm
-                  token={token}
-                  orderKind={order.order_kind}
-                />
-              </section>
-            ) : (
-              <PaymentPendingState order={order} />
-            )}
+                  <h2
+                    id="payment-method-heading"
+                    className="font-heading text-heading-md text-primary"
+                  >
+                    {isProduct
+                      ? "Bukti Pembayaran"
+                      : "Pilih Metode Pembayaran"}
+                  </h2>
+                  <p className="mt-2 font-body text-body-md text-on-surface-variant">
+                    {isProduct
+                      ? "Bayar total penuh melalui Transfer Bank BRI, lalu unggah bukti pembayaran."
+                      : "Pilih Transfer atau COD untuk melanjutkan pesanan."}
+                  </p>
+                  <PaymentSubmissionForm
+                    token={token}
+                    orderKind={order.order_kind}
+                    siteAddress={settings.address}
+                    paymentAmount={isProduct ? order.price : order.dp_amount}
+                  />
+                </section>
+              ) : (
+                <PaymentPendingState order={order} />
+              )}
+            </div>
+
+            <OrderSummary order={order} />
           </div>
         </div>
       </Container>

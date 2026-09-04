@@ -46,7 +46,7 @@ export default async function ProductCheckoutPage({
   return (
     <main className="bg-surface-container-low py-12 text-on-surface sm:py-16 md:py-section-gap">
       <Container>
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl">
           <Link
             href="/produk"
             className="font-body text-button text-on-surface-variant underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -54,10 +54,10 @@ export default async function ProductCheckoutPage({
             ← Kembali ke Produk
           </Link>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
-            <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">
+          <div className="mt-6 space-y-6">
+            <section className="border border-outline-variant bg-surface-white p-6 sm:p-8 lg:grid lg:grid-cols-[minmax(16rem,0.7fr)_minmax(0,1.3fr)] lg:gap-8">
               {product.image_url ? (
-                <div className="relative -mx-6 -mt-6 mb-6 aspect-[16/10] overflow-hidden border-b border-outline-variant bg-surface-container-low sm:-mx-8 sm:-mt-8 sm:mb-8">
+                <div className="relative -mx-6 -mt-6 mb-6 aspect-[16/10] overflow-hidden border-b border-outline-variant bg-surface-container-low sm:-mx-8 sm:-mt-8 sm:mb-8 lg:m-0 lg:aspect-[4/3] lg:border lg:border-outline-variant">
                   <Image
                     src={product.image_url}
                     alt={product.name}
@@ -68,18 +68,19 @@ export default async function ProductCheckoutPage({
                   />
                 </div>
               ) : null}
-              <p className="font-body text-label-md uppercase text-secondary">
-                Produk Dipilih
-              </p>
-              <h1 className="mt-2 font-heading text-heading-lg text-primary">
-                {product.name}
-              </h1>
-              {product.description ? (
-                <p className="mt-3 font-body text-body-md text-on-surface-variant">
-                  {product.description}
+              <div className={product.image_url ? undefined : "lg:col-span-2"}>
+                <p className="font-body text-label-md uppercase text-secondary">
+                  Produk Dipilih
                 </p>
-              ) : null}
-              <dl className="mt-6 border-y border-outline-variant">
+                <h1 className="mt-2 font-heading text-heading-lg text-primary">
+                  {product.name}
+                </h1>
+                {product.description ? (
+                  <p className="mt-3 font-body text-body-md text-on-surface-variant">
+                    {product.description}
+                  </p>
+                ) : null}
+                <dl className="mt-6 border-y border-outline-variant">
                 <div className="flex items-start justify-between gap-4 py-4">
                   <dt className="font-body text-body-md text-on-surface-variant">
                     {product.variants.length > 1
@@ -100,27 +101,28 @@ export default async function ProductCheckoutPage({
                       : "Belum tersedia"}
                   </dd>
                 </div>
-              </dl>
-              <p className="mt-5 font-body text-body-sm text-on-surface-variant">
-                Harga pada ringkasan akan menyesuaikan pilihan varian, ukuran,
-                dan jumlah Anda.
-              </p>
-              {availabilitySupport && availabilitySupportUrl ? (
-                <div className="mt-5 border-t border-outline-variant pt-5">
-                  <p className="font-body text-body-sm text-on-surface-variant">
-                    Pilihan lengkap mengikuti stok yang tersedia. Konfirmasikan
-                    pilihan sebelum menyelesaikan pesanan website.
-                  </p>
-                  <a
-                    href={availabilitySupportUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low"
-                  >
-                    {availabilitySupport.label}
-                  </a>
-                </div>
-              ) : null}
+                </dl>
+                <p className="mt-5 font-body text-body-sm text-on-surface-variant">
+                  Harga pada ringkasan akan menyesuaikan pilihan varian, ukuran,
+                  dan jumlah Anda.
+                </p>
+                {availabilitySupport && availabilitySupportUrl ? (
+                  <div className="mt-5 border-t border-outline-variant pt-5">
+                    <p className="font-body text-body-sm text-on-surface-variant">
+                      Pilihan lengkap mengikuti stok yang tersedia. Konfirmasikan
+                      pilihan sebelum menyelesaikan pesanan website.
+                    </p>
+                    <a
+                      href={availabilitySupportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low"
+                    >
+                      {availabilitySupport.label}
+                    </a>
+                  </div>
+                ) : null}
+              </div>
             </section>
 
             <section className="border border-outline-variant bg-surface-white p-6 sm:p-8">

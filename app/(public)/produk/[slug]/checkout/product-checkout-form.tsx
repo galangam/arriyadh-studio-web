@@ -87,8 +87,11 @@ export function ProductCheckoutForm({
       : 0;
 
   return (
-    <form action={formAction} className="space-y-0">
-      <fieldset className="pb-8">
+    <form
+      action={formAction}
+      className="space-y-0 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)] lg:items-start lg:gap-x-8"
+    >
+      <fieldset className="pb-8 lg:col-start-1">
         <legend className="font-heading text-heading-sm text-primary">
           Pilihan Produk
         </legend>
@@ -105,7 +108,7 @@ export function ProductCheckoutForm({
             {materials.map((option) => (
               <label
                 key={option}
-                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-md border border-outline-variant px-4 font-body text-body-md text-on-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:font-semibold"
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-md border border-outline-variant px-4 font-body text-body-md text-on-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:font-semibold has-[:checked]:ring-1 has-[:checked]:ring-primary"
               >
                 <input
                   type="radio"
@@ -147,7 +150,7 @@ export function ProductCheckoutForm({
             {sleeveTypes.map((option) => (
               <label
                 key={option}
-                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-md border border-outline-variant px-4 font-body text-body-md text-on-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:font-semibold"
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-md border border-outline-variant px-4 font-body text-body-md text-on-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:font-semibold has-[:checked]:ring-1 has-[:checked]:ring-primary"
               >
                 <input
                   type="radio"
@@ -242,7 +245,7 @@ export function ProductCheckoutForm({
         </div>
       </fieldset>
 
-      <fieldset className="border-t border-outline-variant py-8">
+      <fieldset className="border-t border-outline-variant py-8 lg:col-start-1">
         <legend className="font-heading text-heading-sm text-primary">
           Data Pemesan
         </legend>
@@ -294,7 +297,7 @@ export function ProductCheckoutForm({
 
       <fieldset
         disabled={isPending}
-        className="border-t border-outline-variant py-8"
+        className="border-t border-outline-variant py-8 lg:col-start-1"
       >
         <legend className="font-heading text-heading-sm text-primary">
           Metode Pembayaran
@@ -342,7 +345,7 @@ export function ProductCheckoutForm({
 
       <section
         aria-labelledby="price-summary-title"
-        className="border-t border-outline-variant py-8"
+        className="border border-outline-variant bg-surface-container-low p-5 sm:p-6 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1 lg:row-span-4"
       >
         <h3
           id="price-summary-title"
@@ -352,8 +355,38 @@ export function ProductCheckoutForm({
         </h3>
         <dl
           aria-live="polite"
-          className="mt-4 border-y border-outline-variant bg-surface-container-low px-4"
+          className="mt-5"
         >
+          {material ? (
+            <div className="flex items-start justify-between gap-4 border-b border-outline-variant py-3 first:pt-0">
+              <dt className="font-body text-body-sm text-on-surface-variant">
+                Bahan
+              </dt>
+              <dd className="text-right font-body text-body-sm font-semibold text-primary">
+                {material}
+              </dd>
+            </div>
+          ) : null}
+          {sleeveType ? (
+            <div className="flex items-start justify-between gap-4 border-b border-outline-variant py-3">
+              <dt className="font-body text-body-sm text-on-surface-variant">
+                Jenis lengan
+              </dt>
+              <dd className="text-right font-body text-body-sm font-semibold text-primary">
+                {sleeveType}
+              </dd>
+            </div>
+          ) : null}
+          {size ? (
+            <div className="flex items-start justify-between gap-4 border-b border-outline-variant py-3">
+              <dt className="font-body text-body-sm text-on-surface-variant">
+                Ukuran
+              </dt>
+              <dd className="font-body text-body-sm font-semibold text-primary">
+                {size}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between gap-4 py-4">
             <dt className="font-body text-body-sm text-on-surface-variant">
               Harga satuan
@@ -364,7 +397,17 @@ export function ProductCheckoutForm({
                 : rupiahFormatter.format(unitPrice)}
             </dd>
           </div>
-          <div className="flex items-center justify-between gap-4 border-t border-outline-variant py-4">
+          {appliedSurcharge > 0 ? (
+            <div className="flex items-center justify-between gap-4 border-t border-outline-variant py-4">
+              <dt className="font-body text-body-sm text-on-surface-variant">
+                Tambahan ukuran
+              </dt>
+              <dd className="font-body text-body-sm font-semibold text-primary">
+                {rupiahFormatter.format(appliedSurcharge)} / pcs
+              </dd>
+            </div>
+          ) : null}
+          <div className="flex items-end justify-between gap-4 border-t border-outline-variant pt-5">
             <dt className="font-body text-body-sm text-on-surface-variant">
               Jumlah
             </dt>
@@ -376,7 +419,7 @@ export function ProductCheckoutForm({
             <dt className="font-body text-body-md font-semibold text-primary">
               Total
             </dt>
-            <dd className="font-heading text-heading-sm text-primary">
+            <dd className="text-right font-heading text-heading-md text-primary">
               {total === null ? "—" : rupiahFormatter.format(total)}
             </dd>
           </div>
@@ -385,7 +428,7 @@ export function ProductCheckoutForm({
 
       <section
         aria-labelledby="checkout-confirmation-title"
-        className="border-t border-outline-variant pt-8"
+        className="border-t border-outline-variant pt-8 lg:col-start-1"
       >
         <h3
           id="checkout-confirmation-title"
