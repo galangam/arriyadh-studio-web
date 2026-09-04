@@ -12,31 +12,61 @@ export async function FloatingWhatsapp() {
   );
 
   return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Hubungi Arriyadh Studio melalui WhatsApp"
-      className="fixed bottom-5 right-5 z-50 flex min-h-12 items-center gap-3 rounded-full border border-outline-variant bg-surface-white px-3 py-2.5 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-    >
-     <Image
-  src="/icons/social/whatsapp.svg"
-  alt=""
-  width={36}
-  height={36}
-  aria-hidden="true"
-  className="size-9 object-contain"
-/>
+    <>
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Hubungi Arriyadh Studio melalui WhatsApp"
+        className="fixed right-4 bottom-5 z-50 flex items-center gap-2 focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:right-7 sm:bottom-7 sm:gap-2.5"
+      >
+        <span className="relative rounded-lg bg-surface-white px-3 py-2 font-body text-xs leading-4 font-semibold whitespace-nowrap text-primary shadow-md sm:px-4 sm:py-2.5 sm:text-body-sm">
+          <span className="sm:hidden">Konsultasi via WhatsApp</span>
+          <span className="hidden sm:inline">Konsultasi via WhatsApp</span>
 
-      <span className="hidden pr-2 text-left sm:block">
-        <span className="block font-body text-[10px] uppercase tracking-label text-secondary">
-          WhatsApp
+          <span
+            aria-hidden="true"
+            className="absolute top-1/2 -right-2 -translate-y-1/2 border-y-[6px] border-l-[8px] border-y-transparent border-l-surface-white"
+          />
         </span>
 
-        <span className="block font-body text-body-sm font-semibold text-primary">
-          {settings.phone ?? whatsappNumber}
+        <span className="whatsapp-attention flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#46DA51] shadow-md sm:size-14">
+          <Image
+            src="/icons/social/whatsapp.svg"
+            alt=""
+            width={56}
+            height={56}
+            aria-hidden="true"
+            className="size-full object-cover"
+          />
         </span>
-      </span>
-    </a>
+      </a>
+
+      <style>{`
+        @keyframes whatsapp-attention {
+          0%, 10%, 100% {
+            transform: rotate(0deg) scale(1);
+          }
+
+          2.5%, 7.5% {
+            transform: rotate(-4deg) scale(1.02);
+          }
+
+          5% {
+            transform: rotate(4deg) scale(1.02);
+          }
+        }
+
+        .whatsapp-attention {
+          animation: whatsapp-attention 6s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .whatsapp-attention {
+            animation: none;
+          }
+        }
+      `}</style>
+    </>
   );
 }
