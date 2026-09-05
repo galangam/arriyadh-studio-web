@@ -24,8 +24,8 @@ const socialLinkDefinitions = [
     key: "tiktok_url",
     label: "TikTok",
     icon: "/icons/social/tiktok.svg",
-    width: 30,
-    height: 30,
+    width: 20,
+    height: 20,
   },
   {
     key: "instagram_url",
