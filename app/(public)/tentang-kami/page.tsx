@@ -198,14 +198,16 @@ export default async function TentangKamiPage() {
             />
           ) : null}
 
-          <div className="absolute inset-x-0 bottom-0 bg-primary/45 px-gutter py-3 text-on-primary backdrop-blur-[2px]">
+          <div aria-hidden="true" className="absolute inset-0 bg-black/55" />
+
+          <div className="absolute inset-x-0 bottom-0 px-gutter py-3 text-on-primary">
             <div className="flex items-center justify-between gap-gutter">
               <div>
                 <p className="font-heading text-heading-xs">
                   Arriyadh Studio
                 </p>
 
-                <p className="mt-1 font-body text-body-sm text-on-primary/70">
+                <p className="mt-1 font-body text-body-sm text-on-primary">
                   Kalijati, Subang
                 </p>
               </div>

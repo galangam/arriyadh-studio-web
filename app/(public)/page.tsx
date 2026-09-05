@@ -79,37 +79,37 @@ export default async function Home() {
             priority
             unoptimized={content.hero_image_url.startsWith("http")}
             sizes="100vw"
-            className="-z-20 object-cover object-[center_35%] opacity-70"
+            className="-z-20 object-cover object-[center_35%]"
             aria-hidden="true"
           />
         ) : null}
 
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-surface-white/40"
+          className="absolute inset-0 -z-10 bg-black/50"
         />
 
        <Container className="flex min-h-[480px] items-center py-12 sm:min-h-[520px] sm:py-16 md:min-h-[560px] md:py-section-gap lg:min-h-[580px]">
   <div className="max-w-2xl py-gutter md:w-[58%] md:py-10 lg:py-12">
-    <p className="font-body text-label-md uppercase text-secondary">
+    <p className="font-body text-label-md uppercase text-on-primary/80">
       {content.hero_eyebrow}
     </p>
 
     <h1
       id="hero-title"
-      className="mt-margin-mobile max-w-xl font-heading text-heading-strong text-primary sm:text-display-lg"
+      className="mt-margin-mobile max-w-xl font-heading text-heading-strong text-on-primary sm:text-display-lg"
     >
       {content.hero_title}
     </h1>
 
-    <p className="mt-gutter max-w-lg font-body text-body-md text-on-surface-variant sm:text-body-lg">
+    <p className="mt-gutter max-w-lg font-body text-body-md text-on-primary/80 sm:text-body-lg">
       {content.hero_description}
     </p>
 
     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
       <Link
         href="/layanan"
-        className="inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-surface-white px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
       >
         Lihat Layanan
         <ArrowIcon />
@@ -117,7 +117,7 @@ export default async function Home() {
 
       <Link
         href="/lacak-pesanan"
-        className="inline-flex min-h-12 items-center justify-center rounded-md border border-primary bg-surface-white/80 px-gutter font-body text-button text-primary transition-colors hover:bg-surface-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="inline-flex min-h-12 items-center justify-center rounded-md border border-on-primary bg-transparent px-gutter font-body text-button text-on-primary transition-colors hover:bg-surface-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
       >
         Lacak Pesanan
       </Link>
