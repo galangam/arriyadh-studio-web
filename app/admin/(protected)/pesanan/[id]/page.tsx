@@ -14,6 +14,10 @@ import { ProductionProgress } from "@/app/admin/(protected)/pesanan/[id]/product
 import { ProductCodConfirmationSection } from "@/app/admin/(protected)/pesanan/[id]/product-cod-confirmation-section";
 import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
 import { ServicePaymentLinkSection } from "@/app/admin/(protected)/pesanan/[id]/service-payment-link-section";
+import {
+  WhatsappActionIcon,
+  whatsappActionClassName,
+} from "@/components/ui/whatsapp-action";
 
 import {
   formatAdminOrderDateTime,
@@ -504,8 +508,9 @@ export default async function AdminOrderDetailPage({
                   href={productPaymentWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-center text-admin-label font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
+                  className={`${whatsappActionClassName} mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md px-5 text-center text-admin-label font-semibold sm:w-auto`}
                 >
+                  <WhatsappActionIcon />
                   Kirim Link Pembayaran via WhatsApp
                 </a>
               </section>
@@ -619,8 +624,9 @@ export default async function AdminOrderDetailPage({
                   href={statusWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-outline-variant px-5 text-admin-label font-semibold text-primary hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
+                  className={`${whatsappActionClassName} mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md px-5 text-admin-label font-semibold sm:w-auto`}
                 >
+                  <WhatsappActionIcon />
                   {statusWhatsappButtonLabel}
                 </a>
               </section>
@@ -685,7 +691,7 @@ export default async function AdminOrderDetailPage({
               {nextAction ? (
                 <div className="mt-5 border-t border-outline-variant pt-4">
                   <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">Tindakan berikutnya</p>
-                  <a href={nextAction.href} className="mt-2 inline-flex min-h-10 items-center text-admin-label font-semibold text-primary underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                  <a href={nextAction.href} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-outline-variant bg-surface-white px-4 text-center text-admin-label font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
                     {nextAction.label} <span aria-hidden="true">↓</span>
                   </a>
                 </div>

@@ -34,7 +34,7 @@ export function TransferVerificationControls({ orderId }: { orderId: string }) {
         <button
           type="submit"
           disabled={isProofPending}
-          className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-outline-variant px-4 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-outline-variant bg-surface-white px-4 text-admin-label text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {isProofPending ? "Menyiapkan..." : "Lihat Bukti Pembayaran"}
         </button>
@@ -51,7 +51,7 @@ export function TransferVerificationControls({ orderId }: { orderId: string }) {
             href={proofState.signedUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex text-admin-label font-semibold text-link-blue underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-outline-variant bg-surface-white px-4 text-admin-label font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
           >
             Buka Bukti Pembayaran
             <span className="sr-only"> di tab baru</span>

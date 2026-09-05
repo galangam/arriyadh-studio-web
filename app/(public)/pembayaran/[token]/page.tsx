@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 
 import { PaymentSubmissionForm } from "@/app/(public)/pembayaran/[token]/payment-submission-form";
 import { Container } from "@/components/ui/container";
+import {
+  WhatsappActionIcon,
+  whatsappActionClassName,
+} from "@/components/ui/whatsapp-action";
 import { getSiteSettings } from "@/lib/content/site-settings";
 import {
   getPublicPaymentOrder,
@@ -117,8 +121,9 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
             href={whatsappConfirmationUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
+            className={`${whatsappActionClassName} mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md px-gutter font-body text-button sm:w-auto`}
           >
+            <WhatsappActionIcon />
             {whatsappButtonLabel}
           </a>
         </section>

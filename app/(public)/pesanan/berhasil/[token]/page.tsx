@@ -3,6 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Container } from "@/components/ui/container";
+import {
+  WhatsappActionIcon,
+  whatsappActionClassName,
+} from "@/components/ui/whatsapp-action";
 import { getPublicOrderConfirmation } from "@/lib/orders/public-order-confirmation";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import {
@@ -254,8 +258,9 @@ export default async function OrderConfirmationPage({
                   href={productCodWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
+                  className={`${whatsappActionClassName} inline-flex min-h-12 w-full items-center justify-center rounded-md px-gutter font-body text-button sm:w-auto`}
                 >
+                  <WhatsappActionIcon />
                   Konfirmasi Pesanan COD ke Admin
                 </a>
               ) : null}
@@ -284,8 +289,9 @@ export default async function OrderConfirmationPage({
                 href={assistanceWhatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-gutter font-body text-button text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
+                className={`${whatsappActionClassName} mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md px-gutter font-body text-button sm:w-auto`}
               >
+                <WhatsappActionIcon />
                 Konfirmasi via WhatsApp
               </a>
             </section>

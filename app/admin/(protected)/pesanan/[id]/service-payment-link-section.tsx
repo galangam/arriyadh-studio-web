@@ -3,6 +3,10 @@
 import { useState } from "react";
 
 import { WhatsappMessagePreview } from "@/components/admin/whatsapp-message-preview";
+import {
+  WhatsappActionIcon,
+  whatsappActionClassName,
+} from "@/components/ui/whatsapp-action";
 
 type ServicePaymentLinkSectionProps = {
   paymentUrl: string;
@@ -31,7 +35,10 @@ export function ServicePaymentLinkSection({ paymentUrl, message, whatsappUrl }: 
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
         <button type="button" onClick={copyPaymentLink} className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-outline px-4 text-admin-label font-semibold text-primary hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto">{copyLabel}</button>
-        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-outline-variant px-4 text-admin-label font-semibold text-primary hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto">Kirim via WhatsApp</a>
+        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={`${whatsappActionClassName} inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 text-admin-label font-semibold sm:w-auto`}>
+          <WhatsappActionIcon />
+          Kirim via WhatsApp
+        </a>
       </div>
     </section>
   );

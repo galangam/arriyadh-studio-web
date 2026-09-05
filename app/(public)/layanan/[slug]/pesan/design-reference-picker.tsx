@@ -270,7 +270,7 @@ export function DesignReferencePicker({
                     href={previewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex font-body text-label-md font-semibold text-link-blue underline underline-offset-4"
+                    className="mt-2 inline-flex min-h-9 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-3 font-body text-label-md font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     Lihat
                     <span className="sr-only"> {file.name} di tab baru</span>

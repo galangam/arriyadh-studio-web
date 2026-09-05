@@ -24,7 +24,7 @@ export function DesignReferenceControl({ referenceId }: { referenceId: string })
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex min-h-10 items-center justify-center rounded-md border border-outline-variant px-4 text-admin-label font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-10 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-4 text-admin-label font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Menyiapkan..." : "Lihat Referensi"}
         </button>
@@ -40,7 +40,7 @@ export function DesignReferenceControl({ referenceId }: { referenceId: string })
             href={state.signedUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex text-admin-label font-semibold text-link-blue underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-4 text-admin-label font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             Buka Referensi Desain
             <span className="sr-only"> di tab baru</span>
