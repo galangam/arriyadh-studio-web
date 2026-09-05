@@ -258,6 +258,7 @@ export default async function OrderConfirmationPage({
                   href={productCodWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-page-whatsapp-action="true"
                   className={`${whatsappActionClassName} inline-flex min-h-12 w-full items-center justify-center rounded-md px-gutter font-body text-button sm:w-auto`}
                 >
                   <WhatsappActionIcon />
@@ -289,6 +290,7 @@ export default async function OrderConfirmationPage({
                 href={assistanceWhatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-page-whatsapp-action="true"
                 className={`${whatsappActionClassName} mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md px-gutter font-body text-button sm:w-auto`}
               >
                 <WhatsappActionIcon />

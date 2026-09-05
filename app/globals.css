@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+.public-layout-shell:has([data-page-whatsapp-action="true"])
+  > .floating-whatsapp-slot {
+  display: none;
+}
+
 /*
  * =========================================================
  * ARRIYADH STUDIO DESIGN SYSTEM

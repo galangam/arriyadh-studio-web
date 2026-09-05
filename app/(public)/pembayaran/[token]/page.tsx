@@ -121,6 +121,7 @@ function PaymentPendingState({ order }: { order: PublicPaymentOrder }) {
             href={whatsappConfirmationUrl}
             target="_blank"
             rel="noopener noreferrer"
+            data-page-whatsapp-action="true"
             className={`${whatsappActionClassName} mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md px-gutter font-body text-button sm:w-auto`}
           >
             <WhatsappActionIcon />

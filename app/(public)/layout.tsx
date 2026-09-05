@@ -8,11 +8,13 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-on-background">
+    <div className="public-layout-shell flex min-h-screen flex-col bg-background text-on-background">
       <PublicNavbar />
       <div className="flex-1">{children}</div>
       <PublicFooter />
-      <FloatingWhatsapp />
+      <div className="floating-whatsapp-slot">
+        <FloatingWhatsapp />
+      </div>
     </div>
   );
 }

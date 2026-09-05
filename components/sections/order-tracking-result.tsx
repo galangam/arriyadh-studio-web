@@ -442,6 +442,7 @@ export function OrderTrackingResult({
           href={trackingWhatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
+          data-page-whatsapp-action="true"
           className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md border border-outline bg-surface-container-low px-gutter font-body text-button font-semibold text-primary transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
         >
           Tanyakan Pesanan via WhatsApp

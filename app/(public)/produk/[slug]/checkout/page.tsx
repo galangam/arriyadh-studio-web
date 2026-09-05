@@ -116,6 +116,7 @@ export default async function ProductCheckoutPage({
                       href={availabilitySupportUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-page-whatsapp-action="true"
                       className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-outline px-4 font-body text-button text-primary hover:bg-surface-container-low"
                     >
                       {availabilitySupport.label}

@@ -224,6 +224,7 @@ export default async function LacakPesananPage() {
                   href={whatsappHelpUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-page-whatsapp-action="true"
                  className="inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Hubungi WhatsApp
