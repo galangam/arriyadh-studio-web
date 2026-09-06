@@ -26,8 +26,11 @@ export function DesignReferenceControl({ referenceId }: { referenceId: string })
           disabled={isPending}
           className="inline-flex min-h-10 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-4 text-admin-label font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Menyiapkan..." : "Lihat Referensi"}
+          {isPending ? "Menyiapkan..." : "Siapkan Referensi Desain"}
         </button>
+        <p className="mt-2 text-admin-caption text-on-surface-variant">
+          Setelah siap, tombol untuk membuka referensi akan muncul di bawah.
+        </p>
       </form>
       <div aria-live="polite" aria-atomic="true" className="mt-3">
         {state.error ? (

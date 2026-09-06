@@ -106,7 +106,7 @@ export function AdvanceOrderStatusControl({
               disabled={isPending}
               className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isPending ? "Memperbarui..." : "Ya, lanjutkan"}
+              {isPending ? "Memperbarui..." : `Ya, ubah ke ${nextStatusLabel}`}
             </button>
           </div>
         </form>

@@ -36,8 +36,11 @@ export function TransferVerificationControls({ orderId }: { orderId: string }) {
           disabled={isProofPending}
           className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-outline-variant bg-surface-white px-4 text-admin-label text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
-          {isProofPending ? "Menyiapkan..." : "Lihat Bukti Pembayaran"}
+          {isProofPending ? "Menyiapkan..." : "Siapkan Bukti Pembayaran"}
         </button>
+        <p className="mt-2 text-admin-caption text-on-surface-variant">
+          Setelah siap, tombol untuk membuka bukti akan muncul di bawah.
+        </p>
       </form>
 
       <div aria-live="polite" aria-atomic="true">
@@ -70,7 +73,7 @@ export function TransferVerificationControls({ orderId }: { orderId: string }) {
         >
           {isVerificationPending
             ? "Memverifikasi..."
-            : "Verifikasi Pembayaran"}
+            : "Verifikasi dan Lanjutkan Pesanan"}
         </button>
         <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5">
           {verificationState.error ? (
@@ -127,7 +130,7 @@ export function ProductCodConfirmationControl({
         disabled={isPending}
         className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {isPending ? "Mengonfirmasi..." : "Konfirmasi Pesanan COD"}
+        {isPending ? "Mengonfirmasi..." : "Konfirmasi dan Siapkan Produk"}
       </button>
       <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5">
         {state.error ? (

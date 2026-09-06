@@ -131,7 +131,7 @@ export default async function AdminOrdersPage({
             href={createOrdersExportHref(filters)}
             className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-5 text-admin-label font-semibold text-primary hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
           >
-            Export CSV
+            Unduh Data Pesanan (CSV)
           </a>
         </section>
 
@@ -198,14 +198,14 @@ export default async function AdminOrdersPage({
                 type="submit"
                 className="min-h-10 rounded-md bg-primary px-4 text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                Terapkan
+                Terapkan Filter
               </button>
               {hasActiveFilters && (
                 <Link
                   href="/admin/pesanan"
                   className="inline-flex min-h-10 items-center rounded-md border border-outline-variant px-3 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
-                  Reset
+                  Hapus Filter
                 </Link>
               )}
             </div>

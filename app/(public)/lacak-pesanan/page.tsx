@@ -235,7 +235,7 @@ export default async function LacakPesananPage() {
                     href={`mailto:${settings.email}`}
                     className="inline-flex min-h-12 items-center justify-center rounded-md border border-outline-variant bg-surface-white px-gutter font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
-                    Pusat Bantuan
+                    Kirim Email
                   </a>
                 ) : null}
               </div>

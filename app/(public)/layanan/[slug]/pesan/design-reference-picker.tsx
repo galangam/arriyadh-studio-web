@@ -212,7 +212,7 @@ export function DesignReferencePicker({
         onClick={() => pickerInputRef.current?.click()}
         className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-primary px-4 font-body text-button text-primary hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
-        Tambah File
+        Tambah File Referensi
       </button>
       <input
         ref={pickerInputRef}

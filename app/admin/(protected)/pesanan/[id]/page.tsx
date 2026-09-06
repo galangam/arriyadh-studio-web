@@ -203,26 +203,26 @@ export default async function AdminOrderDetailPage({
   const statusDetails: DetailItem[] = [];
   const nextAction =
     order.order_kind === "service" && order.status === "menunggu_harga"
-      ? { href: "#set-order-price", label: "Tetapkan harga pesanan" }
+      ? { href: "#set-order-price", label: "Buka Penetapan Harga" }
       : order.payment_method === "transfer" &&
           order.status === "menunggu_verifikasi" &&
           order.payment_proof_path
-        ? { href: "#verify-payment", label: "Verifikasi pembayaran" }
+        ? { href: "#verify-payment", label: "Buka Verifikasi Pembayaran" }
         : order.order_kind === "service" &&
             order.payment_method === "cod" &&
             order.status === "menunggu_konfirmasi_dp"
-          ? { href: "#confirm-cod", label: "Konfirmasi COD" }
+          ? { href: "#confirm-cod", label: "Buka Konfirmasi COD" }
           : order.order_kind === "product" &&
               order.payment_method === "cod" &&
               order.status === "menunggu_verifikasi"
-            ? { href: "#confirm-product-cod", label: "Konfirmasi pesanan COD" }
+            ? { href: "#confirm-product-cod", label: "Buka Konfirmasi Pesanan COD" }
             : productPaymentUrl
-              ? { href: "#product-payment-link", label: "Kirim link pembayaran" }
+              ? { href: "#product-payment-link", label: "Buka Opsi Kirim Link Pembayaran" }
               : servicePaymentUrl
-              ? { href: "#service-payment-link", label: "Kirim link pembayaran" }
+              ? { href: "#service-payment-link", label: "Buka Opsi Kirim Link Pembayaran" }
               : isServiceProductionStatus ||
                   (order.order_kind === "product" && order.status === "diproses")
-                ? { href: "#production-progress", label: "Perbarui progres pesanan" }
+                ? { href: "#production-progress", label: "Buka Kontrol Progres" }
                 : null;
 
   if (order.quoted_at) {

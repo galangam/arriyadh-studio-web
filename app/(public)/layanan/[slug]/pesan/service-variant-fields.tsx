@@ -341,8 +341,12 @@ export function ServiceVariantFields({
         }}
         className="mt-4 min-h-11 rounded-md border border-primary px-4 font-body text-button text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
-        + Tambah Varian
+        + Tambah Varian Lain
       </button>
+      <p className="mt-2 max-w-xl font-body text-body-sm text-on-surface-variant">
+        Gunakan tombol ini jika ingin menambah kombinasi bahan atau jenis lengan
+        lain dalam pesanan yang sama.
+      </p>
 
       <p
         className="mt-5 border-t border-outline-variant pt-4 font-body text-body-md font-semibold text-primary"

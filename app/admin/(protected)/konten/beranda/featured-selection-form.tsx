@@ -94,8 +94,8 @@ export function FeaturedSelectionForm({
                   <input type="hidden" name="featured_ids" value={id} />
                   <span className="w-7 text-admin-caption text-on-surface-variant">{index + 1}.</span>
                   <span className="min-w-0 flex-1 break-words text-admin-body text-on-surface">{option.name}</span>
-                  <button type="button" onClick={() => move(id, -1)} disabled={index === 0} aria-label={`Naikkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-40">↑</button>
-                  <button type="button" onClick={() => move(id, 1)} disabled={index === selectedIds.length - 1} aria-label={`Turunkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-40">↓</button>
+                  <button type="button" onClick={() => move(id, -1)} disabled={index === 0} aria-label={`Naikkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-40">↑ Naikkan</button>
+                  <button type="button" onClick={() => move(id, 1)} disabled={index === selectedIds.length - 1} aria-label={`Turunkan ${option.name}`} className="rounded border border-outline-variant px-2 py-1 text-admin-label text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-40">↓ Turunkan</button>
                 </li>
               );
             })}
