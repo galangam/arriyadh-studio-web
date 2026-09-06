@@ -151,21 +151,14 @@ export function PublicNavbar() {
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`relative border-b border-outline-variant py-3 pr-8 font-body text-button transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  className={`border-b border-l-[3px] border-b-outline-variant px-4 py-3 font-body text-button transition-colors focus-visible:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isActive
-                      ? "font-semibold text-primary"
-                      : "text-on-surface-variant hover:text-primary"
+                      ? "border-l-primary bg-surface-container-low font-semibold text-primary"
+                      : "border-l-transparent text-on-surface-variant hover:bg-surface-container-low/60 hover:text-primary"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
-
-                  {isActive && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute right-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary"
-                    />
-                  )}
                 </Link>
               );
             })}
