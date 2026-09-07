@@ -33,6 +33,44 @@ function ArrowIcon() {
   );
 }
 
+function getGoogleMapsEmbedUrl(
+  mapsUrl: string,
+  businessName: string,
+  address: string,
+) {
+  const embedUrl = new URL("https://www.google.com/maps");
+  let query = `${businessName}, ${address}`;
+
+  try {
+    const locationUrl = new URL(mapsUrl);
+    const placeName = locationUrl.pathname.match(/\/maps\/place\/([^/]+)/)?.[1];
+    const coordinates = locationUrl.pathname.match(
+      /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(\d+(?:\.\d+)?)z/,
+    );
+
+    if (coordinates) {
+      const coordinateQuery = `${coordinates[1]},${coordinates[2]}`;
+
+      query = coordinateQuery;
+      embedUrl.searchParams.set("ll", coordinateQuery);
+      embedUrl.searchParams.set("z", coordinates[3]);
+    } else {
+      query =
+        locationUrl.searchParams.get("q") ??
+        (placeName
+          ? decodeURIComponent(placeName.replaceAll("+", " "))
+          : query);
+    }
+  } catch {
+    // Fall back to the existing business name and address for malformed CMS URLs.
+  }
+
+  embedUrl.searchParams.set("q", query);
+  embedUrl.searchParams.set("output", "embed");
+
+  return embedUrl.toString();
+}
+
 export default async function TentangKamiPage() {
   const [content, settings, portfolio] = await Promise.all([
     getAboutContent(),
@@ -44,12 +82,17 @@ export default async function TentangKamiPage() {
     .split(/\r?\n\s*\r?\n/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
+  const mapEmbedUrl = getGoogleMapsEmbedUrl(
+    settings.maps_url,
+    settings.business_name,
+    settings.address,
+  );
   return (
     <main className="overflow-hidden bg-surface-white text-on-surface">
       {/* INTRO */}
       <section
         aria-labelledby="page-title"
-        className="bg-surface-white py-20 text-center md:py-24 lg:py-28"
+        className="bg-surface-white py-14 text-center md:py-24 lg:py-28"
       >
         <Container>
           <Reveal>
@@ -67,7 +110,7 @@ export default async function TentangKamiPage() {
 
               <div
                 aria-hidden="true"
-                className="mx-auto mt-10 h-[3px] w-14 bg-primary"
+                className="mx-auto mt-8 h-[3px] w-14 bg-primary md:mt-10"
               />
             </div>
           </Reveal>
@@ -77,11 +120,11 @@ export default async function TentangKamiPage() {
       {/* STORY */}
       <section
         aria-labelledby="about-title"
-        className="bg-surface py-section-gap md:py-24"
+        className="bg-surface pb-12 pt-8 md:py-24"
       >
         <Container>
           <Reveal>
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+            <div className="grid items-center gap-8 md:gap-12 lg:grid-cols-2 lg:gap-20">
               <div className="relative mx-auto w-full max-w-2xl">
                 <div className="relative aspect-[4/3] overflow-hidden bg-surface-container-low">
                   <Image
@@ -130,7 +173,7 @@ export default async function TentangKamiPage() {
       {/* WORKSHOP */}
      <section
   aria-labelledby="workshop-title"
-  className="bg-surface pb-section-gap pt-8 md:pb-24 md:pt-12"
+  className="bg-surface pb-12 pt-4 md:pb-24 md:pt-12"
 >
   <Container>
     <Reveal>
@@ -168,59 +211,45 @@ export default async function TentangKamiPage() {
               </p>
             </div>
           </div>
-
-          <a
-            href={settings.maps_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-8 inline-flex min-h-12 items-center justify-center gap-base rounded-md bg-primary px-gutter font-body text-button text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            Buka di Google Maps
-            <ArrowIcon />
-          </a>
         </div>
 
-        <a
-          href={settings.maps_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Buka lokasi Arriyadh Studio di Google Maps"
-          className="group relative block aspect-[16/10] overflow-hidden border border-outline-variant bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          {content.workshop_image_url ? (
-            <Image
-              src={content.workshop_image_url}
-              alt="Peta lokasi workshop Arriyadh Studio di Subang"
-              fill
-              unoptimized={content.workshop_image_url.startsWith("http")}
-              sizes="(min-width: 1024px) 55vw, 100vw"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-            />
-          ) : null}
+        <div className="overflow-hidden border border-outline-variant bg-surface-container-low">
+          <iframe
+            src={mapEmbedUrl}
+            title="Peta interaktif lokasi Arriyadh Studio di Kalijati, Subang"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            className="block h-64 w-full border-0 sm:h-72 lg:h-[19rem]"
+          />
 
-          <div aria-hidden="true" className="absolute inset-0 bg-black/55" />
-
-          <div className="absolute inset-x-0 bottom-0 px-gutter py-3 text-on-primary">
+          <div className="border-t border-outline-variant bg-surface-white px-gutter py-3">
             <div className="flex items-center justify-between gap-gutter">
               <div>
-                <p className="font-heading text-heading-xs">
+                <p className="font-heading text-heading-xs text-primary">
                   Arriyadh Studio
                 </p>
 
-                <p className="mt-1 font-body text-body-sm text-on-primary">
+                <p className="mt-1 font-body text-body-sm text-on-surface-variant">
                   Kalijati, Subang
                 </p>
               </div>
 
-              <span className="inline-flex items-center gap-base font-body text-button">
-                Lihat Lokasi
+              <a
+                href={settings.maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex shrink-0 items-center gap-base font-body text-button text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                aria-label="Buka lokasi Arriyadh Studio di Google Maps (buka di tab baru)"
+              >
+                Buka di Google Maps
                 <span className="transition-transform duration-200 group-hover:translate-x-1">
                   <ArrowIcon />
                 </span>
-              </span>
+              </a>
             </div>
           </div>
-        </a>
+        </div>
       </div>
     </Reveal>
   </Container>
@@ -230,7 +259,7 @@ export default async function TentangKamiPage() {
       <section
         id="portofolio"
         aria-labelledby="portfolio-title"
-        className="scroll-mt-20 bg-surface-white py-section-gap md:py-24"
+        className="scroll-mt-20 bg-surface-white pb-12 pt-14 md:py-24"
       >
         <Container>
           <Reveal>
@@ -254,7 +283,7 @@ export default async function TentangKamiPage() {
             </div>
           </Reveal>
 
-          <Reveal delay={100} className="mt-12">
+          <Reveal delay={100} className="mt-10 md:mt-12">
         <div className="grid grid-flow-dense grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {portfolioItems.map((image, index) => {
                 const featured = index % 8 === 0;
