@@ -160,6 +160,37 @@ export function createAdminOrderStatusWhatsappUrl(
   return createWhatsappUrl(order.customerWhatsapp, messageLines.join("\n"));
 }
 
+type AdminServiceCodDpWhatsappHandoff = {
+  customerWhatsapp: string;
+  customerName: string;
+  orderCode: string;
+  serviceName: string | null;
+  dpAmount: number;
+};
+
+export function createAdminServiceCodDpWhatsappUrl(
+  order: AdminServiceCodDpWhatsappHandoff,
+) {
+  const serviceName = order.serviceName ?? "Layanan custom";
+  const message = [
+    `Halo, Kak ${order.customerName}.`,
+    "",
+    "Untuk pesanan layanan Arriyadh Studio dengan metode pembayaran COD, pembayaran DP perlu diselesaikan sebelum proses produksi dimulai.",
+    "",
+    `Kode Pesanan: ${order.orderCode}`,
+    `Layanan: ${serviceName}`,
+    `DP: ${dpAmountFormatter.format(order.dpAmount)}`,
+    "",
+    "Pembayaran DP dapat dilakukan dengan:",
+    "1. datang langsung ke workshop Arriyadh Studio, atau",
+    "2. bertemu di lokasi yang disepakati bersama.",
+    "",
+    "Silakan konfirmasi pilihan dan waktu yang paling sesuai. Terima kasih.",
+  ].join("\n");
+
+  return createWhatsappUrl(order.customerWhatsapp, message);
+}
+
 type ProductOrderWhatsappHandoff = {
   orderCode: string;
   productName: string;
@@ -169,6 +200,12 @@ type ProductOrderWhatsappHandoff = {
   quantity: number;
   total: number;
 };
+
+const dpAmountFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
 
 const productTotalFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,

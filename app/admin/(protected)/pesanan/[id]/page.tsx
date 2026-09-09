@@ -6,7 +6,6 @@ import { DesignReferenceControl } from "@/app/admin/(protected)/pesanan/[id]/des
 import { AdminPaymentSummary } from "@/app/admin/(protected)/pesanan/[id]/admin-payment-summary";
 
 import {
-  CodConfirmationControl,
   TransferVerificationControls,
 } from "@/app/admin/(protected)/pesanan/[id]/payment-verification-controls";
 
@@ -14,6 +13,7 @@ import { ProductionProgress } from "@/app/admin/(protected)/pesanan/[id]/product
 import { ProductCodConfirmationSection } from "@/app/admin/(protected)/pesanan/[id]/product-cod-confirmation-section";
 import { SetOrderPriceForm } from "@/app/admin/(protected)/pesanan/[id]/set-order-price-form";
 import { ServicePaymentLinkSection } from "@/app/admin/(protected)/pesanan/[id]/service-payment-link-section";
+import { ServiceCodDpConfirmationSection } from "@/app/admin/(protected)/pesanan/[id]/service-cod-dp-confirmation-section";
 import {
   WhatsappActionIcon,
   whatsappActionClassName,
@@ -133,6 +133,10 @@ export default async function AdminOrderDetailPage({
     order.dp_amount !== null &&
     order.status !== "menunggu_harga" &&
     ["menunggu_pembayaran_dp", "menunggu_konfirmasi_dp", "menunggu_verifikasi"].includes(order.status) &&
+    !(
+      order.payment_method === "cod" &&
+      order.status === "menunggu_konfirmasi_dp"
+    ) &&
     !(order.payment_method === "transfer" && order.payment_proof_path) &&
     siteOrigin !== null;
   const servicePaymentUrl = showServicePaymentLink
@@ -211,7 +215,10 @@ export default async function AdminOrderDetailPage({
         : order.order_kind === "service" &&
             order.payment_method === "cod" &&
             order.status === "menunggu_konfirmasi_dp"
-          ? { href: "#confirm-cod", label: "Buka Konfirmasi COD" }
+          ? {
+              href: "#confirm-service-cod-dp",
+              label: "Buka Konfirmasi DP COD",
+            }
           : order.order_kind === "product" &&
               order.payment_method === "cod" &&
               order.status === "menunggu_verifikasi"
@@ -571,29 +578,7 @@ export default async function AdminOrderDetailPage({
                 </section>
               )}
 
-            {order.order_kind === "service" &&
-              order.payment_method === "cod" &&
-              order.status === "menunggu_konfirmasi_dp" && (
-                <section
-                  id="confirm-cod"
-                  aria-labelledby="confirm-cod-heading"
-                  className="scroll-mt-24 border border-primary/30 bg-surface-white p-5 md:p-6"
-                >
-                  <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">
-                    Tindakan berikutnya
-                  </p>
-                  <h2
-                    id="confirm-cod-heading"
-                    className="mt-1 font-heading text-admin-section text-primary"
-                  >
-                    Konfirmasi COD
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
-                    Konfirmasi metode COD untuk memulai alur produksi pesanan.
-                  </p>
-                  <CodConfirmationControl orderId={order.id} />
-                </section>
-              )}
+            <ServiceCodDpConfirmationSection order={order} />
 
             <ProductCodConfirmationSection order={order} />
 

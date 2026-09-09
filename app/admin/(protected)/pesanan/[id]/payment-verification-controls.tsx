@@ -100,7 +100,7 @@ export function CodConfirmationControl({ orderId }: { orderId: string }) {
         disabled={isPending}
         className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-center text-admin-label text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {isPending ? "Mengonfirmasi..." : "Konfirmasi dan Mulai Produksi"}
+        {isPending ? "Mengonfirmasi..." : "Konfirmasi DP & Mulai Produksi"}
       </button>
       <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5">
         {state.error ? (
