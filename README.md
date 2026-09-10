@@ -1,239 +1,248 @@
 # Arriyadh Studio Web
 
-Arriyadh Studio Web adalah aplikasi web full-stack untuk usaha konveksi, sablon,
-permak pakaian, dan penjualan produk ready-stock. Aplikasi ini menyediakan
-informasi bisnis, pemesanan terstruktur, pelacakan status pesanan, pembayaran
-manual, serta panel admin untuk mengelola pesanan dan konten website.
+Arriyadh Studio Web is a full-stack web application for a garment production,
+screen-printing, clothing alteration, and ready-stock product business. The
+application provides permanent business information, structured ordering,
+order-status tracking, manual payments, and an admin panel for managing orders
+and website content.
 
-Project ini dikembangkan sebagai project tugas akhir PKL untuk membantu
-digitalisasi proses bisnis Arriyadh Studio.
+This project was developed as a final vocational internship (PKL) project to
+help digitize Arriyadh Studio's business processes.
 
-## Tentang Project
+## About the Project
 
-Sistem memiliki dua aktor utama:
+The system has two primary actors:
 
-- **Pelanggan**, yang dapat melihat informasi, membuat pesanan, membayar, dan
-  melacak pesanan tanpa membuat akun.
-- **Admin**, yang masuk melalui Supabase Auth untuk mengelola pesanan, workflow,
-  pembayaran, dan konten website.
+- **Customers**, who can view information, place orders, make payments, and
+  track orders without creating an account.
+- **Admin**, who signs in through Supabase Auth to manage orders, workflows,
+  payments, and website content.
 
-Terdapat dua jenis pemesanan yang diproses secara terpisah: layanan custom yang
-memerlukan peninjauan harga oleh admin dan produk ready-stock dengan harga
-katalog.
+Two order types are handled separately: custom services that require an admin
+price review and ready-stock products with catalog pricing.
 
-## Fitur Utama
+## Key Features
 
-### Pelanggan
+### Customers
 
-- Beranda dan informasi bisnis.
-- Halaman Tentang Kami dengan peta Google Maps interaktif.
-- Katalog layanan aktif dan form pemesanan layanan custom.
-- Dukungan detail varian, ukuran, material, dan referensi desain sesuai layanan.
-- Katalog produk ready-stock beserta varian, ukuran, kuantitas, dan checkout.
-- Konfirmasi order dan halaman pembayaran berbasis token order.
-- Pembayaran melalui Transfer BRI atau COD.
-- Upload bukti transfer dengan validasi file.
-- Pelacakan pesanan menggunakan kode pesanan tanpa akun pelanggan.
-- Integrasi WhatsApp melalui tautan `wa.me` dengan pesan yang telah disiapkan.
-- Halaman Syarat & Ketentuan dan Kebijakan Privasi.
+- Homepage and business information.
+- About Us page with an interactive Google Maps embed.
+- Active service catalog and custom-service order form.
+- Service-specific support for variants, sizes, materials, and design
+  references.
+- Ready-stock product catalog with variants, sizes, quantities, and checkout.
+- Order confirmation and token-based payment pages.
+- Payments through BRI bank transfer or COD.
+- Transfer-proof upload with file validation.
+- Order tracking by order code without a customer account.
+- WhatsApp integration through `wa.me` links with prepared messages.
+- Terms & Conditions and Privacy Policy pages.
 
-Route publik utama:
+Primary public routes:
 
-| Route | Fungsi |
+| Route | Purpose |
 | --- | --- |
-| `/` | Beranda dan ringkasan bisnis |
-| `/tentang-kami` | Profil, informasi workshop, portfolio, dan peta |
-| `/layanan` | Katalog layanan |
-| `/layanan/[slug]/pesan` | Form pesanan layanan custom |
-| `/produk` | Katalog produk ready-stock |
-| `/produk/[slug]/checkout` | Checkout produk |
-| `/pesanan/berhasil/[token]` | Konfirmasi pesanan |
-| `/pembayaran/[token]` | Pemilihan/pengiriman pembayaran |
-| `/lacak-pesanan` | Pelacakan berdasarkan kode pesanan |
-| `/syarat-ketentuan` | Syarat dan ketentuan layanan |
-| `/kebijakan-privasi` | Kebijakan privasi |
+| `/` | Homepage and business overview |
+| `/tentang-kami` | Profile, workshop information, portfolio, and map |
+| `/layanan` | Service catalog |
+| `/layanan/[slug]/pesan` | Custom-service order form |
+| `/produk` | Ready-stock product catalog |
+| `/produk/[slug]/checkout` | Product checkout |
+| `/pesanan/berhasil/[token]` | Order confirmation |
+| `/pembayaran/[token]` | Payment selection/submission |
+| `/lacak-pesanan` | Tracking by order code |
+| `/syarat-ketentuan` | Terms and conditions |
+| `/kebijakan-privasi` | Privacy policy |
 
 ### Admin
 
-- Login menggunakan Supabase Auth dengan model single-admin.
-- Dashboard ringkasan pesanan.
-- Daftar pesanan dengan pencarian, filter, dan pagination.
-- Detail order dan export data terfilter ke CSV.
-- Penetapan harga layanan custom.
-- Verifikasi bukti Transfer BRI.
-- Konfirmasi DP COD untuk layanan custom.
-- Konfirmasi COD untuk produk ready-stock.
-- Pembaruan status sesuai workflow masing-masing order.
-- Pembatalan order dan WhatsApp handoff kepada pelanggan.
-- CMS untuk informasi bisnis, beranda, Tentang Kami, layanan, produk, portfolio,
-  featured services, dan featured products.
-- Pengelolaan status aktif/published, urutan konten, dan gambar katalog.
+- Supabase Auth login with a single-admin model.
+- Order summary dashboard.
+- Order list with search, filters, and pagination.
+- Order details and filtered CSV export.
+- Custom-service price quotation.
+- BRI transfer-proof verification.
+- COD down payment confirmation for custom services.
+- COD confirmation for ready-stock products.
+- Status updates based on each order's workflow.
+- Order cancellation and WhatsApp handoff to customers.
+- CMS for business information, homepage, About Us, services, products,
+  portfolio, featured services, and featured products.
+- Active/published status, content ordering, and catalog image management.
 
-Tidak tersedia signup admin secara publik. Otorisasi admin menggunakan
+Public admin signup is not available. Admin authorization uses
 `app_metadata.role = "admin"`.
 
-## Alur Pemesanan
+## Order Flows
 
-### Pesan Layanan Custom
+### Custom Service Order
 
-1. Pelanggan memilih layanan aktif dan mengisi kebutuhan pesanan.
-2. Server memvalidasi data, varian, ukuran, dan referensi desain yang diperlukan.
-3. Database membuat order dengan status `menunggu_harga` serta snapshot layanan.
-4. Admin meninjau kebutuhan dan menetapkan harga.
-5. Database menghasilkan DP sebesar 50% dari harga yang ditetapkan.
-6. Pelanggan memilih Transfer BRI atau COD untuk pembayaran DP.
-7. Admin memverifikasi transfer atau mengonfirmasi pembayaran DP COD.
-8. Order masuk ke workflow produksi sesuai jenis layanan.
-9. Admin memperbarui status dan pelanggan memantaunya melalui kode pesanan.
+1. The customer selects an active service and enters the order requirements.
+2. The server validates the data, variants, sizes, and required design
+   references.
+3. The database creates the order with the `menunggu_harga` status and a
+   service snapshot.
+4. The admin reviews the requirements and sets the price.
+5. The database generates a down payment (DP) equal to 50% of the quoted price.
+6. The customer selects BRI bank transfer or COD for the down payment.
+7. The admin verifies the transfer or confirms the COD down payment.
+8. The order enters the production workflow for its service type.
+9. The admin updates the status, and the customer tracks it using the order
+   code.
 
-### Beli Produk Ready-Stock
+### Ready-Stock Product Purchase
 
-1. Pelanggan memilih produk, varian aktif, ukuran, dan kuantitas.
-2. Harga dihitung ulang di server berdasarkan katalog aktif dan surcharge ukuran.
-3. Pelanggan memilih Transfer BRI atau COD.
-4. Admin memverifikasi pembayaran atau mengonfirmasi order COD.
-5. Order diproses hingga selesai tanpa masuk ke workflow produksi garment.
+1. The customer selects a product, active variant, size, and quantity.
+2. The server recalculates the price from the active catalog and size
+   surcharge.
+3. The customer selects BRI bank transfer or COD.
+4. The admin verifies the payment or confirms the COD order.
+5. The order is processed through completion without entering the garment
+   production workflow.
 
-Data nama produk, varian, kuantitas, dan harga disimpan sebagai snapshot saat
-order dibuat sehingga histori tidak bergantung penuh pada perubahan katalog.
+The product name, variant, quantity, and price are stored as snapshots when the
+order is created, so order history does not depend entirely on later catalog
+changes.
 
-## Workflow Pesanan
+## Order Workflows
 
-### Konveksi dan Sablon
+### Garment Production and Screen Printing
 
 ```text
 Sample / Mockup
-→ Desain
-→ Pecah Warna
-→ Potong
-→ Sablon
-→ Jahit
-→ Iron
+→ Design
+→ Color Separation
+→ Cutting
+→ Screen Printing
+→ Sewing
+→ Ironing
 → Packing
-→ Selesai
+→ Completed
 ```
 
-### Permak
+### Alterations
 
 ```text
-Diterima → Dikerjakan → Quality Check → Selesai
+Received → In Progress → Quality Check → Completed
 ```
 
-### Produk Ready-Stock
+### Ready-Stock Products
 
 ```text
-Menunggu Verifikasi → Diproses → Selesai
+Awaiting Verification → Processing → Completed
 ```
 
-Database dan aplikasi membatasi perpindahan status agar mengikuti workflow yang
-sesuai. Order yang belum selesai juga dapat dibatalkan oleh admin.
+The database and application restrict status transitions to the appropriate
+workflow. The admin can also cancel orders that have not been completed.
 
-## Pembayaran dan WhatsApp
+## Payments and WhatsApp
 
-Metode pembayaran yang didukung:
+Supported payment methods:
 
-- Transfer Bank BRI.
+- BRI bank transfer.
 - COD.
 
-Detail rekening produksi dikonfigurasi di aplikasi dan hanya ditampilkan pada
-alur pembayaran pelanggan. Sistem tidak menggunakan payment gateway atau
-verifikasi pembayaran otomatis; seluruh pembayaran diperiksa manual oleh admin.
+Production account details are configured in the application and displayed
+only during the customer payment flow. The system does not use a payment
+gateway or automatic payment verification; every payment is verified manually
+by the admin.
 
-Integrasi WhatsApp menggunakan tautan resmi `wa.me`. Aplikasi hanya menyiapkan
-dan membuka pesan; pengiriman tetap dilakukan secara manual oleh pelanggan atau
-admin. Project tidak menggunakan bot maupun library otomasi WhatsApp tidak resmi.
+WhatsApp integration uses official `wa.me` links. The application only prepares
+and opens messages; customers or the admin must send them manually. The project
+does not use bots or unofficial WhatsApp automation libraries.
 
-## Pelacakan Pesanan
+## Order Tracking
 
-Pelanggan melacak order menggunakan `order_code`, bukan UUID database atau token
-pembayaran. Hasil tracking publik dibatasi pada data yang diperlukan untuk
-memahami jenis order, ringkasan item, status, dan progres.
+Customers track orders using `order_code`, not a database UUID or payment
+token. Public tracking results are limited to the information required to
+understand the order type, item summary, status, and progress.
 
-Nama pelanggan, nomor WhatsApp, email, alamat, catatan admin, bukti pembayaran,
-dan path file privat tidak disertakan dalam hasil tracking publik.
+Customer names, WhatsApp numbers, email addresses, addresses, admin notes,
+payment proofs, and private file paths are not included in public tracking
+results.
 
 ## Tech Stack
 
-| Teknologi | Penggunaan |
+| Technology | Purpose |
 | --- | --- |
-| Next.js 16.3.1 | Full-stack framework dan App Router |
-| React 19.2.8 | Komponen antarmuka |
-| TypeScript | Type safety aplikasi |
-| Tailwind CSS 4 | Styling berbasis utility dan design token CSS-first |
-| Supabase PostgreSQL | Database utama |
-| Supabase Auth | Autentikasi admin |
-| Supabase Storage | Penyimpanan gambar dan dokumen order |
-| `@supabase/ssr` | Session Supabase pada server dan Proxy |
-| `@supabase/supabase-js` | Akses Supabase dari aplikasi |
+| Next.js 16.3.1 | Full-stack framework and App Router |
+| React 19.2.8 | User-interface components |
+| TypeScript | Application type safety |
+| Tailwind CSS 4 | Utility styling and CSS-first design tokens |
+| Supabase PostgreSQL | Primary database |
+| Supabase Auth | Admin authentication |
+| Supabase Storage | Image and order-document storage |
+| `@supabase/ssr` | Server-side Supabase sessions and Proxy integration |
+| `@supabase/supabase-js` | Supabase access from the application |
 | npm | Package manager |
-| Vercel | Target deployment aplikasi Next.js |
+| Vercel | Next.js deployment target |
 
-## Arsitektur Singkat
+## Architecture Overview
 
-Project menggunakan Next.js App Router dengan pola berikut:
+The project uses the Next.js App Router with the following patterns:
 
-- Server Components digunakan sebagai default untuk komposisi halaman dan
-  pengambilan data.
-- Client Components digunakan untuk form, menu, dialog, upload, filter, dan
-  interaksi browser.
-- Server Actions menangani validasi dan mutation dari form publik maupun admin.
-- Satu Route Handler menangani export CSV order admin.
-- Operasi berbasis session menggunakan session-bound Supabase server client yang
-  membaca session pengguna melalui cookie.
-- Elevated Supabase client diberi `server-only` dan digunakan hanya pada jalur
-  server tepercaya yang memang perlu melewati RLS.
-- Root `proxy.ts` memperbarui session serta melindungi navigasi admin.
+- Server Components are the default for page composition and data fetching.
+- Client Components are used for forms, menus, dialogs, uploads, filters, and
+  browser interactions.
+- Server Actions handle validation and mutations from public and admin forms.
+- A single Route Handler handles admin order exports as CSV.
+- Session-based operations use a session-bound Supabase server client that
+  reads the user session from cookies.
+- The elevated Supabase client is marked `server-only` and used only on trusted
+  server paths that specifically need to bypass RLS.
+- The root `proxy.ts` refreshes sessions and protects admin navigation.
 
-## Struktur Project
+## Project Structure
 
 ```text
-app/          Route, layout, Server Actions, dan Route Handler App Router
-components/   Komponen UI, layout publik/admin, dan bagian halaman reusable
-lib/          Data access, business logic, validasi, auth, dan Supabase client
-database/     SQL incremental untuk perubahan schema, policy, dan CMS
-public/       Branding, icon, dan gambar lokal
+app/          App Router routes, layouts, Server Actions, and Route Handler
+components/   Reusable UI, public/admin layout, and page-section components
+lib/          Data access, business logic, validation, auth, and Supabase clients
+database/     Incremental SQL for schema, policy, and CMS changes
+public/       Branding, icons, and local images
 ```
 
-Route publik dikelompokkan dalam `app/(public)`, sedangkan halaman admin yang
-memerlukan autentikasi berada di `app/admin/(protected)`.
+Public routes are grouped under `app/(public)`, while authenticated admin pages
+are located in `app/admin/(protected)`.
 
-## Database dan Storage
+## Database and Storage
 
-Supabase PostgreSQL menyimpan dua jenis order: `service` dan `product`. Database
-menangani unique order code/token, snapshot katalog, validasi harga produk,
-generated DP 50%, guard transisi status, serta perlindungan snapshot historis.
+Supabase PostgreSQL stores two order types: `service` and `product`. The
+database manages unique order codes/tokens, catalog snapshots, product-price
+validation, a generated 50% down payment, status-transition guards, and
+historical snapshot protection.
 
-SQL dalam folder `database/` merupakan patch incremental, bukan full migration
-history atau schema dasar lengkap. Terapkan file yang diperlukan sesuai urutan
-nomornya pada project Supabase yang sudah memiliki schema dasar. Patch terbaru:
+The SQL files in `database/` are incremental patches, not a complete migration
+history or base schema. Apply the required files in numerical order to a
+Supabase project that already has the base schema. The latest patch is:
 
 ```text
 database/step-5-13-admin-product-variants-select-policy.sql
 ```
 
-Patch tersebut menambahkan jalur SELECT bagi admin untuk membaca seluruh varian
-produk, termasuk varian inactive, tanpa memperluas akses publik.
+This patch adds a SELECT path that allows the admin to read all product
+variants, including inactive variants, without broadening public access.
 
-Bucket Storage yang digunakan:
+Storage buckets:
 
-| Bucket | Akses | Batas dan format | Penggunaan |
+| Bucket | Access | Limits and formats | Purpose |
 | --- | --- | --- | --- |
-| `content-images` | Public | 5 MiB; JPEG, PNG, WebP | Gambar CMS |
-| `design-references` | Private | 10 MiB; JPEG, PNG, WebP, PDF | Referensi desain pelanggan |
-| `payment-proofs` | Private | 5 MiB; JPEG, PNG, WebP | Bukti pembayaran |
+| `content-images` | Public | 5 MiB; JPEG, PNG, WebP | CMS images |
+| `design-references` | Private | 10 MiB; JPEG, PNG, WebP, PDF | Customer design references |
+| `payment-proofs` | Private | 5 MiB; JPEG, PNG, WebP | Payment proofs |
 
-File upload divalidasi berdasarkan ukuran, MIME type, dan signature/magic bytes.
-Admin mengakses dokumen pada bucket private melalui signed URL berumur pendek.
+File uploads are validated by size, MIME type, and signature/magic bytes. The
+admin accesses documents in private buckets through short-lived signed URLs.
 
-## Instalasi
+## Installation
 
-Prasyarat:
+Prerequisites:
 
-- Node.js yang kompatibel dengan Next.js 16.
+- A Node.js version compatible with Next.js 16.
 - npm.
-- Project Supabase yang telah dikonfigurasi.
+- A configured Supabase project.
 
-Clone repository dan install dependency:
+Clone the repository and install its dependencies:
 
 ```bash
 git clone https://github.com/galangam/arriyadh-studio-web.git
@@ -243,7 +252,8 @@ npm install
 
 ## Environment Variables
 
-Buat `.env.local` di root project. Tiga variabel berikut wajib tersedia:
+Create `.env.local` in the project root. The following three variables are
+required:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
@@ -251,37 +261,37 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 ```
 
-Untuk menentukan origin aplikasi secara eksplisit, variabel berikut dapat
-ditambahkan:
+The following variable can be added to configure the application origin
+explicitly:
 
 ```env
 NEXT_PUBLIC_SITE_URL=
 ```
 
-`SUPABASE_SECRET_KEY` hanya boleh tersedia di environment server. Jangan memakai
-prefix `NEXT_PUBLIC_`, memasukkannya ke repository, atau mengaksesnya dari Client
-Component.
+`SUPABASE_SECRET_KEY` must only be available in the server environment. Do not
+add a `NEXT_PUBLIC_` prefix, commit it to the repository, or access it from a
+Client Component.
 
-## Menjalankan Project
+## Running the Project
 
-Development server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
-Menjalankan hasil production build secara lokal:
+Run the production build locally:
 
 ```bash
 npm run build
 npm run start
 ```
 
-## Validasi
+## Validation
 
-Jalankan pemeriksaan berikut sebelum deployment atau review perubahan:
+Run the following checks before deployment or change review:
 
 ```bash
 npm run lint
@@ -289,49 +299,52 @@ npx tsc --noEmit
 npm run build
 ```
 
-Ketiga perintah tersebut telah lulus pada branch final saat README ini disusun.
+All three commands passed on the final branch when this README was prepared.
 
 ## Deployment
 
-Target deployment adalah Vercel dengan Supabase sebagai backend:
+The deployment target is Vercel with Supabase as the backend:
 
-1. Buat atau pilih project Supabase dan siapkan schema dasar yang dibutuhkan.
-2. Terapkan patch SQL incremental dari `database/` sesuai dependensi dan urutan.
-3. Konfigurasikan environment variables pada environment deployment.
-4. Deploy aplikasi Next.js ke Vercel.
-5. Jalankan pemeriksaan route publik, login admin, order, pembayaran, dan tracking
-   pada environment deployment.
+1. Create or select a Supabase project and prepare the required base schema.
+2. Apply the incremental SQL patches from `database/` in dependency and
+   numerical order.
+3. Configure the environment variables in the deployment environment.
+4. Deploy the Next.js application to Vercel.
+5. Verify public routes, admin login, ordering, payment, and tracking in the
+   deployment environment.
 
-Jangan memasukkan secret Supabase atau konfigurasi privat ke repository maupun
-dokumentasi publik.
+Do not add Supabase secrets or private configuration to the repository or
+public documentation.
 
-## Keamanan
+## Security
 
-- Route admin dilindungi di server dan melalui Proxy.
-- Server Actions sensitif melakukan pemeriksaan admin secara mandiri.
-- Role admin bersumber dari trusted `app_metadata` Supabase Auth.
-- Elevated Supabase key hanya digunakan dalam modul server-only.
-- Browser publik tidak memiliki direct SELECT ke tabel order.
-- Referensi desain dan bukti pembayaran disimpan di bucket private.
-- Tracking publik hanya mengembalikan subset data non-sensitif.
-- Database menjaga status transition, integritas harga, dan historical snapshot.
+- Admin routes are protected on the server and through the Proxy.
+- Sensitive Server Actions perform their own admin authorization checks.
+- The admin role comes from trusted Supabase Auth `app_metadata`.
+- The elevated Supabase key is used only in server-only modules.
+- Public browsers cannot directly SELECT from the orders table.
+- Design references and payment proofs are stored in private buckets.
+- Public tracking returns only a non-sensitive subset of order data.
+- The database enforces status transitions, pricing integrity, and historical
+  snapshots.
 
-## Batasan Sistem
+## System Limitations
 
-- Pelanggan tidak memiliki akun dan menggunakan kode pesanan untuk tracking.
-- Harga layanan custom harus ditentukan admin sebelum pembayaran.
-- Verifikasi pembayaran dilakukan manual.
-- WhatsApp memerlukan interaksi manual pengguna atau admin.
-- Sistem belum menyediakan payment settlement atau laporan keuangan otomatis.
+- Customers do not have accounts and use order codes for tracking.
+- Custom-service prices must be set by the admin before payment.
+- Payments are verified manually.
+- WhatsApp requires manual customer or admin interaction.
+- The system does not provide automated payment settlement or financial
+  reporting.
 
-## Status Project
+## Project Status
 
-Implementasi fitur utama dan validasi project telah selesai. Project saat ini
-berada pada tahap finalisasi deployment dan masih dapat dikembangkan melalui
-perbaikan, penyempurnaan, serta fitur tambahan pada versi berikutnya.
+Core feature implementation and project validation are complete. The project is
+currently in the final deployment stage and may continue to evolve through
+fixes, refinements, and additional features in future versions.
 
-## Pengembangan
+## Development
 
-Project ini dibuat sebagai bagian dari tugas akhir PKL dan portfolio pengembangan
-web full-stack untuk mendigitalisasi proses pemesanan serta pengelolaan konten
-Arriyadh Studio.
+This project was created as a final vocational internship (PKL) project and a
+full-stack web development portfolio project to digitize Arriyadh Studio's
+ordering and content-management processes.
