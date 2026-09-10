@@ -6,7 +6,7 @@ import {
   submitPayment,
   type PaymentSubmissionState,
 } from "@/app/(public)/pembayaran/[token]/actions";
-import { DemoTransferAccount } from "@/app/(public)/pembayaran/[token]/demo-transfer-account";
+import { TransferAccount } from "@/app/(public)/pembayaran/[token]/transfer-account";
 
 const initialState: PaymentSubmissionState = { error: null };
 const maxProofSize = 5 * 1024 * 1024;
@@ -165,7 +165,7 @@ export function PaymentSubmissionForm({
               ? "Transfer total pembayaran ke rekening BRI berikut, lalu unggah bukti pembayaran."
               : "Transfer DP sesuai jumlah yang ditampilkan ke rekening BRI berikut, lalu unggah bukti pembayaran DP."}
           </p>
-          <DemoTransferAccount />
+          <TransferAccount />
           <div className="border-y border-outline-variant bg-surface-container-low px-4 py-4 sm:px-5">
             <p className="font-body text-label-md font-semibold uppercase tracking-label text-secondary">
               {isProduct

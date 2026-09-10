@@ -1,5 +1,5 @@
-export const demoProductTransferAccount = {
+export const briTransferAccount = {
   bank: "BRI",
-  accountNumber: "123456789012345",
-  accountName: "Arriyadh Studio",
+  accountNumber: "346301027870532",
+  accountName: "NANANG AZIS RIANA",
 } as const;
