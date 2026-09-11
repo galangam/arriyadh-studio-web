@@ -248,7 +248,7 @@ export function ServiceOrderForm({
       ? "Deskripsi Pekerjaan"
       : "Material / Bahan";
   const requirementHelp = isOtherService
-    ? "Jelaskan kebutuhan banner, stiker, undangan, desain, atau pekerjaan custom lainnya."
+    ? "Jelaskan kebutuhan banner, stiker, undangan, desain, atau pekerjaan custom lainnya. Sertakan jumlah dan satuan yang dibutuhkan jika relevan."
     : serviceFlow === "permak"
       ? "Jelaskan bagian pakaian yang perlu disesuaikan atau diperbaiki."
       : requiresDesignSpecification
@@ -349,7 +349,7 @@ export function ServiceOrderForm({
 
         <div className="mt-5 space-y-6">
 
-      {!usesVariants ? (
+      {!usesVariants && !isOtherService ? (
       <div>
         <label
           htmlFor="quantity"

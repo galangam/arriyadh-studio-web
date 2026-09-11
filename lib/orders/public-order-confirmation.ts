@@ -7,6 +7,7 @@ type ConfirmationRow = {
   order_code: string;
   order_kind: "service" | "product";
   status: string;
+  services: { slug: string } | null;
   service_name_snapshot: string | null;
   service_flow: string | null;
   material: string | null;
@@ -41,8 +42,9 @@ type PublicOrderVariantRow = Omit<PublicOrderVariant, "sizes"> & {
 
 export type PublicOrderConfirmation = Omit<
   ConfirmationRow,
-  "id" | "unit_price" | "price"
+  "id" | "services" | "unit_price" | "price"
 > & {
+  service_slug: string | null;
   unit_price: number | null;
   price: number | null;
   design_reference_count: number;
@@ -61,7 +63,7 @@ export async function getPublicOrderConfirmation(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_sleeve_type, product_size, quantity, unit_price, price, payment_method",
+      "id, order_code, order_kind, status, services(slug), service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_sleeve_type, product_size, quantity, unit_price, price, payment_method",
     )
     .eq("payment_token", token)
     .in("order_kind", ["service", "product"])
@@ -74,7 +76,7 @@ export async function getPublicOrderConfirmation(
   if (price !== null && !Number.isFinite(price)) return null;
   if (unitPrice !== null && !Number.isFinite(unitPrice)) return null;
 
-  const { id: orderId, ...customerSafeData } = data;
+  const { id: orderId, services, ...customerSafeData } = data;
 
   const [referenceResult, variantResult] = await Promise.all([
     supabase
@@ -93,6 +95,7 @@ export async function getPublicOrderConfirmation(
 
   return {
     ...customerSafeData,
+    service_slug: services?.slug ?? null,
     unit_price: unitPrice,
     price,
     design_reference_count: referenceResult.count ?? 0,

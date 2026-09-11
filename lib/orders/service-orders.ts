@@ -21,6 +21,7 @@ import {
   publicServiceFlows,
   type PublicServiceFlow,
 } from "@/lib/services/public-services";
+import { isOtherService } from "@/lib/orders/order-presentation";
 
 export type ServiceOrderInput = {
   serviceId: string;
@@ -284,6 +285,7 @@ export async function createServiceOrder(
   const material = input.material.trim();
   const designDescription = input.designDescription.trim();
   const designOriented = isDesignOrientedService(service.slug);
+  const otherService = isOtherService(service.slug);
   const referenceRequirement =
     getDesignReferenceRequirement(service.slug);
   const allowedVariantMaterials = getServiceVariantMaterials(service.slug);
@@ -298,6 +300,7 @@ export async function createServiceOrder(
   }
   if (
     !variantService &&
+    !otherService &&
     (!Number.isSafeInteger(input.quantity) ||
       input.quantity === null ||
       input.quantity < 1 ||
@@ -306,8 +309,9 @@ export async function createServiceOrder(
     throw new Error("QUANTITY_INVALID");
   }
 
-  const orderQuantity =
-    validatedVariantResult?.totalQuantity ?? input.quantity;
+  const orderQuantity = otherService
+    ? 1
+    : validatedVariantResult?.totalQuantity ?? input.quantity;
 
   if (orderQuantity === null) throw new Error("QUANTITY_INVALID");
 

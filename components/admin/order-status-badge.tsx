@@ -26,13 +26,19 @@ function statusClasses(status: OrderStatus) {
   return "border-primary/20 bg-surface-container-low text-primary";
 }
 
-export function OrderStatusBadge({ status }: { status: OrderStatus }) {
+export function OrderStatusBadge({
+  status,
+  label = orderStatusLabels[status],
+}: {
+  status: OrderStatus;
+  label?: string;
+}) {
   return (
     <span
       className={`inline-flex max-w-full items-center gap-2 rounded-full border px-2.5 py-1 text-admin-caption font-semibold ${statusClasses(status)}`}
     >
       <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-current" />
-      <span className="break-words">{orderStatusLabels[status]}</span>
+      <span className="break-words">{label}</span>
     </span>
   );
 }

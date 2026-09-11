@@ -7,6 +7,10 @@ import {
   WhatsappActionIcon,
   whatsappActionClassName,
 } from "@/components/ui/whatsapp-action";
+import {
+  isOtherService as isOtherServiceSlug,
+  shouldShowOrderQuantity,
+} from "@/lib/orders/order-presentation";
 import { getPublicOrderConfirmation } from "@/lib/orders/public-order-confirmation";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import {
@@ -50,14 +54,16 @@ export default async function OrderConfirmationPage({
   if (!order) notFound();
 
   const isService = order.order_kind === "service";
+  const isOtherService = isOtherServiceSlug(order.service_slug);
   const requirement =
-    order.service_flow === "permak"
-      ? order.job_description
-      : order.material;
+    isOtherService
+      ? order.job_description ?? order.material
+      : order.service_flow === "permak"
+        ? order.job_description
+        : order.material;
   const isAwaitingQuote = isService && order.status === "menunggu_harga";
   const serviceName = order.service_name_snapshot ?? "Layanan custom";
   const normalizedServiceName = serviceName.toLowerCase();
-  const isOtherService = normalizedServiceName === "lainnya";
   const isJerseyService =
     normalizedServiceName === "jersey" ||
     normalizedServiceName === "jersey embos";
@@ -133,7 +139,9 @@ export default async function OrderConfirmationPage({
             {!isService && order.product_size ? (
               <DetailRow label="Ukuran" value={order.product_size} />
             ) : null}
-            <DetailRow label="Jumlah" value={order.quantity + " pcs"} />
+            {shouldShowOrderQuantity(order.order_kind, order.service_slug) ? (
+              <DetailRow label="Jumlah" value={order.quantity + " pcs"} />
+            ) : null}
             {isService && order.service_variants.length > 0 ? (
               <DetailRow
                 label="Rincian Pesanan"
@@ -181,11 +189,11 @@ export default async function OrderConfirmationPage({
             {isService && order.service_variants.length === 0 && requirement ? (
               <DetailRow
                 label={
-                  order.service_flow === "permak"
+                  isOtherService
+                    ? "Detail Kebutuhan"
+                    : order.service_flow === "permak"
                     ? "Deskripsi Pekerjaan"
-                    : isOtherService
-                      ? "Detail Kebutuhan"
-                      : "Material / Bahan"
+                    : "Material / Bahan"
                 }
                 value={<span className="whitespace-pre-wrap">{requirement}</span>}
               />

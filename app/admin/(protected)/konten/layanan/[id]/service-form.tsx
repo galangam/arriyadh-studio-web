@@ -7,6 +7,10 @@ import {
   updateService,
   type ServiceFormState,
 } from "@/app/admin/(protected)/konten/layanan/[id]/actions";
+import {
+  getServiceTypeLabel,
+  isOtherService,
+} from "@/lib/orders/order-presentation";
 import type { AdminService } from "@/lib/services/admin-services";
 
 const initialState: ServiceFormState = {
@@ -17,11 +21,6 @@ const initialState: ServiceFormState = {
 
 const fieldClassName =
   "mt-2 w-full rounded-md border border-outline-variant bg-surface-white px-4 py-3 text-admin-body text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";
-
-const flowLabels = {
-  konveksi_sablon: "Konveksi / Sablon",
-  permak: "Permak",
-} as const;
 
 export function ServiceForm({ service, imagePreviewUrl }: { service: AdminService; imagePreviewUrl: string | null }) {
   const updateCurrentService = updateService.bind(null, service.id);
@@ -68,7 +67,8 @@ export function ServiceForm({ service, imagePreviewUrl }: { service: AdminServic
           <div>
             <dt className="text-admin-label text-primary">Flow / Alur Layanan</dt>
             <dd className="mt-2 rounded-md bg-surface-container-low px-4 py-3 text-admin-body text-on-surface-variant">
-              {flowLabels[service.flow]} ({service.flow})
+              {getServiceTypeLabel(service.slug, service.flow)}
+              {isOtherService(service.slug) ? null : ` (${service.flow})`}
             </dd>
           </div>
         </dl>
