@@ -35,9 +35,11 @@ type TrackingOrderCommon = {
 
 export type TrackingServiceOrder = TrackingOrderCommon & {
   kind: "service";
+  serviceSlug: string | null;
   serviceName: string | null;
   serviceFlow: "konveksi_sablon" | "permak";
   material: string | null;
+  otherRequirement: string | null;
   dpAmount: number | null;
   variants: TrackingServiceVariant[];
   designReferenceCount: number;
@@ -63,9 +65,11 @@ type TrackingOrderRow = {
   order_code: string;
   order_kind: string;
   status: string;
+  services: { slug: string } | null;
   service_name_snapshot: string | null;
   service_flow: string | null;
   material: string | null;
+  job_description: string | null;
   product_name_snapshot: string | null;
   product_size: string | null;
   product_sleeve_type: string | null;
@@ -137,7 +141,7 @@ export async function getPublicTrackingOrder(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, service_name_snapshot, service_flow, material, product_name_snapshot, product_size, product_sleeve_type, quantity, unit_price, price, dp_amount, payment_method, created_at, completed_at, cancelled_at",
+      "id, order_code, order_kind, status, services(slug), service_name_snapshot, service_flow, material, job_description, product_name_snapshot, product_size, product_sleeve_type, quantity, unit_price, price, dp_amount, payment_method, created_at, completed_at, cancelled_at",
     )
     .eq("order_code", normalizedCode)
     .maybeSingle<TrackingOrderRow>();
@@ -256,9 +260,14 @@ export async function getPublicTrackingOrder(
     order: {
       ...common,
       kind: "service",
+      serviceSlug: data.services?.slug ?? null,
       serviceName: data.service_name_snapshot,
       serviceFlow: data.service_flow,
       material: variants.length === 0 ? data.material : null,
+      otherRequirement:
+        data.services?.slug === "lainnya"
+          ? data.job_description ?? data.material
+          : null,
       dpAmount,
       variants,
       designReferenceCount: referenceResult.count,

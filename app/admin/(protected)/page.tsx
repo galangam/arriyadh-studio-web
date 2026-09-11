@@ -7,6 +7,7 @@ import {
   getAdminDashboardData,
   getOrderSnapshotName,
 } from "@/lib/orders/admin-orders";
+import { getOrderStatusLabel } from "@/lib/orders/order-presentation";
 
 const activitySummary = [
   { key: "awaitingPrice", label: "Menunggu Harga" },
@@ -145,7 +146,7 @@ export default async function AdminDashboardPage() {
                         <td className="whitespace-nowrap px-4 py-3.5 text-admin-body font-semibold text-primary">{order.order_code}</td>
                         <td className="max-w-52 break-words px-4 py-3.5 text-admin-body text-on-surface">{order.customer_name}</td>
                         <td className="px-4 py-3 text-admin-body text-on-surface"><span className="block font-semibold text-primary">{getOrderSnapshotName(order)}</span></td>
-                        <td className="px-4 py-3.5"><OrderStatusBadge status={order.status} /></td>
+                        <td className="px-4 py-3.5"><OrderStatusBadge status={order.status} label={getOrderStatusLabel(order.status, order.service_slug)} /></td>
                         <td className="whitespace-nowrap px-4 py-3 text-admin-body text-on-surface-variant">{formatAdminOrderDate(order.created_at)}</td>
                         <td className="px-4 py-3 text-center text-admin-body">
                           <Link

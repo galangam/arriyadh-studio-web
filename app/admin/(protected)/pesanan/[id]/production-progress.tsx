@@ -1,6 +1,6 @@
 import { AdvanceOrderStatusControl } from "@/app/admin/(protected)/pesanan/[id]/advance-order-status-control";
 import type { AdminOrderDetail } from "@/lib/orders/admin-orders";
-import { orderStatusLabels } from "@/lib/orders/order-status";
+import { getOrderStatusLabel } from "@/lib/orders/order-presentation";
 import {
   getNextOrderStatus,
   getOrderWorkflow,
@@ -17,6 +17,8 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
 
   const nextStatus = getNextOrderStatus(order);
   const isCompleted = order.status === "selesai";
+  const serviceSlug =
+    order.order_kind === "service" ? order.service_slug : null;
 
   return (
     <section
@@ -70,7 +72,7 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
               </span>
               <span className="min-w-0">
                 <span className="block break-words text-admin-body font-semibold text-primary">
-                  {orderStatusLabels[stage]}
+                  {getOrderStatusLabel(stage, serviceSlug)}
                 </span>
                 <span className="mt-0.5 block text-admin-caption text-on-surface-variant">
                   {stateLabel}
@@ -89,7 +91,7 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
           <h3 className="mt-1 font-heading text-admin-section text-primary">
             {nextStatus === "selesai"
               ? "Selesaikan Pesanan"
-              : `Lanjut ke ${orderStatusLabels[nextStatus]}`}
+              : `Lanjut ke ${getOrderStatusLabel(nextStatus, serviceSlug)}`}
           </h3>
           <p className="mt-2 max-w-2xl text-admin-body text-on-surface-variant">
             Perbarui status setelah tahap saat ini selesai dikerjakan.
@@ -100,7 +102,7 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
                 Status Saat Ini
               </dt>
               <dd className="mt-1 text-admin-body text-on-surface">
-                {orderStatusLabels[order.status]}
+                {getOrderStatusLabel(order.status, serviceSlug)}
               </dd>
             </div>
             <div>
@@ -108,14 +110,14 @@ export function ProductionProgress({ order }: { order: AdminOrderDetail }) {
                 Tahap Berikutnya
               </dt>
               <dd className="mt-1 text-admin-body text-on-surface">
-                {orderStatusLabels[nextStatus]}
+                {getOrderStatusLabel(nextStatus, serviceSlug)}
               </dd>
             </div>
           </dl>
           <AdvanceOrderStatusControl
             orderId={order.id}
-            currentStatusLabel={orderStatusLabels[order.status]}
-            nextStatusLabel={orderStatusLabels[nextStatus]}
+            currentStatusLabel={getOrderStatusLabel(order.status, serviceSlug)}
+            nextStatusLabel={getOrderStatusLabel(nextStatus, serviceSlug)}
             completesOrder={nextStatus === "selesai"}
             isProduct={order.order_kind === "product"}
           />

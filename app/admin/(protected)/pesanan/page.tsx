@@ -14,6 +14,10 @@ import {
   type AdminOrderListRow,
   typeFilterOptions,
 } from "@/lib/orders/admin-orders";
+import {
+  getOrderStatusLabel,
+  shouldShowOrderQuantity,
+} from "@/lib/orders/order-presentation";
 
 const orderTableColumns = [
   "Kode Pesanan",
@@ -89,9 +93,11 @@ function OrderDetail({ order }: { order: AdminOrderListRow }) {
       <span className="block font-semibold text-primary">
         {getOrderSnapshotName(order)}
       </span>
-      <span className="mt-0.5 block text-admin-caption text-on-surface-variant">
-        {order.quantity} pcs
-      </span>
+      {shouldShowOrderQuantity(order.order_kind, order.service_slug) ? (
+        <span className="mt-0.5 block text-admin-caption text-on-surface-variant">
+          {order.quantity} pcs
+        </span>
+      ) : null}
     </>
   );
 }
@@ -296,7 +302,7 @@ export default async function AdminOrdersPage({
                           <OrderDetail order={order} />
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-admin-body font-semibold text-primary">{formatOrderPrice(order.price)}</td>
-                        <td className="px-4 py-3.5"><OrderStatusBadge status={order.status} /></td>
+                        <td className="px-4 py-3.5"><OrderStatusBadge status={order.status} label={getOrderStatusLabel(order.status, order.service_slug)} /></td>
                         <td className="px-4 py-3 text-center text-admin-body">
                           <Link
                             href={"/admin/pesanan/" + order.id}

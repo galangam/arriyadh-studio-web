@@ -6,7 +6,10 @@ import {
   parseAdminOrderFilters,
   type AdminOrderListRow,
 } from "@/lib/orders/admin-orders";
-import { orderStatusLabels } from "@/lib/orders/order-status";
+import {
+  getOrderStatusLabel,
+  shouldShowOrderQuantity,
+} from "@/lib/orders/order-presentation";
 
 const csvHeaders = [
   "Order ID",
@@ -58,10 +61,14 @@ function serializeOrderRow(order: AdminOrderListRow) {
     escapeCsvCell(order.customer_whatsapp, { forceText: true }),
     escapeCsvCell(orderKindLabels[order.order_kind]),
     escapeCsvCell(getOrderSnapshotName(order)),
-    escapeCsvCell(order.quantity),
+    escapeCsvCell(
+      shouldShowOrderQuantity(order.order_kind, order.service_slug)
+        ? order.quantity
+        : null,
+    ),
     escapeCsvCell(order.price),
     escapeCsvCell(getPaymentMethodLabel(order.payment_method)),
-    escapeCsvCell(orderStatusLabels[order.status]),
+    escapeCsvCell(getOrderStatusLabel(order.status, order.service_slug)),
   ].join(",");
 }
 

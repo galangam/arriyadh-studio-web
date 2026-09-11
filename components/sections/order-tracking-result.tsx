@@ -1,5 +1,9 @@
 import { OrderTrackingProgress } from "@/components/sections/order-tracking-progress";
-import { orderStatusLabels } from "@/lib/orders/order-status";
+import {
+  getOrderStatusLabel,
+  isOtherService,
+  shouldShowOrderQuantity,
+} from "@/lib/orders/order-presentation";
 import { getOrderWorkflow } from "@/lib/orders/order-workflows";
 import type { TrackingOrder } from "@/lib/orders/public-order-tracking";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
@@ -106,9 +110,14 @@ function getStateMessage(order: TrackingOrder) {
   });
 
   if (workflow?.some((status) => status === order.status)) {
+    const statusLabel = getOrderStatusLabel(
+      order.status,
+      order.kind === "service" ? order.serviceSlug : null,
+    );
+
     return {
-      heading: `Tahap ${orderStatusLabels[order.status]}`,
-      message: `Pesanan sedang berada pada tahap ${orderStatusLabels[order.status]}.`,
+      heading: `Tahap ${statusLabel}`,
+      message: `Pesanan sedang berada pada tahap ${statusLabel}.`,
     };
   }
 
@@ -135,7 +144,10 @@ function ServiceDetails({
   order: Extract<TrackingOrder, { kind: "service" }>;
 }) {
   if (order.variants.length === 0) {
-    return order.material ? (
+    const otherService = isOtherService(order.serviceSlug);
+    const detail = otherService ? order.otherRequirement : order.material;
+
+    return detail ? (
       <section
         aria-labelledby="tracking-order-detail-heading"
         className="border-t border-outline-variant pt-6"
@@ -147,7 +159,10 @@ function ServiceDetails({
           Detail Pesanan
         </h3>
         <dl className="mt-4">
-          <DetailItem label="Material" value={order.material} />
+          <DetailItem
+            label={otherService ? "Detail Kebutuhan" : "Material"}
+            value={detail}
+          />
         </dl>
       </section>
     ) : null;
@@ -243,6 +258,10 @@ export function OrderTrackingResult({
   whatsappNumber: string;
 }) {
   const stateMessage = getStateMessage(order);
+  const statusLabel = getOrderStatusLabel(
+    order.status,
+    order.kind === "service" ? order.serviceSlug : null,
+  );
   const itemName =
     order.kind === "service"
       ? (order.serviceName ?? "Layanan Custom")
@@ -265,7 +284,7 @@ export function OrderTrackingResult({
       "Halo Arriyadh Studio, saya ingin menanyakan pesanan saya.",
       "",
       `Kode Pesanan: ${order.orderCode}`,
-      `Status: ${orderStatusLabels[order.status]}`,
+      `Status: ${statusLabel}`,
     ].join("\n"),
   );
 
@@ -293,7 +312,7 @@ export function OrderTrackingResult({
           </div>
 
           <span className="inline-flex w-fit shrink-0 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 font-body text-label-md font-semibold text-primary">
-            Status: {orderStatusLabels[order.status]}
+            Status: {statusLabel}
           </span>
         </div>
 
@@ -315,12 +334,18 @@ export function OrderTrackingResult({
           label="Jenis Pesanan"
           value={order.kind === "service" ? "Layanan" : "Produk"}
         />
-        <DetailItem label="Jumlah" value={`${order.quantity} pcs`} />
+        {shouldShowOrderQuantity(
+          order.kind,
+          order.kind === "service" ? order.serviceSlug : null,
+        ) ? (
+          <DetailItem label="Jumlah" value={`${order.quantity} pcs`} />
+        ) : null}
       </dl>
 
       {order.kind === "service" ? (
         <OrderTrackingProgress
           kind="service"
+          serviceSlug={order.serviceSlug}
           serviceFlow={order.serviceFlow}
           status={order.status}
         />

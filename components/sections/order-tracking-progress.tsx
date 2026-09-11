@@ -1,9 +1,11 @@
+import { getOrderStatusLabel } from "@/lib/orders/order-presentation";
 import { orderStatusLabels, type OrderStatus } from "@/lib/orders/order-status";
 import { getOrderWorkflow } from "@/lib/orders/order-workflows";
 
 type OrderTrackingProgressProps =
   | {
       kind: "service";
+      serviceSlug: string | null;
       serviceFlow: "konveksi_sablon" | "permak";
       status: OrderStatus;
     }
@@ -47,7 +49,7 @@ function getVisibleStages(
 
   return workflow.map((status) => ({
     key: status,
-    label: orderStatusLabels[status],
+    label: getOrderStatusLabel(status, props.serviceSlug),
   }));
 }
 

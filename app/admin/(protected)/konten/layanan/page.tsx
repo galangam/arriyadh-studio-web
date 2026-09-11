@@ -2,12 +2,8 @@ import Link from "next/link";
 
 import { ContentStatusBadge } from "@/components/admin/content-status-badge";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { getServiceTypeLabel } from "@/lib/orders/order-presentation";
 import { getAdminServices } from "@/lib/services/admin-services";
-
-const flowLabels = {
-  konveksi_sablon: "Konveksi / Sablon",
-  permak: "Permak",
-} as const;
 
 export default async function AdminServicesPage() {
   await requireAdmin();
@@ -50,7 +46,7 @@ export default async function AdminServicesPage() {
                   <tr key={service.id} className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container-low/60">
                     <th scope="row" className="px-4 py-4 font-heading text-admin-body text-primary">{service.name}</th>
                     <td className="px-4 py-4 font-mono text-admin-caption text-on-surface-variant">{service.slug}</td>
-                    <td className="px-4 py-4 text-admin-body text-on-surface-variant">{flowLabels[service.flow]}</td>
+                    <td className="px-4 py-4 text-admin-body text-on-surface-variant">{getServiceTypeLabel(service.slug, service.flow)}</td>
                     <td className="px-4 py-4"><ContentStatusBadge active={service.is_active} /></td>
                     <td className="px-4 py-4 text-admin-body text-on-surface">{service.sort_order}</td>
                     <td className="px-4 py-4 text-right">

@@ -86,6 +86,7 @@ export type AdminOrderListRow = {
   status: OrderStatus;
   customer_name: string;
   customer_whatsapp: string;
+  service_slug: string | null;
   product_name_snapshot: string | null;
   product_size: string | null;
   service_name_snapshot: string | null;
@@ -93,6 +94,10 @@ export type AdminOrderListRow = {
   price: number | null;
   payment_method: string | null;
   created_at: string;
+};
+
+type AdminOrderListRowData = Omit<AdminOrderListRow, "service_slug"> & {
+  services: { slug: string } | null;
 };
 
 export type AdminOrderVariantSize = {
@@ -129,6 +134,7 @@ export type AdminOrderDetail = {
   customer_company: string | null;
   customer_email: string | null;
   shipping_address: string | null;
+  service_slug: string | null;
   service_name_snapshot: string | null;
   service_flow: string | null;
   material: string | null;
@@ -162,10 +168,22 @@ export type RecentOrder = Pick<
   | "order_kind"
   | "status"
   | "customer_name"
+  | "service_slug"
   | "product_name_snapshot"
   | "service_name_snapshot"
   | "created_at"
 >;
+
+type RecentOrderData = Omit<RecentOrder, "service_slug"> & {
+  services: { slug: string } | null;
+};
+
+type AdminOrderDetailData = Omit<
+  AdminOrderDetail,
+  "design_references" | "service_slug" | "service_variants"
+> & {
+  services: { slug: string } | null;
+};
 
 export type DashboardMetrics = {
   awaitingPrice: number;
@@ -201,7 +219,7 @@ export type AdminOrdersExportData =
 export const adminOrdersPageSize = 10;
 const adminOrdersExportBatchSize = 1000;
 const adminOrderListSelection =
-  "id, order_code, order_kind, status, customer_name, customer_whatsapp, product_name_snapshot, product_size, service_name_snapshot, quantity, price, payment_method, created_at";
+  "id, order_code, order_kind, status, customer_name, customer_whatsapp, services(slug), product_name_snapshot, product_size, service_name_snapshot, quantity, price, payment_method, created_at";
 
 const jakartaDateFormatter = new Intl.DateTimeFormat("id-ID", {
   dateStyle: "medium",
@@ -306,6 +324,13 @@ export function getOrderSnapshotName(
   return snapshot ?? orderKindLabels[order.order_kind];
 }
 
+function normalizeAdminOrderListRow(
+  row: AdminOrderListRowData,
+): AdminOrderListRow {
+  const { services, ...order } = row;
+  return { ...order, service_slug: services?.slug ?? null };
+}
+
 function createFilteredAdminOrdersQuery(
   supabase: Awaited<ReturnType<typeof createClient>>,
   filters: AdminOrderFilters,
@@ -371,12 +396,12 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     supabase
       .from("orders")
       .select(
-        "id, order_code, order_kind, status, customer_name, service_name_snapshot, product_name_snapshot, created_at",
+        "id, order_code, order_kind, status, customer_name, services(slug), service_name_snapshot, product_name_snapshot, created_at",
       )
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(5)
-      .returns<RecentOrder[]>(),
+      .returns<RecentOrderData[]>(),
   ]);
 
   const responses = [
@@ -407,7 +432,13 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       inProduction: inProduction.count,
       completedThisMonth: completedThisMonth.count,
     },
-    recentOrders: recentOrders.data,
+    recentOrders: recentOrders.data.map((order) => {
+      const { services, ...recentOrder } = order;
+      return {
+        ...recentOrder,
+        service_slug: services?.slug ?? null,
+      };
+    }),
   };
 }
 
@@ -422,7 +453,7 @@ export async function getAdminOrdersPage(
     const to = from + adminOrdersPageSize - 1;
     return createFilteredAdminOrdersQuery(supabase, filters)
       .range(from, to)
-      .returns<AdminOrderListRow[]>();
+      .returns<AdminOrderListRowData[]>();
   }
 
   const [initialOrders, allOrders] = await Promise.all([
@@ -443,7 +474,7 @@ export async function getAdminOrdersPage(
   const totalCount = initialOrders.count;
   const totalPages = Math.max(1, Math.ceil(totalCount / adminOrdersPageSize));
   const page = Math.min(filters.page, totalPages);
-  let orders = initialOrders.data;
+  let orders = initialOrders.data.map(normalizeAdminOrderListRow);
 
   if (page !== filters.page) {
     const correctedOrders = await createFilteredQuery(page);
@@ -452,7 +483,7 @@ export async function getAdminOrdersPage(
       return { ok: false };
     }
 
-    orders = correctedOrders.data;
+    orders = correctedOrders.data.map(normalizeAdminOrderListRow);
   }
 
   return {
@@ -477,13 +508,13 @@ export async function getAdminOrdersForExport(
     const to = from + adminOrdersExportBatchSize - 1;
     const result = await createFilteredAdminOrdersQuery(supabase, filters)
       .range(from, to)
-      .returns<AdminOrderListRow[]>();
+      .returns<AdminOrderListRowData[]>();
 
     if (result.error || result.data === null) {
       return { ok: false };
     }
 
-    orders.push(...result.data);
+    orders.push(...result.data.map(normalizeAdminOrderListRow));
 
     if (result.data.length < adminOrdersExportBatchSize) {
       return { ok: true, orders };
@@ -499,10 +530,10 @@ export async function getAdminOrderDetail(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_sleeve_type, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_token, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
+      "id, order_code, order_kind, status, customer_name, customer_whatsapp, customer_company, customer_email, shipping_address, services(slug), service_name_snapshot, service_flow, material, job_description, design_description, product_name_snapshot, product_sleeve_type, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_token, payment_proof_path, payment_verified_at, quoted_at, cancellation_reason, cancelled_at, completed_at, created_at, updated_at",
     )
     .eq("id", id)
-    .maybeSingle<Omit<AdminOrderDetail, "design_references" | "service_variants">>();
+    .maybeSingle<AdminOrderDetailData>();
 
   if (error || !data) {
     notFound();
@@ -529,8 +560,11 @@ export async function getAdminOrderDetail(
     notFound();
   }
 
+  const { services, ...order } = data;
+
   return {
-    ...data,
+    ...order,
+    service_slug: services?.slug ?? null,
     design_references: referenceResult.data,
     service_variants: variantResult.data.map((variant) => ({
       variant_type: variant.variant_type,

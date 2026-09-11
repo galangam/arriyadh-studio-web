@@ -28,7 +28,11 @@ import {
   type AdminDesignReference,
   type AdminOrderDetail,
 } from "@/lib/orders/admin-orders";
-import { orderStatusLabels } from "@/lib/orders/order-status";
+import {
+  getOrderStatusLabel,
+  getServiceTypeLabel,
+  isOtherService,
+} from "@/lib/orders/order-presentation";
 import { isOrderCancellableStatus } from "@/lib/orders/order-workflows";
 import { getJerseyVariantTypeLabel } from "@/lib/services/service-requirements";
 import { getSiteOrigin } from "@/lib/site-origin";
@@ -69,14 +73,11 @@ function DetailList({ items }: { items: DetailItem[] }) {
 }
 
 function OrderInformation({ order }: { order: AdminOrderDetail }) {
-  const isOtherService =
-    order.service_name_snapshot?.toLowerCase() === "lainnya";
-  const serviceFlowLabel =
-    order.service_flow === "konveksi_sablon"
-      ? "Konveksi / Sablon"
-      : order.service_flow === "permak"
-        ? "Permak"
-        : "Layanan Custom";
+  const otherService = isOtherService(order.service_slug);
+  const serviceFlowLabel = getServiceTypeLabel(
+    order.service_slug,
+    order.service_flow,
+  );
   const items: DetailItem[] =
     order.order_kind === "product"
       ? [
@@ -98,7 +99,7 @@ function OrderInformation({ order }: { order: AdminOrderDetail }) {
           { label: "Jenis Layanan", value: serviceFlowLabel },
           {
             label:
-              isOtherService
+              otherService
                 ? "Detail Kebutuhan"
                 : order.service_flow === "konveksi_sablon"
                   ? "Material / Bahan"
@@ -112,7 +113,9 @@ function OrderInformation({ order }: { order: AdminOrderDetail }) {
                   ? order.material
                   : null,
           },
-          { label: "Jumlah", value: `${order.quantity} pcs` },
+          ...(!otherService
+            ? [{ label: "Jumlah", value: `${order.quantity} pcs` }]
+            : []),
         ];
 
   return <DetailList items={items} />;
@@ -192,7 +195,7 @@ export default async function AdminOrderDetailPage({
           order.order_kind === "product"
             ? (order.product_name_snapshot ?? "Produk")
             : (order.service_name_snapshot ?? "Layanan custom"),
-        statusLabel: orderStatusLabels[order.status],
+        statusLabel: getOrderStatusLabel(order.status, order.service_slug),
       })
     : null;
   const statusWhatsappButtonLabel =
@@ -269,7 +272,10 @@ export default async function AdminOrderDetailPage({
             <p className="text-admin-label text-on-surface-variant">
               {orderKindLabels[order.order_kind]}
             </p>
-            <OrderStatusBadge status={order.status} />
+            <OrderStatusBadge
+              status={order.status}
+              label={getOrderStatusLabel(order.status, order.service_slug)}
+            />
           </div>
           <h1 className="mt-2 break-words font-heading text-admin-title text-primary">
             {order.order_code}
@@ -672,7 +678,7 @@ export default async function AdminOrderDetailPage({
               >
                 Status Pesanan
               </h2>
-              <div className="mt-4"><OrderStatusBadge status={order.status} /></div>
+              <div className="mt-4"><OrderStatusBadge status={order.status} label={getOrderStatusLabel(order.status, order.service_slug)} /></div>
               {nextAction ? (
                 <div className="mt-5 border-t border-outline-variant pt-4">
                   <p className="text-admin-caption font-semibold uppercase tracking-label text-on-surface-variant">Tindakan berikutnya</p>

@@ -17,6 +17,7 @@ type PublicServicePaymentOrder = {
   order_code: string;
   order_kind: "service";
   status: ServicePaymentStatus;
+  service_slug: string | null;
   service_name_snapshot: string | null;
   quantity: number;
   price: number;
@@ -47,6 +48,7 @@ type PaymentOrderRow = {
   order_code: string;
   order_kind: "service" | "product";
   status: string;
+  services: { slug: string } | null;
   service_name_snapshot: string | null;
   product_name_snapshot: string | null;
   material: string | null;
@@ -162,6 +164,7 @@ function normalizePaymentOrder(row: PaymentOrderRow): PublicPaymentOrder | null 
     order_code: row.order_code,
     order_kind: "service",
     status: row.status as ServicePaymentStatus,
+    service_slug: row.services?.slug ?? null,
     service_name_snapshot: row.service_name_snapshot,
     quantity: row.quantity,
     price,
@@ -179,7 +182,7 @@ export async function getPublicPaymentOrder(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "order_code, order_kind, status, service_name_snapshot, product_name_snapshot, material, product_sleeve_type, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_proof_path",
+      "order_code, order_kind, status, services(slug), service_name_snapshot, product_name_snapshot, material, product_sleeve_type, product_size, quantity, unit_price, price, dp_amount, payment_method, payment_proof_path",
     )
     .eq("payment_token", token)
     .in("order_kind", ["service", "product"])

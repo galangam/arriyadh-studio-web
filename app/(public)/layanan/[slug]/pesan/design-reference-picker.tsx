@@ -188,7 +188,7 @@ export function DesignReferencePicker({
       </p>
       <input
         ref={submittedInputRef}
-        name="designReferences"
+        name={selectedReferences.length > 0 ? "designReferences" : undefined}
         type="file"
         multiple
         required={required}

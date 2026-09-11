@@ -7,6 +7,7 @@ import {
   whatsappActionClassName,
 } from "@/components/ui/whatsapp-action";
 import { getSiteSettings } from "@/lib/content/site-settings";
+import { shouldShowOrderQuantity } from "@/lib/orders/order-presentation";
 import {
   getPublicPaymentOrder,
   type PublicPaymentOrder,
@@ -208,14 +209,19 @@ function OrderSummary({ order }: { order: PublicPaymentOrder }) {
             </dd>
           </div>
         ) : null}
-        <div>
-          <dt className="font-body text-label-md text-on-surface-variant">
-            Jumlah
-          </dt>
-          <dd className="mt-1 font-body text-body-md font-semibold text-primary">
-            {order.quantity} pcs
-          </dd>
-        </div>
+        {shouldShowOrderQuantity(
+          order.order_kind,
+          order.order_kind === "service" ? order.service_slug : null,
+        ) ? (
+          <div>
+            <dt className="font-body text-label-md text-on-surface-variant">
+              Jumlah
+            </dt>
+            <dd className="mt-1 font-body text-body-md font-semibold text-primary">
+              {order.quantity} pcs
+            </dd>
+          </div>
+        ) : null}
         {isProduct && order.unit_price !== null ? (
           <div>
             <dt className="font-body text-label-md text-on-surface-variant">
